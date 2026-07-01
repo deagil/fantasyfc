@@ -8,59 +8,163 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root"
-import { Route as IndexRouteImport } from "./routes/index"
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteRouteImport } from './routes/_app/route'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppTransfersRouteImport } from './routes/_app/transfers'
+import { Route as AppSquadRouteImport } from './routes/_app/squad'
+import { Route as AppSeasonRouteImport } from './routes/_app/season'
+import { Route as AppOfficeRouteImport } from './routes/_app/office'
 
-const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+const AppRouteRoute = AppRouteRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppTransfersRoute = AppTransfersRouteImport.update({
+  id: '/transfers',
+  path: '/transfers',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppSquadRoute = AppSquadRouteImport.update({
+  id: '/squad',
+  path: '/squad',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppSeasonRoute = AppSeasonRouteImport.update({
+  id: '/season',
+  path: '/season',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppOfficeRoute = AppOfficeRouteImport.update({
+  id: '/office',
+  path: '/office',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute
+  '/': typeof AppIndexRoute
+  '/office': typeof AppOfficeRoute
+  '/season': typeof AppSeasonRoute
+  '/squad': typeof AppSquadRoute
+  '/transfers': typeof AppTransfersRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute
+  '/office': typeof AppOfficeRoute
+  '/season': typeof AppSeasonRoute
+  '/squad': typeof AppSquadRoute
+  '/transfers': typeof AppTransfersRoute
+  '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  "/": typeof IndexRoute
+  '/_app': typeof AppRouteRouteWithChildren
+  '/_app/office': typeof AppOfficeRoute
+  '/_app/season': typeof AppSeasonRoute
+  '/_app/squad': typeof AppSquadRoute
+  '/_app/transfers': typeof AppTransfersRoute
+  '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/"
+  fullPaths: '/' | '/office' | '/season' | '/squad' | '/transfers'
   fileRoutesByTo: FileRoutesByTo
-  to: "/"
-  id: "__root__" | "/"
+  to: '/office' | '/season' | '/squad' | '/transfers' | '/'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/_app/office'
+    | '/_app/season'
+    | '/_app/squad'
+    | '/_app/transfers'
+    | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AppRouteRoute: typeof AppRouteRouteWithChildren
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      id: "/"
-      path: "/"
-      fullPath: "/"
-      preLoaderRoute: typeof IndexRouteImport
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/transfers': {
+      id: '/_app/transfers'
+      path: '/transfers'
+      fullPath: '/transfers'
+      preLoaderRoute: typeof AppTransfersRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/squad': {
+      id: '/_app/squad'
+      path: '/squad'
+      fullPath: '/squad'
+      preLoaderRoute: typeof AppSquadRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/season': {
+      id: '/_app/season'
+      path: '/season'
+      fullPath: '/season'
+      preLoaderRoute: typeof AppSeasonRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/office': {
+      id: '/_app/office'
+      path: '/office'
+      fullPath: '/office'
+      preLoaderRoute: typeof AppOfficeRouteImport
+      parentRoute: typeof AppRouteRoute
     }
   }
 }
 
+interface AppRouteRouteChildren {
+  AppOfficeRoute: typeof AppOfficeRoute
+  AppSeasonRoute: typeof AppSeasonRoute
+  AppSquadRoute: typeof AppSquadRoute
+  AppTransfersRoute: typeof AppTransfersRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppOfficeRoute: AppOfficeRoute,
+  AppSeasonRoute: AppSeasonRoute,
+  AppSquadRoute: AppSquadRoute,
+  AppTransfersRoute: AppTransfersRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
+  AppRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AppRouteRoute: AppRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx"
-import type { createStart } from "@tanstack/react-start"
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
