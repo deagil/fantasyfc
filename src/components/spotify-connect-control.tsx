@@ -3,6 +3,8 @@ import { useServerFn } from "@tanstack/react-start"
 
 import { Button } from "@/components/ui/button"
 import { SettingsRow } from "@/components/settings-row"
+import { syncServerSession } from "@/lib/auth/auth-fns"
+import { createBrowserSupabaseClient } from "@/lib/supabase/browser"
 import { disconnectProvider, getConnection } from "@/lib/integrations/connections"
 
 const spotifyLabel = (
@@ -19,10 +21,13 @@ const spotifyLabel = (
 
 export function SpotifyConnectControl() {
   const fetchConnection = useServerFn(getConnection)
+  const syncSession = useServerFn(syncServerSession)
   const disconnect = useServerFn(disconnectProvider)
 
   const [accountLabel, setAccountLabel] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [connectError, setConnectError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -45,11 +50,37 @@ export function SpotifyConnectControl() {
     }
   }, [fetchConnection])
 
-  const handleConnect = () => {
-    const params = new URLSearchParams({
-      origin: window.location.origin,
-    })
-    window.location.assign(`/spotify-connect?${params.toString()}`)
+  const handleConnect = async () => {
+    setConnectError(null)
+    setIsConnecting(true)
+
+    try {
+      const supabase = createBrowserSupabaseClient()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session) {
+        setConnectError("Sign in again, then retry connecting Spotify.")
+        return
+      }
+
+      await syncSession({
+        data: {
+          accessToken: session.access_token,
+          refreshToken: session.refresh_token,
+        },
+      })
+
+      const params = new URLSearchParams({
+        origin: window.location.origin,
+      })
+      window.location.assign(`/spotify-connect?${params.toString()}`)
+    } catch {
+      setConnectError("Could not start Spotify connect. Try again.")
+    } finally {
+      setIsConnecting(false)
+    }
   }
 
   const handleDisconnect = async () => {
@@ -83,19 +114,25 @@ export function SpotifyConnectControl() {
   }
 
   return (
-    <SettingsRow
-      label={spotifyLabel}
-      value="Not connected"
-      action={
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleConnect}
-        >
-          Connect
-        </Button>
-      }
-    />
+    <div className="flex flex-col gap-1">
+      <SettingsRow
+        label={spotifyLabel}
+        value="Not connected"
+        action={
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isConnecting}
+            onClick={() => void handleConnect()}
+          >
+            {isConnecting ? "Connecting..." : "Connect"}
+          </Button>
+        }
+      />
+      {connectError ? (
+        <p className="text-destructive">{connectError}</p>
+      ) : null}
+    </div>
   )
 }

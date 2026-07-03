@@ -9,7 +9,7 @@ import {
 import { useServerFn } from "@tanstack/react-start"
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js"
 
-import { getAuthUser, signOutServer } from "@/lib/auth/auth-fns"
+import { getAuthUser, signOutServer, verifyOtpServer } from "@/lib/auth/auth-fns"
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser"
 import type { AuthUser, Profile } from "@/lib/auth/types"
 
@@ -39,6 +39,7 @@ function sessionUser(session: Session | null): AuthUser | null {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchAuthUser = useServerFn(getAuthUser)
+  const verifyOtpFn = useServerFn(verifyOtpServer)
   const signOutFn = useServerFn(signOutServer)
   const [user, setUser] = useState<AuthUser | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -119,20 +120,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const verifyCode = useCallback(async (email: string, token: string) => {
     setError(null)
-    const supabase = createBrowserSupabaseClient()
-    const { error: verifyError } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: "email",
-    })
+    const result = await verifyOtpFn({ data: { email, token } })
 
-    if (verifyError) {
+    if (!result.ok) {
       setError("Invalid or expired code. Try again.")
       return false
     }
 
+    await syncProfileFromServer()
     return true
-  }, [])
+  }, [verifyOtpFn, syncProfileFromServer])
 
   const signOut = useCallback(async () => {
     const supabase = createBrowserSupabaseClient()
