@@ -14,3 +14,10 @@ todos.json
 
 # typescript
 *.tsbuildinfo
+
+# local / agent / reference (not shipped)
+.cursor/
+AGENTS.md
+data/
+docs/
+portless.json

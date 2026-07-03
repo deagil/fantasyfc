@@ -10,6 +10,8 @@ import { HUB_PLAYLIST_FALLBACK_NAME } from "@/lib/integrations/spotify/playlist"
 import { useSpotifyPlayer } from "@/lib/integrations/spotify/player-context"
 import { cn } from "@/lib/utils"
 
+const TILE_DISCONNECTED_TITLE = "Fantasy FC Trax"
+
 export function NowPlayingTile({
   className,
   comingSoon = false,
@@ -36,6 +38,7 @@ export function NowPlayingTile({
 
   const [copied, setCopied] = useState(false)
 
+  const isSpotifyAvailable = isLoggedIn && isConnected
   const isIdle = !track
   const tickerText = track
     ? `${track.name} · ${track.artists}`
@@ -60,10 +63,16 @@ export function NowPlayingTile({
     <DataTile size="1x1" comingSoon={comingSoon} className={className}>
       <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-3 p-3">
         <div className="relative z-10 flex min-w-0 items-center gap-2">
-          <ScrollingTicker
-            text={tickerText}
-            className="min-w-0 flex-1 text-lg font-semibold text-foreground"
-          />
+          {isSpotifyAvailable ? (
+            <ScrollingTicker
+              text={tickerText}
+              className="min-w-0 flex-1 text-lg font-semibold text-foreground"
+            />
+          ) : (
+            <p className="min-w-0 flex-1 text-lg font-semibold text-foreground">
+              {TILE_DISCONNECTED_TITLE}
+            </p>
+          )}
           {track ? (
             <Button
               type="button"
@@ -82,10 +91,16 @@ export function NowPlayingTile({
         </div>
 
         <div className="box-border size-full min-h-0 overflow-hidden p-3 pt-0">
-          {!isLoggedIn || !isConnected ? (
-            <DataTile.EmptyState className="flex h-full items-center justify-center text-center">
-              Connect Spotify in account settings to play music here.
-            </DataTile.EmptyState>
+          {!isSpotifyAvailable ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+              <img
+                src="/images/spotify_logo.svg"
+                alt=""
+                aria-hidden="true"
+                className="size-14"
+              />
+              <DataTile.EmptyState>Login to play menu music</DataTile.EmptyState>
+            </div>
           ) : playerError ? (
             <DataTile.EmptyState className="flex h-full items-center justify-center text-center">
               {playerError}
