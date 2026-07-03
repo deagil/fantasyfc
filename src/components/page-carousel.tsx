@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 
-import { contentContainerClassName, mobileContentTopSpacerClassName } from "@/lib/layout"
+import { contentContainerClassName, hubTileContainerClassName, mobileContentTopSpacerClassName } from "@/lib/layout"
 import {
   defaultNavTabId,
   getNavPageIndex,
@@ -285,7 +285,7 @@ export function PageCarousel({ className }: { className?: string }) {
             className="w-full shrink-0"
             aria-hidden={page.id !== tab}
           >
-            <div className={contentContainerClassName}>
+            <div className={cn(contentContainerClassName, hubTileContainerClassName)}>
               <div
                 className={mobileContentTopSpacerClassName}
                 aria-hidden

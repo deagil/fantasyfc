@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SpotifyCallbackRouteImport } from './routes/spotify-callback'
 import { Route as ScoutsRouteImport } from './routes/scouts'
 import { Route as FixturesRouteImport } from './routes/fixtures'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
@@ -18,6 +19,11 @@ import { Route as AppSquadRouteImport } from './routes/_app/squad'
 import { Route as AppSeasonRouteImport } from './routes/_app/season'
 import { Route as AppOfficeRouteImport } from './routes/_app/office'
 
+const SpotifyCallbackRoute = SpotifyCallbackRouteImport.update({
+  id: '/spotify-callback',
+  path: '/spotify-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ScoutsRoute = ScoutsRouteImport.update({
   id: '/scouts',
   path: '/scouts',
@@ -62,6 +68,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/fixtures': typeof FixturesRoute
   '/scouts': typeof ScoutsRoute
+  '/spotify-callback': typeof SpotifyCallbackRoute
   '/office': typeof AppOfficeRoute
   '/season': typeof AppSeasonRoute
   '/squad': typeof AppSquadRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/fixtures': typeof FixturesRoute
   '/scouts': typeof ScoutsRoute
+  '/spotify-callback': typeof SpotifyCallbackRoute
   '/office': typeof AppOfficeRoute
   '/season': typeof AppSeasonRoute
   '/squad': typeof AppSquadRoute
@@ -81,6 +89,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteRouteWithChildren
   '/fixtures': typeof FixturesRoute
   '/scouts': typeof ScoutsRoute
+  '/spotify-callback': typeof SpotifyCallbackRoute
   '/_app/office': typeof AppOfficeRoute
   '/_app/season': typeof AppSeasonRoute
   '/_app/squad': typeof AppSquadRoute
@@ -93,6 +102,7 @@ export interface FileRouteTypes {
     | '/'
     | '/fixtures'
     | '/scouts'
+    | '/spotify-callback'
     | '/office'
     | '/season'
     | '/squad'
@@ -101,6 +111,7 @@ export interface FileRouteTypes {
   to:
     | '/fixtures'
     | '/scouts'
+    | '/spotify-callback'
     | '/office'
     | '/season'
     | '/squad'
@@ -111,6 +122,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/fixtures'
     | '/scouts'
+    | '/spotify-callback'
     | '/_app/office'
     | '/_app/season'
     | '/_app/squad'
@@ -122,10 +134,18 @@ export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
   FixturesRoute: typeof FixturesRoute
   ScoutsRoute: typeof ScoutsRoute
+  SpotifyCallbackRoute: typeof SpotifyCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/spotify-callback': {
+      id: '/spotify-callback'
+      path: '/spotify-callback'
+      fullPath: '/spotify-callback'
+      preLoaderRoute: typeof SpotifyCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/scouts': {
       id: '/scouts'
       path: '/scouts'
@@ -209,6 +229,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   FixturesRoute: FixturesRoute,
   ScoutsRoute: ScoutsRoute,
+  SpotifyCallbackRoute: SpotifyCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

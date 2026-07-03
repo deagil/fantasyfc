@@ -6,7 +6,7 @@ import { NavTabs } from "@/components/nav-tabs"
 import { PageCarousel } from "@/components/page-carousel"
 import { UserMenu } from "@/components/user-menu"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { contentContainerClassName } from "@/lib/layout"
+import { contentContainerClassName, hubDesktopAlignClassName, hubTileContainerClassName } from "@/lib/layout"
 import { FplBootstrapProvider } from "@/lib/fpl/bootstrap-context"
 import { TeamProvider } from "@/lib/fpl/team-context"
 import { navPages, validateHubSearch } from "@/lib/nav-pages"
@@ -26,29 +26,34 @@ function AppLayout() {
       <FplBootstrapProvider>
         <TooltipProvider>
           <AppShell className="flex flex-col overflow-x-hidden lg:h-svh lg:overflow-y-hidden">
-            <MobilePageHeader title={activePage.label} />
+              <MobilePageHeader title={activePage.label} />
 
-            <main
-              className={cn(
-                "flex min-h-0 flex-1 flex-col",
-                "pb-28 lg:justify-start lg:pt-4 lg:pb-3"
-              )}
-            >
-              <div className={contentContainerClassName}>
-                <div className="hidden items-center gap-4 lg:flex">
-                  <NavTabs className="min-w-0 flex-1" />
-                  <UserMenu />
+              <main
+                className={cn(
+                  "flex min-h-0 flex-1 flex-col",
+                  "pb-28 lg:justify-start lg:pt-4 lg:pb-3"
+                )}
+              >
+                <div className={cn(contentContainerClassName, hubTileContainerClassName)}>
+                  <div
+                    className={cn(
+                      "hidden items-center gap-4 lg:flex",
+                      hubDesktopAlignClassName
+                    )}
+                  >
+                    <NavTabs className="min-w-0 flex-1" />
+                    <UserMenu />
+                  </div>
                 </div>
-              </div>
-              <PageCarousel className="lg:mt-2" />
-            </main>
+                <PageCarousel className="lg:mt-2" />
+              </main>
 
-            <nav className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-2 lg:hidden">
-              <div className="w-full max-w-lg">
-                <NavTabs variant="default" />
-              </div>
-            </nav>
-          </AppShell>
+              <nav className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-2 lg:hidden">
+                <div className="w-full max-w-lg">
+                  <NavTabs variant="default" />
+                </div>
+              </nav>
+            </AppShell>
         </TooltipProvider>
       </FplBootstrapProvider>
     </TeamProvider>

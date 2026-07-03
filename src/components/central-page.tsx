@@ -2,6 +2,7 @@ import { GameweekTile } from "@/components/gameweek-tile"
 import { ComingSoonTile } from "@/components/coming-soon-tile"
 import { LeaguesTile } from "@/components/leagues-tile"
 import { NewsTile } from "@/components/news-tile"
+import { NowPlayingTile } from "@/components/now-playing-tile"
 import { OverallTile } from "@/components/overall-tile"
 import { TransfersTile } from "@/components/transfers-tile"
 import { DataTile } from "@/components/tile-group"
@@ -19,23 +20,6 @@ export function CentralPage() {
         <DataTile comingSoon className="relative">
           <DataTile.Header className="relative z-10">
             <DataTile.Heading>
-              <DataTile.Label style={{ viewTransitionName: "vt-fixtures-title" }}>
-                Fixtures
-              </DataTile.Label>
-            </DataTile.Heading>
-          </DataTile.Header>
-          <img
-            src="/images/ref.png"
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-6 bottom-0 h-[85%] w-auto object-contain object-bottom drop-shadow-lg"
-          />
-        </DataTile>
-      </ComingSoonTile>
-      <ComingSoonTile className="col-span-1 row-span-1 lg:col-start-4 lg:row-start-3">
-        <DataTile comingSoon className="relative">
-          <DataTile.Header className="relative z-10">
-            <DataTile.Heading>
               <DataTile.Label style={{ viewTransitionName: "vt-scouts-title" }}>
                 Scouts
               </DataTile.Label>
@@ -49,6 +33,7 @@ export function CentralPage() {
           />
         </DataTile>
       </ComingSoonTile>
+      <NowPlayingTile className="col-span-1 row-span-1 lg:col-start-4 lg:row-start-3" />
     </div>
   )
 }

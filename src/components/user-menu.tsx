@@ -5,7 +5,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -23,6 +22,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { KickoffThemePicker } from "@/components/kickoff-theme-picker"
+import { AccountSection } from "@/components/account-section"
+import { SettingsRow } from "@/components/settings-row"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useTeam } from "@/lib/fpl/team-context"
 
@@ -67,17 +68,17 @@ export function UserMenu() {
   const settingsBody = (
     <div className="flex flex-col gap-4 text-sm">
       <KickoffThemePicker />
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <span className="text-muted-foreground">Team</span>
-          <span className="font-medium">{entry?.name ?? "Loading team..."}</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-muted-foreground">Team ID</span>
-          <span className="font-medium">{teamId}</span>
-        </div>
-        {error ? <p className="text-destructive">{error}</p> : null}
-      </div>
+      <SettingsRow
+        label="Team"
+        value={entry?.name ?? "Loading team..."}
+        action={
+          <Button variant="outline" size="sm" onClick={clearTeam}>
+            Switch Team
+          </Button>
+        }
+      />
+      {error ? <p className="text-destructive">{error}</p> : null}
+      <AccountSection />
     </div>
   )
 
@@ -86,18 +87,33 @@ export function UserMenu() {
       <KickoffThemePicker />
       <div className="flex flex-col gap-2">
         <Label htmlFor="team-id">Team ID</Label>
-        <Input
-          id="team-id"
-          inputMode="numeric"
-          placeholder="e.g. 216925"
-          value={teamIdInput}
-          onChange={(event) => setTeamIdInput(event.target.value)}
-        />
+        <div className="flex items-center gap-2">
+          <Input
+            id="team-id"
+            inputMode="numeric"
+            placeholder="e.g. 216925"
+            value={teamIdInput}
+            onChange={(event) => setTeamIdInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                void handleConnect()
+              }
+            }}
+          />
+          <Button
+            className="shrink-0"
+            disabled={isLoading}
+            onClick={() => void handleConnect()}
+          >
+            {isLoading ? "Connecting..." : "Connect"}
+          </Button>
+        </div>
         {submitError ? (
           <p className="text-sm text-destructive">{submitError}</p>
         ) : null}
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
       </div>
+      <AccountSection />
     </div>
   )
 
@@ -125,11 +141,6 @@ export function UserMenu() {
                 </DialogDescription>
               </DialogHeader>
               {settingsBody}
-              <DialogFooter>
-                <Button variant="outline" onClick={clearTeam}>
-                  Log out
-                </Button>
-              </DialogFooter>
             </>
           ) : (
             <>
@@ -141,14 +152,6 @@ export function UserMenu() {
                 </DialogDescription>
               </DialogHeader>
               {loginBody}
-              <DialogFooter>
-                <Button
-                  disabled={isLoading}
-                  onClick={() => void handleConnect()}
-                >
-                  {isLoading ? "Connecting..." : "Connect"}
-                </Button>
-              </DialogFooter>
             </>
           )}
         </DialogContent>
@@ -172,11 +175,8 @@ export function UserMenu() {
                 Connected to the public FPL API using your team ID.
               </DrawerDescription>
             </DrawerHeader>
-            <div className="px-4">{settingsBody}</div>
+            <div className="px-4 pb-4">{settingsBody}</div>
             <DrawerFooter className="pt-2">
-              <Button variant="outline" onClick={clearTeam}>
-                Log out
-              </Button>
               <DrawerClose asChild>
                 <Button variant="ghost">Close</Button>
               </DrawerClose>
@@ -190,13 +190,10 @@ export function UserMenu() {
                 Enter your public FPL team ID. It will be saved in this browser.
               </DrawerDescription>
             </DrawerHeader>
-            <div className="px-4">{loginBody}</div>
+            <div className="px-4 pb-4">{loginBody}</div>
             <DrawerFooter className="pt-2">
-              <Button disabled={isLoading} onClick={() => void handleConnect()}>
-                {isLoading ? "Connecting..." : "Connect"}
-              </Button>
               <DrawerClose asChild>
-                <Button variant="ghost">Cancel</Button>
+                <Button variant="ghost">Close</Button>
               </DrawerClose>
             </DrawerFooter>
           </>
