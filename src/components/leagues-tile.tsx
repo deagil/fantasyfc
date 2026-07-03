@@ -166,7 +166,13 @@ function LeagueEmptyState({ tab }: { tab: LeagueTabId }) {
   )
 }
 
-export function LeaguesTile({ className }: { className?: string }) {
+export function LeaguesTile({
+  className,
+  comingSoon = false,
+}: {
+  className?: string
+  comingSoon?: boolean
+}) {
   const { teamId, entry, isLoggedIn, isLoading, error } = useTeam()
   const fetchStandings = useServerFn(getFplLeagueStandings)
   const [leagueTab, setLeagueTab] = useState<LeagueTabId>("private")
@@ -262,7 +268,7 @@ export function LeaguesTile({ className }: { className?: string }) {
 
   return (
     <>
-      <DataTile size="2x2" interactive className={className}>
+      <DataTile size="2x2" interactive comingSoon={comingSoon} className={className}>
         <Tabs
           value={leagueTab}
           onValueChange={handleLeagueTabChange}

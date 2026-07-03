@@ -35,6 +35,7 @@ type DataTileProps = {
   /** @deprecated Use `size="2x1"` */
   slim?: boolean
   interactive?: boolean
+  comingSoon?: boolean
   className?: string
   children?: React.ReactNode
 }
@@ -70,6 +71,7 @@ function DataTileRoot({
   wide = false,
   slim = false,
   interactive = false,
+  comingSoon = false,
   className,
   children,
 }: DataTileProps) {
@@ -79,6 +81,7 @@ function DataTileRoot({
     <Card
       data-tile
       data-tile-interactive={interactive ? "" : undefined}
+      data-coming-soon={comingSoon ? "" : undefined}
       className={cn(
         "h-full min-h-0 gap-0 overflow-hidden rounded-none bg-transparent py-0 text-(--tile-fg) shadow-none ring-0",
         tileSizeClassNames[resolvedSize],

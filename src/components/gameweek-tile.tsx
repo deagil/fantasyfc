@@ -247,7 +247,13 @@ function phaseNeedsHistory(phase: GameweekPhase | null): boolean {
   return phase?.type === "off-season"
 }
 
-export function GameweekTile({ className }: { className?: string }) {
+export function GameweekTile({
+  className,
+  comingSoon = false,
+}: {
+  className?: string
+  comingSoon?: boolean
+}) {
   const now = useNow(1_000)
   const { bootstrap, fixtures, teamsById, isLoading, error } = useFplBootstrap()
   const { isLoading: isTeamLoading, error: teamError, history } = useTeam()
@@ -269,6 +275,7 @@ export function GameweekTile({ className }: { className?: string }) {
   return (
     <DataTile
       size="2x1"
+      comingSoon={comingSoon}
       className={cn(isLocked && "opacity-90 saturate-[0.85]", className)}
     >
       <div className="flex h-full min-h-0 flex-col">
@@ -279,7 +286,6 @@ export function GameweekTile({ className }: { className?: string }) {
               <DataTile.Subtitle>{getPhaseSubtitle(phase)}</DataTile.Subtitle>
             ) : null}
           </DataTile.Heading>
-          <DataTile.Action aria-label="View gameweek" />
         </DataTile.Header>
 
         <DataTile.Content

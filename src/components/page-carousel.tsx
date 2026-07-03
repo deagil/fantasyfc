@@ -3,7 +3,9 @@ import { useNavigate, useSearch } from "@tanstack/react-router"
 
 import { contentContainerClassName, mobileContentTopSpacerClassName } from "@/lib/layout"
 import {
+  defaultNavTabId,
   getNavPageIndex,
+  isNavPageEnabled,
   navPages,
   tabSearch,
 } from "@/lib/nav-pages"
@@ -68,6 +70,12 @@ export function PageCarousel({ className }: { className?: string }) {
       return
     }
 
+    const page = navPages[urlIndex]
+    if (page && !page.enabled) {
+      navigate({ to: "/", search: tabSearch(defaultNavTabId), replace: true })
+      return
+    }
+
     const previousIndex = previousIndexRef.current
     if (previousIndex !== urlIndex) {
       setTransitionMs(
@@ -76,12 +84,12 @@ export function PageCarousel({ className }: { className?: string }) {
       setDisplayIndex(urlIndex)
       previousIndexRef.current = urlIndex
     }
-  }, [urlIndex, isDragging, prefersReducedMotion])
+  }, [urlIndex, isDragging, prefersReducedMotion, navigate])
 
   const commitToIndex = useCallback(
     (index: number, replace: boolean) => {
       const page = navPages[index]
-      if (!page || index === displayIndex) {
+      if (!page || index === displayIndex || !isNavPageEnabled(page.id)) {
         return
       }
 

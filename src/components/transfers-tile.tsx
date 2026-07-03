@@ -7,18 +7,23 @@ import {
 } from "@/lib/fpl/transfers"
 import { useTeam } from "@/lib/fpl/team-context"
 
-export function TransfersTile({ className }: { className?: string }) {
+export function TransfersTile({
+  className,
+  comingSoon = false,
+}: {
+  className?: string
+  comingSoon?: boolean
+}) {
   const { entry, history, isLoggedIn, isLoading, error } = useTeam()
   const transfers =
     entry && history ? getPublicTransferSummary(entry, history) : null
 
   return (
-    <DataTile className={className}>
+    <DataTile className={className} comingSoon={comingSoon}>
       <DataTile.Header>
         <DataTile.Heading>
           <DataTile.Label>Transfer Hub</DataTile.Label>
         </DataTile.Heading>
-        <DataTile.Action aria-label="View transfers" />
       </DataTile.Header>
 
       <DataTile.Content align="center" className="min-h-0 flex-1 justify-center pt-0">

@@ -191,6 +191,8 @@
     --tile-action-hover-bg: rgb(255 255 255 / 0.88);
     --tile-action-hover-fg: var(--pl-purple);
     --tile-grain-opacity: 0.08;
+    --shell-tab-active-bg: var(--pl-green);
+    --shell-tab-active-fg: var(--pl-purple);
   }
 
   .app-shell[data-kickoff-theme="late-kickoff"]::before {
@@ -219,6 +221,8 @@
     --tile-action-hover-bg: rgb(255 255 255 / 0.88);
     --tile-action-hover-fg: var(--pl-purple);
     --tile-grain-opacity: 0.08;
+    --shell-tab-active-bg: var(--pl-green);
+    --shell-tab-active-fg: var(--pl-purple);
   }
 
   .app-shell[data-kickoff-theme="early-kickoff"]::before {
@@ -253,6 +257,11 @@
 
   .shell-chrome-ghost {
     color: var(--shell-foreground);
+  }
+
+  .app-shell [data-slot="tabs-trigger"][data-active] {
+    background-color: var(--shell-tab-active-bg);
+    color: var(--shell-tab-active-fg);
   }
 
   .app-shell[data-kickoff-theme="late-kickoff"] .shell-chrome-ghost:hover {
@@ -305,6 +314,26 @@
   [data-tile] > * {
     position: relative;
     z-index: 1;
+  }
+
+  [data-tile][data-coming-soon] {
+    opacity: 0.55;
+    pointer-events: none;
+    user-select: none;
+    filter: saturate(0.85);
+  }
+
+  @media (hover: hover) {
+    [data-tile][data-coming-soon]:hover,
+    .group\/tile:hover [data-tile][data-coming-soon] {
+      border-color: var(--tile-border);
+      background-color: var(--tile-bg) !important;
+      color: var(--tile-fg);
+      box-shadow: var(--tile-shadow);
+      --foreground: var(--tile-fg);
+      --card-foreground: var(--tile-fg);
+      --muted-foreground: var(--tile-muted-fg);
+    }
   }
 
   [data-tile]

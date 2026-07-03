@@ -19,7 +19,7 @@ function ScoutsDetailPage() {
             variant="ghost"
             size="icon-sm"
             className="shell-chrome-ghost -ml-1 shrink-0 rounded-full"
-            render={<Link to="/" search={tabSearch("central")} aria-label="Back" />}
+            render={<Link to="/" search={tabSearch("hub")} aria-label="Back" />}
           >
             <ChevronLeftIcon />
           </Button>

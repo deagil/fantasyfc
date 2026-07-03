@@ -3,16 +3,27 @@ import { DataTile } from "@/components/data-tile"
 import { formatOverallRank } from "@/lib/fpl/history"
 import { useTeam } from "@/lib/fpl/team-context"
 
-export function OverallTile({ className }: { className?: string }) {
+export function OverallTile({
+  className,
+  comingSoon = false,
+}: {
+  className?: string
+  comingSoon?: boolean
+}) {
   const { entry, isLoggedIn, isLoading, error } = useTeam()
 
+  const title = entry?.name ?? "Your team"
+
   return (
-    <DataTile className={className}>
+    <DataTile className={className} comingSoon={comingSoon}>
       <DataTile.Header>
         <DataTile.Heading>
-          <DataTile.Label>Manager Career</DataTile.Label>
+          {isLoading && isLoggedIn && !entry ? (
+            <Skeleton className="h-4 w-28" />
+          ) : (
+            <DataTile.Label>{title}</DataTile.Label>
+          )}
         </DataTile.Heading>
-        <DataTile.Action aria-label="View overall rank" />
       </DataTile.Header>
 
       <DataTile.Content align="center" className="min-h-0 flex-1 justify-center pt-0">
