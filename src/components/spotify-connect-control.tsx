@@ -3,9 +3,9 @@ import { useServerFn } from "@tanstack/react-start"
 
 import { Button } from "@/components/ui/button"
 import { SettingsRow } from "@/components/settings-row"
-import { syncServerSession } from "@/lib/auth/auth-fns"
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser"
 import { disconnectProvider, getConnection } from "@/lib/integrations/connections"
+import { startSpotifyConnect } from "@/lib/integrations/spotify/server"
 
 const spotifyLabel = (
   <span className="inline-flex items-center gap-1.5">
@@ -21,7 +21,7 @@ const spotifyLabel = (
 
 export function SpotifyConnectControl() {
   const fetchConnection = useServerFn(getConnection)
-  const syncSession = useServerFn(syncServerSession)
+  const beginConnect = useServerFn(startSpotifyConnect)
   const disconnect = useServerFn(disconnectProvider)
 
   const [accountLabel, setAccountLabel] = useState<string | null>(null)
@@ -60,25 +60,23 @@ export function SpotifyConnectControl() {
         data: { session },
       } = await supabase.auth.getSession()
 
-      if (!session) {
+      if (!session?.access_token || !session.refresh_token) {
         setConnectError("Sign in again, then retry connecting Spotify.")
+        setIsConnecting(false)
         return
       }
 
-      await syncSession({
+      const { url } = await beginConnect({
         data: {
+          origin: window.location.origin,
           accessToken: session.access_token,
           refreshToken: session.refresh_token,
         },
       })
 
-      const params = new URLSearchParams({
-        origin: window.location.origin,
-      })
-      window.location.assign(`/spotify-connect?${params.toString()}`)
+      window.location.assign(url)
     } catch {
       setConnectError("Could not start Spotify connect. Try again.")
-    } finally {
       setIsConnecting(false)
     }
   }

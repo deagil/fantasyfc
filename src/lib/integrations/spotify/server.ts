@@ -15,6 +15,31 @@ export const beginSpotifyConnectForRoute = createServerFn({ method: "GET" })
     return beginSpotifyConnect(data.origin)
   })
 
+/** Sync auth + PKCE cookies in one response, then return the Spotify authorize URL. */
+export const startSpotifyConnect = createServerFn({ method: "POST" })
+  .validator(
+    (data: { origin?: string; accessToken: string; refreshToken: string }) => data
+  )
+  .handler(async ({ data }) => {
+    const { createServerSupabaseClient } = await import("@/lib/supabase/server")
+    const { beginSpotifyConnect } = await import(
+      "@/lib/integrations/spotify/oauth.server"
+    )
+
+    const supabase = createServerSupabaseClient()
+    const { error } = await supabase.auth.setSession({
+      access_token: data.accessToken,
+      refresh_token: data.refreshToken,
+    })
+
+    if (error) {
+      throw new Error("Failed to sync session")
+    }
+
+    const url = await beginSpotifyConnect(data.origin)
+    return { url }
+  })
+
 export const handleSpotifyCallback = createServerFn({ method: "POST" })
   .validator((data: { code: string; state: string }) => data)
   .handler(async ({ data }) => {
