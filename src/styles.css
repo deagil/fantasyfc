@@ -8,6 +8,15 @@
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: 'Inter Variable', sans-serif;
+    --color-pl-purple: var(--pl-purple);
+    --color-pl-plum: var(--pl-plum);
+    --color-pl-violet: var(--pl-violet);
+    --color-pl-pink: var(--pl-pink);
+    --color-pl-orange: var(--pl-orange);
+    --color-pl-yellow: var(--pl-yellow);
+    --color-pl-green: var(--pl-green);
+    --color-pl-blue: var(--pl-blue);
+    --color-pl-sky: var(--pl-sky);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,6 +58,18 @@
 }
 
 :root {
+    /* Premier League brand palette (Nomad rebrand) */
+    --pl-purple: #3d195b;
+    --pl-plum: #5c3d7a;
+    --pl-violet: #6b3fa0;
+    --pl-pink: #ff2882;
+    --pl-orange: #ff6900;
+    --pl-yellow: #ebff00;
+    --pl-green: #00ff85;
+    --pl-blue: #05f0ff;
+    --pl-sky: #e8f2fa;
+    --pl-sky-deep: #dceef8;
+
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -63,15 +84,15 @@
     --muted-foreground: oklch(0.556 0 0);
     --accent: oklch(0.97 0 0);
     --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
+    --destructive: var(--pl-pink);
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
     --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --chart-1: var(--pl-blue);
+    --chart-2: var(--pl-green);
+    --chart-3: var(--pl-pink);
+    --chart-4: var(--pl-plum);
+    --chart-5: var(--pl-purple);
     --radius: 0.625rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
@@ -98,15 +119,15 @@
     --muted-foreground: oklch(0.708 0 0);
     --accent: oklch(0.269 0 0);
     --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
+    --destructive: var(--pl-pink);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --chart-1: var(--pl-blue);
+    --chart-2: var(--pl-green);
+    --chart-3: var(--pl-pink);
+    --chart-4: var(--pl-plum);
+    --chart-5: var(--pl-purple);
     --sidebar: oklch(0.205 0 0);
     --sidebar-foreground: oklch(0.985 0 0);
     --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -123,6 +144,7 @@
     }
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
     }
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
@@ -130,4 +152,337 @@
   html {
     @apply font-sans;
     }
+}
+
+@layer components {
+  .app-shell {
+    position: relative;
+    color: var(--shell-foreground);
+  }
+
+  .app-shell::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .app-shell > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Late kickoff — plum night, white tiles, pink hover */
+  .app-shell[data-kickoff-theme="late-kickoff"] {
+    --shell-foreground: white;
+    --shell-muted: rgb(255 255 255 / 0.62);
+    --tile-bg: rgb(255 255 255 / 0.95);
+    --tile-fg: var(--pl-purple);
+    --tile-muted-fg: rgb(61 25 91 / 0.55);
+    --tile-border: rgb(61 25 91 / 0.12);
+    --tile-shadow: 0 1px 2px -1px rgb(61 25 91 / 0.06), 0 8px 24px rgb(61 25 91 / 0.06);
+    --tile-hover-bg: var(--pl-pink);
+    --tile-hover-fg: var(--pl-purple);
+    --tile-hover-muted: rgb(61 25 91 / 0.62);
+    --tile-hover-border: rgb(61 25 91 / 0.18);
+    --tile-hover-shadow: 0 4px 24px color-mix(in oklab, var(--pl-pink) 38%, transparent);
+    --tile-action-hover-border: rgb(61 25 91 / 0.18);
+    --tile-action-hover-bg: rgb(255 255 255 / 0.88);
+    --tile-action-hover-fg: var(--pl-purple);
+    --tile-grain-opacity: 0.08;
+  }
+
+  .app-shell[data-kickoff-theme="late-kickoff"]::before {
+    background-color: var(--pl-plum);
+    background-image:
+      radial-gradient(ellipse 90% 70% at 12% -8%, color-mix(in oklab, var(--pl-violet) 50%, transparent), transparent 58%),
+      radial-gradient(ellipse 70% 55% at 100% 100%, color-mix(in oklab, var(--pl-pink) 15%, transparent), transparent 52%),
+      linear-gradient(155deg, #6b4888 0%, var(--pl-plum) 42%, var(--pl-purple) 100%);
+  }
+
+  /* Early kickoff — light sky, white tiles, blue hover */
+  .app-shell[data-kickoff-theme="early-kickoff"] {
+    --shell-foreground: var(--pl-purple);
+    --shell-muted: rgb(61 25 91 / 0.55);
+    --tile-bg: rgb(255 255 255 / 0.95);
+    --tile-fg: var(--pl-purple);
+    --tile-muted-fg: rgb(61 25 91 / 0.55);
+    --tile-border: rgb(61 25 91 / 0.12);
+    --tile-shadow: 0 1px 2px -1px rgb(61 25 91 / 0.06), 0 8px 24px rgb(61 25 91 / 0.06);
+    --tile-hover-bg: var(--pl-blue);
+    --tile-hover-fg: var(--pl-purple);
+    --tile-hover-muted: rgb(61 25 91 / 0.62);
+    --tile-hover-border: rgb(61 25 91 / 0.18);
+    --tile-hover-shadow: 0 4px 24px color-mix(in oklab, var(--pl-blue) 38%, transparent);
+    --tile-action-hover-border: rgb(61 25 91 / 0.18);
+    --tile-action-hover-bg: rgb(255 255 255 / 0.88);
+    --tile-action-hover-fg: var(--pl-purple);
+    --tile-grain-opacity: 0.08;
+  }
+
+  .app-shell[data-kickoff-theme="early-kickoff"]::before {
+    background-color: var(--pl-sky);
+    background-image:
+      radial-gradient(ellipse 85% 65% at 10% -5%, color-mix(in oklab, var(--pl-blue) 24%, transparent), transparent 55%),
+      radial-gradient(ellipse 65% 50% at 100% 100%, color-mix(in oklab, var(--pl-violet) 10%, transparent), transparent 50%),
+      linear-gradient(165deg, #eef6fc 0%, var(--pl-sky-deep) 45%, #ebe8f4 100%);
+  }
+
+  .shell-chrome-btn {
+    border-color: rgb(255 255 255 / 0.25);
+    background-color: rgb(255 255 255 / 0.1);
+    color: white;
+  }
+
+  .shell-chrome-btn:hover {
+    background-color: rgb(255 255 255 / 0.15);
+    color: white;
+  }
+
+  .app-shell[data-kickoff-theme="early-kickoff"] .shell-chrome-btn {
+    border-color: rgb(61 25 91 / 0.14);
+    background-color: rgb(255 255 255 / 0.65);
+    color: var(--pl-purple);
+  }
+
+  .app-shell[data-kickoff-theme="early-kickoff"] .shell-chrome-btn:hover {
+    background-color: rgb(255 255 255 / 0.85);
+    color: var(--pl-purple);
+  }
+
+  .shell-chrome-ghost {
+    color: var(--shell-foreground);
+  }
+
+  .app-shell[data-kickoff-theme="late-kickoff"] .shell-chrome-ghost:hover {
+    background-color: rgb(255 255 255 / 0.1);
+    color: var(--shell-foreground);
+  }
+
+  .app-shell[data-kickoff-theme="early-kickoff"] .shell-chrome-ghost:hover {
+    background-color: rgb(61 25 91 / 0.08);
+    color: var(--shell-foreground);
+  }
+
+  [data-tile] {
+    position: relative;
+    isolation: isolate;
+    gap: 0;
+    overflow: hidden;
+    background-color: var(--tile-bg) !important;
+    color: var(--tile-fg);
+    border: 1px solid var(--tile-border);
+    box-shadow: var(--tile-shadow);
+    --foreground: var(--tile-fg);
+    --card-foreground: var(--tile-fg);
+    --muted-foreground: var(--tile-muted-fg);
+    --background: rgb(61 25 91 / 0.06);
+    --muted: rgb(61 25 91 / 0.08);
+    --secondary: rgb(61 25 91 / 0.08);
+    --secondary-foreground: var(--tile-fg);
+    --border: rgb(61 25 91 / 0.12);
+    --input: rgb(61 25 91 / 0.1);
+    transition:
+      background-color 300ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 300ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 300ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  [data-tile]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: var(--tile-grain-opacity, 0.08);
+    mix-blend-mode: multiply;
+    -webkit-filter: url(#deadline-tile-grain);
+    filter: url(#deadline-tile-grain);
+  }
+
+  [data-tile] > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  [data-tile]
+    :where(.text-foreground, .text-card-foreground):not(
+      :where([class*="text-chart"], [class*="text-destructive"], [class*="text-muted"])
+    ) {
+    color: var(--tile-fg) !important;
+  }
+
+  [data-tile] :where(.text-muted-foreground) {
+    color: var(--tile-muted-fg) !important;
+  }
+
+  @media (hover: hover) {
+    [data-tile]:not([data-tile-interactive]):hover,
+    .group\/tile:hover [data-tile]:not([data-tile-interactive]) {
+      border-color: var(--tile-hover-border);
+      background-color: var(--tile-hover-bg) !important;
+      color: var(--tile-hover-fg);
+      box-shadow: var(--tile-hover-shadow);
+      --foreground: var(--tile-hover-fg);
+      --card-foreground: var(--tile-hover-fg);
+      --muted-foreground: var(--tile-hover-muted);
+      --background: rgb(61 25 91 / 0.08);
+      --muted: rgb(61 25 91 / 0.1);
+      --secondary: rgb(255 255 255 / 0.88);
+      --secondary-foreground: var(--tile-hover-fg);
+      --border: rgb(61 25 91 / 0.15);
+      --input: rgb(61 25 91 / 0.12);
+    }
+
+    [data-tile]:not([data-tile-interactive]):hover [data-tile-action],
+    .group\/tile:hover [data-tile]:not([data-tile-interactive]) [data-tile-action] {
+      border-color: var(--tile-action-hover-border);
+      background-color: var(--tile-action-hover-bg);
+      color: var(--tile-action-hover-fg);
+    }
+
+    [data-tile]:not([data-tile-interactive]):hover
+      :where(.text-foreground, .text-card-foreground):not(
+        :where([class*="text-chart"], [class*="text-destructive"], [class*="text-muted"])
+      ),
+    .group\/tile:hover
+      [data-tile]:not([data-tile-interactive])
+      :where(.text-foreground, .text-card-foreground):not(
+        :where([class*="text-chart"], [class*="text-destructive"], [class*="text-muted"])
+      ) {
+      color: var(--tile-hover-fg) !important;
+    }
+
+    [data-tile]:not([data-tile-interactive]):hover :where(.text-muted-foreground),
+    .group\/tile:hover
+      [data-tile]:not([data-tile-interactive])
+      :where(.text-muted-foreground) {
+      color: var(--tile-hover-muted) !important;
+    }
+
+    [data-tile]:not([data-tile-interactive]):hover :where([class*="text-destructive"]),
+    .group\/tile:hover
+      [data-tile]:not([data-tile-interactive])
+      :where([class*="text-destructive"]) {
+      color: var(--tile-hover-fg) !important;
+    }
+
+    [data-tile] [data-tile-row]:hover {
+      background-color: color-mix(in oklab, var(--pl-purple) 6%, transparent);
+    }
+  }
+
+  [data-tile] [data-tile-row] {
+    color: var(--tile-fg);
+    transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  [data-tile] [data-tile-row][data-selected="true"] {
+    background-color: color-mix(in oklab, var(--pl-purple) 8%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--pl-purple) 10%, transparent);
+  }
+
+  [data-tile] [data-tile-row-muted] {
+    color: var(--tile-muted-fg);
+  }
+}
+
+@keyframes vt-slide-in-from-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes vt-slide-out-to-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-25%); }
+}
+@keyframes vt-slide-in-from-left {
+  from { transform: translateX(-25%); }
+  to { transform: translateX(0); }
+}
+@keyframes vt-slide-out-to-right {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+@keyframes vt-title-fade-in {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes vt-title-fade-out {
+  from {
+    opacity: 1;
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    filter: blur(6px);
+  }
+}
+
+::view-transition-group(vt-fixtures-title),
+::view-transition-group(vt-scouts-title) {
+  animation-duration: 0ms;
+  overflow: visible;
+}
+
+::view-transition-image-pair(vt-fixtures-title),
+::view-transition-image-pair(vt-scouts-title) {
+  overflow: visible;
+}
+
+::view-transition-old(vt-fixtures-title),
+::view-transition-new(vt-fixtures-title),
+::view-transition-old(vt-scouts-title),
+::view-transition-new(vt-scouts-title) {
+  height: 100%;
+  width: 100%;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(vt-fixtures-title),
+::view-transition-old(vt-scouts-title) {
+  animation: vt-title-fade-out 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+::view-transition-new(vt-fixtures-title),
+::view-transition-new(vt-scouts-title) {
+  animation: vt-title-fade-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+::view-transition-group(root) {
+  animation-duration: 320ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root:active-view-transition-type(push) {
+  &::view-transition-old(root) {
+    animation-name: vt-slide-out-to-left;
+    z-index: 1;
+  }
+  &::view-transition-new(root) {
+    animation-name: vt-slide-in-from-right;
+    z-index: 2;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
+  }
+}
+
+:root:active-view-transition-type(pop) {
+  &::view-transition-old(root) {
+    animation-name: vt-slide-out-to-right;
+    z-index: 2;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
+  }
+  &::view-transition-new(root) {
+    animation-name: vt-slide-in-from-left;
+    z-index: 1;
+  }
 }

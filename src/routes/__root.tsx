@@ -2,6 +2,7 @@ import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 
+import { KickoffThemeProvider } from "@/lib/kickoff-theme-context"
 import appCss from "../styles.css?url"
 
 export const Route = createRootRoute({
@@ -41,7 +42,35 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {children}
+        <svg
+          aria-hidden="true"
+          className="pointer-events-none absolute h-0 w-0 overflow-hidden"
+        >
+          <defs>
+            <filter
+              id="deadline-tile-grain"
+              x="0%"
+              y="0%"
+              width="100%"
+              height="100%"
+              colorInterpolationFilters="sRGB"
+            >
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.75"
+                numOctaves="4"
+                stitchTiles="stitch"
+                result="noise"
+              />
+              <feColorMatrix
+                in="noise"
+                type="matrix"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
+              />
+            </filter>
+          </defs>
+        </svg>
+        <KickoffThemeProvider>{children}</KickoffThemeProvider>
         <TanStackDevtools
           config={{
             position: "bottom-right",

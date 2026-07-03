@@ -1,4 +1,5 @@
-import { Card } from "@/components/ui/card"
+import { DataTile } from "@/components/data-tile"
+import { hubTileGridClassName } from "@/lib/layout"
 import { cn } from "@/lib/utils"
 
 type TileGroupProps = {
@@ -8,7 +9,7 @@ type TileGroupProps = {
 
 export function TileGroup({ className, children }: TileGroupProps) {
   return (
-    <div className={cn("grid min-w-0 flex-1 grid-cols-2 gap-4", className)}>
+    <div className={cn(hubTileGridClassName, "min-w-0 flex-1 content-start", className)}>
       {children}
     </div>
   )
@@ -16,20 +17,18 @@ export function TileGroup({ className, children }: TileGroupProps) {
 
 type TileProps = {
   wide?: boolean
+  slim?: boolean
   className?: string
   children?: React.ReactNode
 }
 
-export function Tile({ wide = false, className, children }: TileProps) {
+/** @deprecated Use DataTile for new tiles. Kept for empty placeholders. */
+export function Tile({ wide = false, slim = false, className, children }: TileProps) {
   return (
-    <Card
-      className={cn(
-        "aspect-video items-center justify-center bg-muted/50 py-0 shadow-none ring-0",
-        wide && "col-span-2",
-        className
-      )}
-    >
+    <DataTile wide={wide} slim={slim} className={className}>
       {children}
-    </Card>
+    </DataTile>
   )
 }
+
+export { DataTile } from "@/components/data-tile"

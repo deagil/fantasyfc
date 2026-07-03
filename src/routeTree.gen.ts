@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ScoutsRouteImport } from './routes/scouts'
+import { Route as FixturesRouteImport } from './routes/fixtures'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppTransfersRouteImport } from './routes/_app/transfers'
@@ -16,6 +18,16 @@ import { Route as AppSquadRouteImport } from './routes/_app/squad'
 import { Route as AppSeasonRouteImport } from './routes/_app/season'
 import { Route as AppOfficeRouteImport } from './routes/_app/office'
 
+const ScoutsRoute = ScoutsRouteImport.update({
+  id: '/scouts',
+  path: '/scouts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FixturesRoute = FixturesRouteImport.update({
+  id: '/fixtures',
+  path: '/fixtures',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
@@ -48,12 +60,16 @@ const AppOfficeRoute = AppOfficeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/fixtures': typeof FixturesRoute
+  '/scouts': typeof ScoutsRoute
   '/office': typeof AppOfficeRoute
   '/season': typeof AppSeasonRoute
   '/squad': typeof AppSquadRoute
   '/transfers': typeof AppTransfersRoute
 }
 export interface FileRoutesByTo {
+  '/fixtures': typeof FixturesRoute
+  '/scouts': typeof ScoutsRoute
   '/office': typeof AppOfficeRoute
   '/season': typeof AppSeasonRoute
   '/squad': typeof AppSquadRoute
@@ -63,6 +79,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteRouteWithChildren
+  '/fixtures': typeof FixturesRoute
+  '/scouts': typeof ScoutsRoute
   '/_app/office': typeof AppOfficeRoute
   '/_app/season': typeof AppSeasonRoute
   '/_app/squad': typeof AppSquadRoute
@@ -71,12 +89,28 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/office' | '/season' | '/squad' | '/transfers'
+  fullPaths:
+    | '/'
+    | '/fixtures'
+    | '/scouts'
+    | '/office'
+    | '/season'
+    | '/squad'
+    | '/transfers'
   fileRoutesByTo: FileRoutesByTo
-  to: '/office' | '/season' | '/squad' | '/transfers' | '/'
+  to:
+    | '/fixtures'
+    | '/scouts'
+    | '/office'
+    | '/season'
+    | '/squad'
+    | '/transfers'
+    | '/'
   id:
     | '__root__'
     | '/_app'
+    | '/fixtures'
+    | '/scouts'
     | '/_app/office'
     | '/_app/season'
     | '/_app/squad'
@@ -86,10 +120,26 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
+  FixturesRoute: typeof FixturesRoute
+  ScoutsRoute: typeof ScoutsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/scouts': {
+      id: '/scouts'
+      path: '/scouts'
+      fullPath: '/scouts'
+      preLoaderRoute: typeof ScoutsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fixtures': {
+      id: '/fixtures'
+      path: '/fixtures'
+      fullPath: '/fixtures'
+      preLoaderRoute: typeof FixturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app': {
       id: '/_app'
       path: ''
@@ -157,6 +207,8 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
+  FixturesRoute: FixturesRoute,
+  ScoutsRoute: ScoutsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

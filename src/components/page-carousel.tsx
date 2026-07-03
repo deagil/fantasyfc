@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 
-import { contentContainerClassName } from "@/lib/layout"
+import { contentContainerClassName, mobileContentTopSpacerClassName } from "@/lib/layout"
 import {
   getNavPageIndex,
   navPages,
@@ -112,7 +112,9 @@ export function PageCarousel({ className }: { className?: string }) {
       return
     }
 
-    event.currentTarget.releasePointerCapture(event.pointerId)
+    if (dragRef.current.axis === "x") {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
     setTransitionMs(prefersReducedMotion ? 0 : SNAP_BACK_MS)
     resetDrag()
   }
@@ -122,8 +124,10 @@ export function PageCarousel({ className }: { className?: string }) {
       return
     }
 
+    // Pointer capture is deferred to onPointerMove, once horizontal drag
+    // intent is confirmed. Capturing eagerly here would intercept clicks on
+    // nested interactive elements (e.g. tile links) before they can fire.
     pointerIdRef.current = event.pointerId
-    event.currentTarget.setPointerCapture(event.pointerId)
     dragRef.current = {
       startX: event.clientX,
       startY: event.clientY,
@@ -156,7 +160,6 @@ export function PageCarousel({ className }: { className?: string }) {
       }
 
       if (Math.abs(deltaX) <= Math.abs(deltaY)) {
-        event.currentTarget.releasePointerCapture(event.pointerId)
         pointerIdRef.current = null
         dragRef.current.axis = "y"
         setIsDragging(false)
@@ -165,6 +168,7 @@ export function PageCarousel({ className }: { className?: string }) {
       }
 
       dragRef.current.axis = "x"
+      event.currentTarget.setPointerCapture(event.pointerId)
     }
 
     if (dragRef.current.axis !== "x") {
@@ -188,7 +192,9 @@ export function PageCarousel({ className }: { className?: string }) {
       return
     }
 
-    event.currentTarget.releasePointerCapture(event.pointerId)
+    if (dragRef.current.axis === "x") {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
 
     const width = containerRef.current?.offsetWidth ?? 1
     const offsetX = dragRef.current.offsetX
@@ -254,6 +260,10 @@ export function PageCarousel({ className }: { className?: string }) {
             aria-hidden={page.id !== tab}
           >
             <div className={contentContainerClassName}>
+              <div
+                className={mobileContentTopSpacerClassName}
+                aria-hidden
+              />
               <page.View />
             </div>
           </div>
