@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { useSearch } from "@tanstack/react-router"
 import { useServerFn } from "@tanstack/react-start"
 
 import { Button } from "@/components/ui/button"
@@ -19,7 +20,14 @@ const spotifyLabel = (
   </span>
 )
 
+const SPOTIFY_ERROR_MESSAGES: Record<string, string> = {
+  access_denied: "Spotify authorization was cancelled.",
+  callback_failed:
+    "Spotify connected but we could not save it. Sign in again and retry.",
+}
+
 export function SpotifyConnectControl() {
+  const { spotify_error: spotifyError } = useSearch({ from: "/_app" })
   const fetchConnection = useServerFn(getConnection)
   const beginConnect = useServerFn(startSpotifyConnect)
   const disconnect = useServerFn(disconnectProvider)
@@ -28,7 +36,12 @@ export function SpotifyConnectControl() {
   const [isLoading, setIsLoading] = useState(true)
   const [connectUrl, setConnectUrl] = useState<string | null>(null)
   const [isPreparing, setIsPreparing] = useState(false)
-  const [connectError, setConnectError] = useState<string | null>(null)
+  const [connectError, setConnectError] = useState<string | null>(
+    spotifyError
+      ? (SPOTIFY_ERROR_MESSAGES[spotifyError] ??
+          "Spotify connect failed. Try again.")
+      : null
+  )
 
   useEffect(() => {
     let cancelled = false

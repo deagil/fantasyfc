@@ -89,13 +89,20 @@ export function tabSearch(tab: NavTabId): { tab: NavTabId } {
 
 export function validateHubSearch(
   search: Record<string, unknown>
-): { tab: NavTabId } {
+): { tab: NavTabId; spotify_error?: string } {
   const tab = search.tab
+  const spotifyError =
+    typeof search.spotify_error === "string" ? search.spotify_error : undefined
+
   if (typeof tab === "string") {
     const resolved = resolveNavTabId(tab)
     if (resolved && isNavPageEnabled(resolved)) {
-      return { tab: resolved }
+      return spotifyError
+        ? { tab: resolved, spotify_error: spotifyError }
+        : { tab: resolved }
     }
   }
-  return { tab: defaultNavTabId }
+  return spotifyError
+    ? { tab: defaultNavTabId, spotify_error: spotifyError }
+    : { tab: defaultNavTabId }
 }
