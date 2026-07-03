@@ -144,7 +144,7 @@ export function NewsTile({
     }
   }, [loadTopScorers, phaseType, shouldLoadTopScorers])
 
-  const subtitle = phase ? `GW ${phase.event.id} · Top scorers` : "Top scorers"
+  const subtitle = phase ? `GW${phase.event.id} Top Scorers` : "Top Scorers"
 
   return (
     <DataTile size="2x1" comingSoon={comingSoon} className={className}>

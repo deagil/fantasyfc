@@ -19,10 +19,7 @@ export function CentralPage() {
         <DataTile comingSoon className="relative">
           <DataTile.Header className="relative z-10">
             <DataTile.Heading>
-              <DataTile.Label
-                className="text-lg font-semibold"
-                style={{ viewTransitionName: "vt-fixtures-title" }}
-              >
+              <DataTile.Label style={{ viewTransitionName: "vt-fixtures-title" }}>
                 Fixtures
               </DataTile.Label>
             </DataTile.Heading>
@@ -39,10 +36,7 @@ export function CentralPage() {
         <DataTile comingSoon className="relative">
           <DataTile.Header className="relative z-10">
             <DataTile.Heading>
-              <DataTile.Label
-                className="text-lg font-semibold"
-                style={{ viewTransitionName: "vt-scouts-title" }}
-              >
+              <DataTile.Label style={{ viewTransitionName: "vt-scouts-title" }}>
                 Scouts
               </DataTile.Label>
             </DataTile.Heading>

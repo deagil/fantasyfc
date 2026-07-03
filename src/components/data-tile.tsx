@@ -117,7 +117,12 @@ function DataTileHeading({
   children: React.ReactNode
 }) {
   return (
-    <div className={cn("flex min-w-0 flex-col gap-0.5", className)}>
+    <div
+      className={cn(
+        "flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0",
+        className
+      )}
+    >
       {children}
     </div>
   )
@@ -133,7 +138,7 @@ function DataTileLabel({
   children: React.ReactNode
 }) {
   return (
-    <p className={cn("text-sm font-medium text-foreground", className)} style={style}>
+    <p className={cn("text-lg font-semibold text-foreground", className)} style={style}>
       {children}
     </p>
   )
@@ -147,7 +152,10 @@ function DataTileSubtitle({
   children: React.ReactNode
 }) {
   return (
-    <p className={cn("text-xs text-muted-foreground", className)} data-tile-muted>
+    <p
+      className={cn("text-lg font-semibold text-muted-foreground", className)}
+      data-tile-muted
+    >
       {children}
     </p>
   )

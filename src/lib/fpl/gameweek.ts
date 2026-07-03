@@ -247,7 +247,7 @@ export function resolveGameweekPhase(
 export function getPhaseSubtitle(phase: GameweekPhase): string {
   switch (phase.type) {
     case "off-season":
-      return "Season complete"
+      return "Postseason"
     case "countdown":
       return `Gameweek ${phase.event.id} · ${formatDeadlineLabel(phase.deadline)}`
     case "locked":

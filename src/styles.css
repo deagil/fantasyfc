@@ -221,7 +221,6 @@
     --tile-action-hover-border: rgb(61 25 91 / 0.18);
     --tile-action-hover-bg: rgb(255 255 255 / 0.88);
     --tile-action-hover-fg: var(--pl-purple);
-    --tile-grain-opacity: 0.08;
     --shell-tab-active-bg: var(--pl-green);
     --shell-tab-active-fg: var(--pl-purple);
   }
@@ -251,17 +250,17 @@
     --tile-action-hover-border: rgb(61 25 91 / 0.18);
     --tile-action-hover-bg: rgb(255 255 255 / 0.88);
     --tile-action-hover-fg: var(--pl-purple);
-    --tile-grain-opacity: 0.08;
     --shell-tab-active-bg: var(--pl-green);
     --shell-tab-active-fg: var(--pl-purple);
   }
 
   .app-shell[data-kickoff-theme="early-kickoff"]::before {
     background-color: var(--pl-sky);
-    background-image:
-      radial-gradient(ellipse 85% 65% at 10% -5%, color-mix(in oklab, var(--pl-blue) 24%, transparent), transparent 55%),
-      radial-gradient(ellipse 65% 50% at 100% 100%, color-mix(in oklab, var(--pl-violet) 10%, transparent), transparent 50%),
-      linear-gradient(165deg, #eef6fc 0%, var(--pl-sky-deep) 45%, #ebe8f4 100%);
+    background-image: linear-gradient(
+      to bottom right,
+      color-mix(in oklab, var(--pl-blue) 45%, var(--pl-sky)),
+      color-mix(in oklab, var(--pl-green) 40%, var(--pl-sky-deep))
+    );
   }
 
   .shell-chrome-btn {
@@ -329,18 +328,6 @@
       color 300ms cubic-bezier(0.22, 1, 0.36, 1),
       box-shadow 300ms cubic-bezier(0.22, 1, 0.36, 1),
       border-color 300ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  [data-tile]::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    opacity: var(--tile-grain-opacity, 0.08);
-    mix-blend-mode: multiply;
-    -webkit-filter: url(#deadline-tile-grain);
-    filter: url(#deadline-tile-grain);
   }
 
   [data-tile] > * {
