@@ -4,8 +4,23 @@ minimumReleaseAge: 10080
 
 trustPolicy: no-downgrade
 
+minimumReleaseAgeExclude:
+  - "@tailwindcss/oxide"
+  - "@tailwindcss/oxide-linux-x64-gnu"
+  - "@tailwindcss/oxide-darwin-arm64"
+  - "@tailwindcss/oxide-darwin-x64"
+
+supportedArchitectures:
+  os:
+    - current
+    - linux
+  cpu:
+    - current
+    - x64
+
 allowBuilds:
   esbuild: true
   lightningcss: true
+  "@tailwindcss/oxide": true
   unrs-resolver: true
   msw: false
