@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useServerFn } from "@tanstack/react-start"
 
 import { Button } from "@/components/ui/button"
@@ -26,7 +26,8 @@ export function SpotifyConnectControl() {
 
   const [accountLabel, setAccountLabel] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isConnecting, setIsConnecting] = useState(false)
+  const [connectUrl, setConnectUrl] = useState<string | null>(null)
+  const [isPreparing, setIsPreparing] = useState(false)
   const [connectError, setConnectError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -50,9 +51,10 @@ export function SpotifyConnectControl() {
     }
   }, [fetchConnection])
 
-  const handleConnect = async () => {
+  const prepareConnectUrl = useCallback(async () => {
     setConnectError(null)
-    setIsConnecting(true)
+    setConnectUrl(null)
+    setIsPreparing(true)
 
     try {
       const supabase = createBrowserSupabaseClient()
@@ -62,7 +64,6 @@ export function SpotifyConnectControl() {
 
       if (!session?.access_token || !session.refresh_token) {
         setConnectError("Sign in again, then retry connecting Spotify.")
-        setIsConnecting(false)
         return
       }
 
@@ -74,12 +75,19 @@ export function SpotifyConnectControl() {
         },
       })
 
-      window.location.assign(url)
+      setConnectUrl(url)
     } catch {
-      setConnectError("Could not start Spotify connect. Try again.")
-      setIsConnecting(false)
+      setConnectError("Could not prepare Spotify connect. Try again.")
+    } finally {
+      setIsPreparing(false)
     }
-  }
+  }, [beginConnect])
+
+  useEffect(() => {
+    if (!isLoading && !accountLabel) {
+      void prepareConnectUrl()
+    }
+  }, [accountLabel, isLoading, prepareConnectUrl])
 
   const handleDisconnect = async () => {
     await disconnect({ data: { provider: "spotify" } })
@@ -111,21 +119,38 @@ export function SpotifyConnectControl() {
     )
   }
 
+  const connectLabel = isPreparing
+    ? "Preparing..."
+    : connectUrl
+      ? "Connect"
+      : "Retry"
+
   return (
     <div className="flex flex-col gap-1">
       <SettingsRow
         label={spotifyLabel}
         value="Not connected"
         action={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={isConnecting}
-            onClick={() => void handleConnect()}
-          >
-            {isConnecting ? "Connecting..." : "Connect"}
-          </Button>
+          connectUrl ? (
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={<a href={connectUrl} />}
+            >
+              {connectLabel}
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isPreparing}
+              onClick={() => void prepareConnectUrl()}
+            >
+              {connectLabel}
+            </Button>
+          )
         }
       />
       {connectError ? (
