@@ -1,66 +1,25 @@
 import { createServerFn } from "@tanstack/react-start"
 
-import { resolveAppUrl, spotifyRedirectUri } from "@/lib/app-url"
 import {
   HUB_PLAYLIST_FALLBACK_NAME,
   HUB_PLAYLIST_ID,
   HUB_PLAYLIST_URI,
 } from "@/lib/integrations/spotify/playlist"
 
-const STATE_COOKIE = "spotify_oauth_state"
-const VERIFIER_COOKIE = "spotify_oauth_verifier"
-const ORIGIN_COOKIE = "spotify_oauth_origin"
-const OAUTH_COOKIE_MAX_AGE = 600
-
-function spotifyOAuthCookieOptions() {
-  return {
-    httpOnly: true,
-    sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: OAUTH_COOKIE_MAX_AGE,
-    path: "/",
-  }
-}
-
-export const startSpotifyConnect = createServerFn({ method: "POST" })
+export const beginSpotifyConnectForRoute = createServerFn({ method: "GET" })
   .validator((data: { origin?: string }) => data ?? {})
   .handler(async ({ data }) => {
-    const { setCookie } = await import("@tanstack/react-start/server")
-    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
-    const {
-      generateCodeChallenge,
-      generateCodeVerifier,
-      generateState,
-    } = await import("@/lib/integrations/spotify/pkce")
-    const { spotifyProvider } = await import("@/lib/integrations/spotify/provider")
-
-    await requireServerAuthUser()
-
-    const appOrigin = resolveAppUrl(data.origin)
-    const cookieOptions = spotifyOAuthCookieOptions()
-
-    const state = generateState()
-    const codeVerifier = generateCodeVerifier()
-    const codeChallenge = generateCodeChallenge(codeVerifier)
-
-    setCookie(STATE_COOKIE, state, cookieOptions)
-    setCookie(VERIFIER_COOKIE, codeVerifier, cookieOptions)
-    setCookie(ORIGIN_COOKIE, appOrigin, cookieOptions)
-
-    return {
-      url: spotifyProvider.authorizationUrl({
-        state,
-        codeChallenge,
-        redirectUri: spotifyRedirectUri(appOrigin),
-      }),
-    }
+    const { beginSpotifyConnect } = await import(
+      "@/lib/integrations/spotify/oauth.server"
+    )
+    return beginSpotifyConnect(data.origin)
   })
 
 export const handleSpotifyCallback = createServerFn({ method: "POST" })
   .validator((data: { code: string; state: string }) => data)
   .handler(async ({ data }) => {
     const { completeSpotifyConnect } = await import(
-      "@/lib/integrations/spotify/callback.server"
+      "@/lib/integrations/spotify/oauth.server"
     )
     await completeSpotifyConnect(data.code, data.state)
   })

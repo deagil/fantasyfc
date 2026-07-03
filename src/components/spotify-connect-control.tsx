@@ -4,7 +4,6 @@ import { useServerFn } from "@tanstack/react-start"
 import { Button } from "@/components/ui/button"
 import { SettingsRow } from "@/components/settings-row"
 import { disconnectProvider, getConnection } from "@/lib/integrations/connections"
-import { startSpotifyConnect } from "@/lib/integrations/spotify/server"
 
 const spotifyLabel = (
   <span className="inline-flex items-center gap-1.5">
@@ -20,32 +19,37 @@ const spotifyLabel = (
 
 export function SpotifyConnectControl() {
   const fetchConnection = useServerFn(getConnection)
-  const startConnect = useServerFn(startSpotifyConnect)
   const disconnect = useServerFn(disconnectProvider)
 
   const [accountLabel, setAccountLabel] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isConnecting, setIsConnecting] = useState(false)
 
   useEffect(() => {
     let cancelled = false
 
-    void fetchConnection({ data: { provider: "spotify" } }).then((connection) => {
-      if (!cancelled) {
-        setAccountLabel(connection ? (connection.accountLabel ?? "Spotify") : null)
-        setIsLoading(false)
-      }
-    })
+    void fetchConnection({ data: { provider: "spotify" } })
+      .then((connection) => {
+        if (!cancelled) {
+          setAccountLabel(connection ? (connection.accountLabel ?? "Spotify") : null)
+          setIsLoading(false)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      })
 
     return () => {
       cancelled = true
     }
   }, [fetchConnection])
 
-  const handleConnect = async () => {
-    setIsConnecting(true)
-    const { url } = await startConnect({ data: { origin: window.location.origin } })
-    window.location.href = url
+  const handleConnect = () => {
+    const params = new URLSearchParams({
+      origin: window.location.origin,
+    })
+    window.location.assign(`/spotify-connect?${params.toString()}`)
   }
 
   const handleDisconnect = async () => {
@@ -65,7 +69,12 @@ export function SpotifyConnectControl() {
           accountLabel !== "Spotify" ? `Connected as ${accountLabel}` : "Connected"
         }
         action={
-          <Button variant="outline" size="sm" onClick={() => void handleDisconnect()}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void handleDisconnect()}
+          >
             Disconnect
           </Button>
         }
@@ -79,12 +88,12 @@ export function SpotifyConnectControl() {
       value="Not connected"
       action={
         <Button
+          type="button"
           variant="outline"
           size="sm"
-          disabled={isConnecting}
-          onClick={() => void handleConnect()}
+          onClick={handleConnect}
         >
-          {isConnecting ? "Connecting..." : "Connect"}
+          Connect
         </Button>
       }
     />
