@@ -11,12 +11,9 @@ import {
 } from "@/components/ui/dialog"
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
+  DrawerPanel,
+  drawerChromeOffsetClassName,
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
@@ -26,6 +23,7 @@ import { AccountSection } from "@/components/account-section"
 import { SettingsRow } from "@/components/settings-row"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useTeam } from "@/lib/fpl/team-context"
+import { cn } from "@/lib/utils"
 
 export function UserMenu() {
   const isDesktop = useMediaQuery("(min-width: 1024px)")
@@ -87,27 +85,25 @@ export function UserMenu() {
       <KickoffThemePicker />
       <div className="flex flex-col gap-2">
         <Label htmlFor="team-id">Team ID</Label>
-        <div className="flex items-center gap-2">
-          <Input
-            id="team-id"
-            inputMode="numeric"
-            placeholder="e.g. 216925"
-            value={teamIdInput}
-            onChange={(event) => setTeamIdInput(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                void handleConnect()
-              }
-            }}
-          />
-          <Button
-            className="shrink-0"
-            disabled={isLoading}
-            onClick={() => void handleConnect()}
-          >
-            {isLoading ? "Connecting..." : "Connect"}
-          </Button>
-        </div>
+        <Input
+          id="team-id"
+          inputMode="numeric"
+          placeholder="e.g. 216925"
+          value={teamIdInput}
+          onChange={(event) => setTeamIdInput(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              void handleConnect()
+            }
+          }}
+        />
+        <Button
+          className="w-full lg:w-auto lg:self-start"
+          disabled={isLoading}
+          onClick={() => void handleConnect()}
+        >
+          {isLoading ? "Connecting..." : "Connect"}
+        </Button>
         {submitError ? (
           <p className="text-sm text-destructive">{submitError}</p>
         ) : null}
@@ -136,9 +132,6 @@ export function UserMenu() {
             <>
               <DialogHeader>
                 <DialogTitle>Team settings</DialogTitle>
-                <DialogDescription>
-                  Connected to the public FPL API using your team ID.
-                </DialogDescription>
               </DialogHeader>
               {settingsBody}
             </>
@@ -166,37 +159,29 @@ export function UserMenu() {
           {triggerLabel}
         </Button>
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent size="md">
         {isLoggedIn ? (
-          <>
-            <DrawerHeader className="text-left">
-              <DrawerTitle>Team settings</DrawerTitle>
-              <DrawerDescription>
-                Connected to the public FPL API using your team ID.
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="px-4 pb-4">{settingsBody}</div>
-            <DrawerFooter className="pt-2">
-              <DrawerClose asChild>
-                <Button variant="ghost">Close</Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </>
+          <DrawerPanel
+            title="App settings"
+            // description="Connected to the public FPL API using your team ID."
+            bodyClassName={cn(
+              drawerChromeOffsetClassName,
+              "overflow-y-auto overscroll-contain px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+            )}
+          >
+            {settingsBody}
+          </DrawerPanel>
         ) : (
-          <>
-            <DrawerHeader className="text-left">
-              <DrawerTitle>Connect FPL team</DrawerTitle>
-              <DrawerDescription>
-                Enter your public FPL team ID. It will be saved in this browser.
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="px-4 pb-4">{loginBody}</div>
-            <DrawerFooter className="pt-2">
-              <DrawerClose asChild>
-                <Button variant="ghost">Close</Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </>
+          <DrawerPanel
+            title="Connect FPL team"
+            description="Enter your public FPL team ID. It will be saved in this browser."
+            bodyClassName={cn(
+              drawerChromeOffsetClassName,
+              "overflow-y-auto overscroll-contain px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+            )}
+          >
+            {loginBody}
+          </DrawerPanel>
         )}
       </DrawerContent>
     </Drawer>

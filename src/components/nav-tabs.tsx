@@ -27,7 +27,7 @@ export function NavTabs({ className, variant = "line" }: NavTabsProps) {
           "w-full",
           variant === "line" && "h-auto justify-start gap-6 bg-transparent p-0",
           isBottomBar &&
-            "h-auto bg-background p-1.5 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] group-data-horizontal/tabs:h-auto dark:shadow-[0_-4px_16px_rgba(0,0,0,0.35)]"
+            "h-auto rounded-full bg-background p-1.5 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] group-data-horizontal/tabs:h-auto dark:shadow-[0_-4px_16px_rgba(0,0,0,0.35)]"
         )}
       >
         {navPages.map(({ id, label, icon: Icon, enabled }) => {
@@ -43,7 +43,7 @@ export function NavTabs({ className, variant = "line" }: NavTabsProps) {
                   !enabled &&
                   "cursor-not-allowed opacity-40 after:hidden data-active:text-(--shell-muted)",
                 isBottomBar &&
-                  "h-auto min-h-12 flex-1 flex-col gap-1 px-1 py-2 text-[10px] leading-none text-foreground after:hidden data-active:bg-muted data-active:text-foreground dark:data-active:bg-muted",
+                  "h-auto min-h-12 flex-1 flex-col gap-1 rounded-full px-1 py-2 text-[10px] leading-none text-foreground after:hidden data-active:bg-muted data-active:text-foreground dark:data-active:bg-muted",
                 isBottomBar &&
                   !enabled &&
                   "cursor-not-allowed opacity-40 data-active:bg-transparent data-active:text-foreground/40"

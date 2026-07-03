@@ -2,13 +2,15 @@ import { useCallback, useState } from "react"
 import { useServerFn } from "@tanstack/react-start"
 import { ArrowDownIcon, ArrowUpIcon, MinusIcon } from "lucide-react"
 
+import { ScrollFade } from "@/components/scroll-fade"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Drawer,
   DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
+  DrawerPanel,
+  drawerChromeOffsetClassName,
 } from "@/components/ui/drawer"
 import { DataTile } from "@/components/data-tile"
 import {
@@ -104,8 +106,8 @@ function StandingRow({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-lg px-2 py-2",
-        isCurrentTeam && "bg-chart-2/10 ring-1 ring-chart-2/20"
+        "flex w-full items-center gap-3 px-4 py-2.5",
+        isCurrentTeam && "bg-chart-2/10 ring-1 ring-inset ring-chart-2/20"
       )}
     >
       <span className="w-8 shrink-0 text-sm font-medium tabular-nums text-muted-foreground">
@@ -137,7 +139,7 @@ function LeagueList({
   onSelect: (league: FplClassicLeague) => void
 }) {
   return (
-    <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
+    <ScrollFade className="flex min-h-0 flex-1" contentClassName="-mx-1 flex flex-col gap-0.5">
       {leagues.map((league) => (
         <LeagueRow
           key={league.id}
@@ -146,7 +148,7 @@ function LeagueList({
           onSelect={onSelect}
         />
       ))}
-    </div>
+    </ScrollFade>
   )
 }
 
@@ -247,6 +249,7 @@ export function LeaguesTile({
   const [standingsLoading, setStandingsLoading] = useState(false)
   const [standingsError, setStandingsError] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [leagueIdCopied, setLeagueIdCopied] = useState(false)
 
   const classicLeagues = entry?.leagues.classic ?? []
   const privateLeagues = getLeaguesForTab(classicLeagues, "private")
@@ -275,6 +278,7 @@ export function LeaguesTile({
       setStandingsLoading(true)
       setStandingsError(null)
       setStandings([])
+      setLeagueIdCopied(false)
 
       try {
         const response = await fetchStandings({ data: { leagueId: league.id } })
@@ -287,6 +291,20 @@ export function LeaguesTile({
     },
     [fetchStandings]
   )
+
+  const copyLeagueId = useCallback(async () => {
+    if (!selectedLeague) {
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(String(selectedLeague.id))
+      setLeagueIdCopied(true)
+      window.setTimeout(() => setLeagueIdCopied(false), 2000)
+    } catch {
+      // Clipboard unavailable — ignore silently
+    }
+  }, [selectedLeague])
 
   return (
     <>
@@ -330,30 +348,51 @@ export function LeaguesTile({
       </DataTile>
 
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <DrawerContent variant="flush" className="flex max-h-[92dvh] flex-col">
-          <DrawerHeader className="shrink-0 border-b border-border/40 pb-4">
-            <DrawerTitle>{selectedLeague?.name ?? "League"}</DrawerTitle>
-          </DrawerHeader>
-
-          <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-            {standingsLoading ? (
-              <div className="flex flex-col gap-2">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            ) : standingsError ? (
-              <p className="text-sm text-destructive">{standingsError}</p>
-            ) : (
-              standings.map((standing) => (
-                <StandingRow
-                  key={standing.id}
-                  standing={standing}
-                  isCurrentTeam={standing.entry === teamId}
-                />
-              ))
-            )}
-          </div>
+        <DrawerContent size="md">
+          <DrawerPanel
+            title={selectedLeague?.name ?? "League"}
+            leading={
+              selectedLeague ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="shell-chrome-btn"
+                  onClick={() => void copyLeagueId()}
+                >
+                  {leagueIdCopied ? "Copied" : "Copy ID"}
+                </Button>
+              ) : undefined
+            }
+            bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
+          >
+            <ScrollFade
+              className="flex min-h-0 w-full flex-1"
+              fadeFrom="--popover"
+              contentClassName={cn(
+                drawerChromeOffsetClassName,
+                "flex w-full flex-col pb-4"
+              )}
+            >
+              {standingsLoading ? (
+                <div className="flex w-full flex-col gap-2 px-4">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ) : standingsError ? (
+                <p className="px-4 text-sm text-destructive">{standingsError}</p>
+              ) : (
+                standings.map((standing) => (
+                  <StandingRow
+                    key={standing.id}
+                    standing={standing}
+                    isCurrentTeam={standing.entry === teamId}
+                  />
+                ))
+              )}
+            </ScrollFade>
+          </DrawerPanel>
         </DrawerContent>
       </Drawer>
     </>

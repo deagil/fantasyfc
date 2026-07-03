@@ -30,8 +30,8 @@ function AppLayout() {
 
               <main
                 className={cn(
-                  "flex min-h-0 flex-1 flex-col",
-                  "pb-28 lg:justify-start lg:pt-4 lg:pb-3"
+                  "flex min-h-0 flex-col",
+                  "pb-28 lg:flex-1 lg:justify-start lg:pt-4 lg:pb-3"
                 )}
               >
                 <div className={cn(contentContainerClassName, hubTileContainerClassName)}>

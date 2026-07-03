@@ -83,7 +83,7 @@ function DataTileRoot({
       data-tile-interactive={interactive ? "" : undefined}
       data-coming-soon={comingSoon ? "" : undefined}
       className={cn(
-        "h-full min-h-0 gap-0 overflow-hidden rounded-[2px] bg-transparent py-0 text-(--tile-fg) shadow-none ring-0",
+        "h-full min-h-0 gap-0 overflow-hidden rounded-2xl bg-transparent py-0 text-(--tile-fg) shadow-none ring-0 lg:rounded-[2px]",
         tileSizeClassNames[resolvedSize],
         className
       )}
@@ -102,7 +102,10 @@ function DataTileHeader({
 }) {
   return (
     <div
-      className={cn("flex items-start justify-between gap-2 p-4 pb-0", className)}
+      className={cn(
+        "flex items-start justify-between gap-2 p-3 pb-0 lg:p-4",
+        className
+      )}
     >
       {children}
     </div>
@@ -138,7 +141,13 @@ function DataTileLabel({
   children: React.ReactNode
 }) {
   return (
-    <p className={cn("text-lg font-semibold text-foreground", className)} style={style}>
+    <p
+      className={cn(
+        "truncate text-base font-semibold text-foreground lg:text-lg",
+        className
+      )}
+      style={style}
+    >
       {children}
     </p>
   )
@@ -189,7 +198,7 @@ function DataTileAction({
   )
 }
 
-const dataTileContentVariants = cva("flex flex-1 flex-col p-4 pt-2", {
+const dataTileContentVariants = cva("flex flex-1 flex-col p-3 pt-1 lg:p-4 lg:pt-2", {
   variants: {
     align: {
       end: "justify-end",
@@ -275,7 +284,7 @@ function DataTileHeroStat({
   return (
     <div
       className={cn(
-        "flex min-h-0 flex-1 flex-col items-center justify-center gap-2 text-center",
+        "flex min-h-0 flex-1 flex-col items-center justify-center gap-1 text-center lg:gap-2",
         className
       )}
     >
@@ -283,7 +292,7 @@ function DataTileHeroStat({
         value={value}
         tone={tone}
         className={cn(
-          "text-5xl tracking-tight sm:text-6xl lg:text-5xl xl:text-6xl",
+          "text-4xl tracking-tight sm:text-5xl lg:text-5xl xl:text-6xl",
           valueClassName
         )}
       />

@@ -250,6 +250,7 @@ export function PageCarousel({ className }: { className?: string }) {
     }
   }
 
+  const layoutIndex = displayIndex
   const containerWidth = containerRef.current?.offsetWidth ?? 1
   const dragPercent = (dragOffsetX / containerWidth) * 100
   const translateX = -displayIndex * 100 + (isDragging ? dragPercent : 0)
@@ -268,7 +269,7 @@ export function PageCarousel({ className }: { className?: string }) {
     >
       <div
         className={cn(
-          "flex will-change-transform transition-transform",
+          "flex items-start will-change-transform transition-transform",
           !isDragging && transitionMs > 0
         )}
         style={{
@@ -279,21 +280,25 @@ export function PageCarousel({ className }: { className?: string }) {
             : PAGE_TRANSITION_EASING,
         }}
       >
-        {navPages.map((page) => (
-          <div
-            key={page.id}
-            className="w-full shrink-0"
-            aria-hidden={page.id !== tab}
-          >
-            <div className={cn(contentContainerClassName, hubTileContainerClassName)}>
-              <div
-                className={mobileContentTopSpacerClassName}
-                aria-hidden
-              />
-              <page.View />
+        {navPages.map((page, index) => {
+          const isLayoutSlide = index === layoutIndex
+
+          return (
+            <div
+              key={page.id}
+              className={cn(
+                "w-full shrink-0 self-start",
+                !isLayoutSlide && "h-0 overflow-hidden"
+              )}
+              aria-hidden={page.id !== tab}
+            >
+              <div className={cn(contentContainerClassName, hubTileContainerClassName)}>
+                <div className={mobileContentTopSpacerClassName} aria-hidden />
+                {page.enabled ? <page.View /> : null}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

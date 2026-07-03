@@ -80,7 +80,7 @@ export function AccountSection() {
               ) : null}
               <Button
                 size="sm"
-                className="self-start"
+                className="w-full lg:w-auto lg:self-start"
                 disabled={!code || isVerifying}
                 onClick={() => void handleVerifyCode()}
               >
@@ -102,7 +102,7 @@ export function AccountSection() {
               ) : null}
               <Button
                 size="sm"
-                className="self-start"
+                className="w-full lg:w-auto lg:self-start"
                 disabled={!email}
                 onClick={() => void handleSendCode()}
               >
