@@ -1,11 +1,10 @@
 export const contentContainerClassName = "mx-auto w-full max-w-7xl px-3"
 
 /**
- * Hub tile grid: row height is derived from column width via container queries
- * so 1×1 cells stay square. Three row units on desktop; six on mobile stack.
+ * Hub tile grid: square cells from container width, capped by viewport height on
+ * desktop so fullscreen layouts do not stretch rows off-screen.
  */
-export const hubTileGridClassName =
-  "@container/tiles [container-type:inline-size] grid grid-cols-2 gap-2 [grid-template-rows:repeat(6,calc((100cqw-0.875rem)/2))] lg:grid-cols-4 lg:[grid-template-rows:repeat(3,calc(round(down,(100cqw-2.625rem)/4,1px)))]"
+export const hubTileGridClassName = "@container/tiles hub-tile-grid content-start min-w-0"
 
 export const appShellClassName = "app-shell relative min-h-svh text-(--shell-foreground)"
 

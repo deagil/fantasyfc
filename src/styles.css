@@ -173,6 +173,37 @@
     z-index: 1;
   }
 
+  /* Square hub tiles: width-derived cell size, height-capped on desktop */
+  .hub-tile-grid {
+    container-type: inline-size;
+    container-name: tiles;
+    display: grid;
+    gap: 0.5rem;
+    --hub-col-gap-total: 0.875rem;
+    --hub-cell: calc((100cqw - var(--hub-col-gap-total)) / 2);
+    grid-template-columns: repeat(2, round(down, var(--hub-cell), 1px));
+    grid-template-rows: repeat(6, round(down, var(--hub-cell), 1px));
+  }
+
+  @media (min-width: 1024px) {
+    .hub-tile-grid {
+      --hub-col-gap-total: 1.5rem;
+      --hub-row-gap-total: 1rem;
+      --hub-desktop-chrome: 5.25rem;
+      --hub-cell: min(
+        (100cqw - var(--hub-col-gap-total)) / 4,
+        (100svh - var(--hub-desktop-chrome) - var(--hub-row-gap-total)) / 3
+      );
+      grid-template-columns: repeat(4, round(down, var(--hub-cell), 1px));
+      grid-template-rows: repeat(3, round(down, var(--hub-cell), 1px));
+      width: min(
+        100%,
+        round(down, calc(var(--hub-cell) * 4 + var(--hub-col-gap-total)), 1px)
+      );
+      margin-inline: auto;
+    }
+  }
+
   /* Late kickoff — plum night, white tiles, pink hover */
   .app-shell[data-kickoff-theme="late-kickoff"] {
     --shell-foreground: white;
