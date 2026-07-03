@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start"
 
+import { resolveAppUrl, spotifyRedirectUri } from "@/lib/app-url"
 import {
   HUB_PLAYLIST_FALLBACK_NAME,
   HUB_PLAYLIST_ID,
@@ -8,15 +9,22 @@ import {
 
 const STATE_COOKIE = "spotify_oauth_state"
 const VERIFIER_COOKIE = "spotify_oauth_verifier"
+const ORIGIN_COOKIE = "spotify_oauth_origin"
 const OAUTH_COOKIE_MAX_AGE = 600
 
-function redirectUri() {
-  const appUrl = process.env.APP_URL ?? "http://127.0.0.1:3000"
-  return `${appUrl}/spotify-callback`
+function spotifyOAuthCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: OAUTH_COOKIE_MAX_AGE,
+    path: "/",
+  }
 }
 
-export const startSpotifyConnect = createServerFn({ method: "POST" }).handler(
-  async () => {
+export const startSpotifyConnect = createServerFn({ method: "POST" })
+  .validator((data: { origin?: string }) => data ?? {})
+  .handler(async ({ data }) => {
     const { setCookie } = await import("@tanstack/react-start/server")
     const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
     const {
@@ -28,61 +36,33 @@ export const startSpotifyConnect = createServerFn({ method: "POST" }).handler(
 
     await requireServerAuthUser()
 
+    const appOrigin = resolveAppUrl(data.origin)
+    const cookieOptions = spotifyOAuthCookieOptions()
+
     const state = generateState()
     const codeVerifier = generateCodeVerifier()
     const codeChallenge = generateCodeChallenge(codeVerifier)
 
-    setCookie(STATE_COOKIE, state, {
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: OAUTH_COOKIE_MAX_AGE,
-      path: "/",
-    })
-    setCookie(VERIFIER_COOKIE, codeVerifier, {
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: OAUTH_COOKIE_MAX_AGE,
-      path: "/",
-    })
+    setCookie(STATE_COOKIE, state, cookieOptions)
+    setCookie(VERIFIER_COOKIE, codeVerifier, cookieOptions)
+    setCookie(ORIGIN_COOKIE, appOrigin, cookieOptions)
 
     return {
       url: spotifyProvider.authorizationUrl({
         state,
         codeChallenge,
-        redirectUri: redirectUri(),
+        redirectUri: spotifyRedirectUri(appOrigin),
       }),
     }
-  }
-)
+  })
 
 export const handleSpotifyCallback = createServerFn({ method: "POST" })
   .validator((data: { code: string; state: string }) => data)
   .handler(async ({ data }) => {
-    const { deleteCookie, getCookie } = await import("@tanstack/react-start/server")
-    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
-    const { saveConnection } = await import(
-      "@/lib/integrations/connections-store.server"
+    const { completeSpotifyConnect } = await import(
+      "@/lib/integrations/spotify/callback.server"
     )
-    const { spotifyProvider } = await import("@/lib/integrations/spotify/provider")
-
-    const user = await requireServerAuthUser()
-
-    const expectedState = getCookie(STATE_COOKIE)
-    const codeVerifier = getCookie(VERIFIER_COOKIE)
-    deleteCookie(STATE_COOKIE, { path: "/" })
-    deleteCookie(VERIFIER_COOKIE, { path: "/" })
-
-    if (!expectedState || !codeVerifier || data.state !== expectedState) {
-      throw new Error("Spotify connect failed: state mismatch")
-    }
-
-    const tokens = await spotifyProvider.exchangeCode({
-      code: data.code,
-      codeVerifier,
-      redirectUri: redirectUri(),
-    })
-
-    await saveConnection(user.id, spotifyProvider.id, tokens)
+    await completeSpotifyConnect(data.code, data.state)
   })
 
 /**
@@ -129,14 +109,14 @@ export const getHubPlaylistPreview = createServerFn({ method: "GET" }).handler(
       }
     }
 
-    const data = (await response.json()) as {
+    const playlist = (await response.json()) as {
       name?: string
       images?: Array<{ url: string }>
     }
 
     return {
-      name: data.name ?? HUB_PLAYLIST_FALLBACK_NAME,
-      imageUrl: data.images?.[0]?.url ?? null,
+      name: playlist.name ?? HUB_PLAYLIST_FALLBACK_NAME,
+      imageUrl: playlist.images?.[0]?.url ?? null,
     }
   }
 )

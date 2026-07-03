@@ -44,7 +44,7 @@ export function SpotifyConnectControl() {
 
   const handleConnect = async () => {
     setIsConnecting(true)
-    const { url } = await startConnect()
+    const { url } = await startConnect({ data: { origin: window.location.origin } })
     window.location.href = url
   }
 
