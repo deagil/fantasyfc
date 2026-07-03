@@ -40,6 +40,9 @@ export async function saveConnection(
   providerId: string,
   tokens: ExchangedTokens
 ) {
+  const { ensureUserProfile } = await import("@/lib/auth/profile.server")
+  await ensureUserProfile(userId)
+
   const supabase = createServiceRoleClient()
   const { error } = await supabase
     .from("integration_connections")

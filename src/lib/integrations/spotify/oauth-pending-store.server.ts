@@ -8,6 +8,9 @@ export async function saveSpotifyOAuthPending(
   userId: string,
   data: { state: string; codeVerifier: string; appOrigin: string }
 ) {
+  const { ensureUserProfile } = await import("@/lib/auth/profile.server")
+  await ensureUserProfile(userId)
+
   const supabase = createServiceRoleClient()
   const expiresBefore = new Date(Date.now() - PENDING_TTL_MS).toISOString()
 
