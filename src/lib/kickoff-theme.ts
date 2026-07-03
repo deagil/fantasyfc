@@ -12,12 +12,12 @@ export const kickoffThemes: {
 }[] = [
   {
     id: "early-kickoff",
-    label: "Early kickoff",
+    label: "Early Kickoff",
     description: "Light sky background, white tiles, blue hover.",
   },
   {
     id: "late-kickoff",
-    label: "Late kickoff",
+    label: "Late Kickoff",
     description: "Plum background, white tiles, pink hover.",
   },
 ]

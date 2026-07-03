@@ -110,11 +110,11 @@ export function UserMenu() {
               size="sm"
               variant="outline"
               className="shell-chrome-btn"
-            />
+            >
+              {triggerLabel}
+            </Button>
           }
-        >
-          {triggerLabel}
-        </DialogTrigger>
+        />
         <DialogContent>
           {isLoggedIn ? (
             <>

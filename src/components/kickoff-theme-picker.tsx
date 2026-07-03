@@ -7,7 +7,7 @@ export function KickoffThemePicker({ className }: { className?: string }) {
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <span className="text-sm font-medium">Kickoff theme</span>
+      <span className="text-sm font-medium">Theme</span>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {kickoffThemes.map((option) => (
           <KickoffThemeOption
@@ -44,7 +44,6 @@ function KickoffThemeOption({
       )}
     >
       <span className="text-sm font-medium">{option.label}</span>
-      <span className="text-xs text-muted-foreground">{option.description}</span>
     </button>
   )
 }

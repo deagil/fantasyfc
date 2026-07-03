@@ -234,25 +234,26 @@
   }
 
   .shell-chrome-btn {
+    border-radius: 2px;
     border-color: rgb(255 255 255 / 0.25);
-    background-color: rgb(255 255 255 / 0.1);
-    color: white;
+    background-color: rgb(255 255 255 / 0.1) !important;
+    color: var(--shell-foreground) !important;
   }
 
   .shell-chrome-btn:hover {
-    background-color: rgb(255 255 255 / 0.15);
-    color: white;
+    background-color: rgb(255 255 255 / 0.15) !important;
+    color: var(--shell-foreground) !important;
   }
 
   .app-shell[data-kickoff-theme="early-kickoff"] .shell-chrome-btn {
     border-color: rgb(61 25 91 / 0.14);
-    background-color: rgb(255 255 255 / 0.65);
-    color: var(--pl-purple);
+    background-color: rgb(255 255 255 / 0.65) !important;
+    color: var(--shell-foreground) !important;
   }
 
   .app-shell[data-kickoff-theme="early-kickoff"] .shell-chrome-btn:hover {
-    background-color: rgb(255 255 255 / 0.85);
-    color: var(--pl-purple);
+    background-color: rgb(255 255 255 / 0.85) !important;
+    color: var(--shell-foreground) !important;
   }
 
   .shell-chrome-ghost {

@@ -83,7 +83,7 @@ function DataTileRoot({
       data-tile-interactive={interactive ? "" : undefined}
       data-coming-soon={comingSoon ? "" : undefined}
       className={cn(
-        "h-full min-h-0 gap-0 overflow-hidden rounded-none bg-transparent py-0 text-(--tile-fg) shadow-none ring-0",
+        "h-full min-h-0 gap-0 overflow-hidden rounded-[2px] bg-transparent py-0 text-(--tile-fg) shadow-none ring-0",
         tileSizeClassNames[resolvedSize],
         className
       )}
