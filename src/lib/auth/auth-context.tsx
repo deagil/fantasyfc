@@ -9,7 +9,7 @@ import {
 import { useServerFn } from "@tanstack/react-start"
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js"
 
-import { getAuthUser, signOutServer } from "@/lib/auth/server"
+import { getAuthUser, signOutServer } from "@/lib/auth/auth-fns"
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser"
 import type { AuthUser, Profile } from "@/lib/auth/types"
 

@@ -1,15 +1,10 @@
 import { createServerFn } from "@tanstack/react-start"
-import { deleteCookie, getCookie, setCookie } from "@tanstack/react-start/server"
 
-import { requireServerAuthUser } from "@/lib/auth/server"
-import { getValidConnection, saveConnection } from "@/lib/integrations/connections-store.server"
-import { generateCodeChallenge, generateCodeVerifier, generateState } from "@/lib/integrations/spotify/pkce"
 import {
   HUB_PLAYLIST_FALLBACK_NAME,
   HUB_PLAYLIST_ID,
   HUB_PLAYLIST_URI,
 } from "@/lib/integrations/spotify/playlist"
-import { spotifyProvider } from "@/lib/integrations/spotify/provider"
 
 const STATE_COOKIE = "spotify_oauth_state"
 const VERIFIER_COOKIE = "spotify_oauth_verifier"
@@ -22,6 +17,15 @@ function redirectUri() {
 
 export const startSpotifyConnect = createServerFn({ method: "POST" }).handler(
   async () => {
+    const { setCookie } = await import("@tanstack/react-start/server")
+    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
+    const {
+      generateCodeChallenge,
+      generateCodeVerifier,
+      generateState,
+    } = await import("@/lib/integrations/spotify/pkce")
+    const { spotifyProvider } = await import("@/lib/integrations/spotify/provider")
+
     await requireServerAuthUser()
 
     const state = generateState()
@@ -54,6 +58,13 @@ export const startSpotifyConnect = createServerFn({ method: "POST" }).handler(
 export const handleSpotifyCallback = createServerFn({ method: "POST" })
   .validator((data: { code: string; state: string }) => data)
   .handler(async ({ data }) => {
+    const { deleteCookie, getCookie } = await import("@tanstack/react-start/server")
+    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
+    const { saveConnection } = await import(
+      "@/lib/integrations/connections-store.server"
+    )
+    const { spotifyProvider } = await import("@/lib/integrations/spotify/provider")
+
     const user = await requireServerAuthUser()
 
     const expectedState = getCookie(STATE_COOKIE)
@@ -80,6 +91,12 @@ export const handleSpotifyCallback = createServerFn({ method: "POST" })
  */
 export const getSpotifyAccessToken = createServerFn({ method: "GET" }).handler(
   async () => {
+    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
+    const { getValidConnection } = await import(
+      "@/lib/integrations/connections-store.server"
+    )
+    const { spotifyProvider } = await import("@/lib/integrations/spotify/provider")
+
     const user = await requireServerAuthUser()
     const connection = await getValidConnection(user.id, spotifyProvider.id)
     return connection?.accessToken ?? null
@@ -88,6 +105,12 @@ export const getSpotifyAccessToken = createServerFn({ method: "GET" }).handler(
 
 export const getHubPlaylistPreview = createServerFn({ method: "GET" }).handler(
   async () => {
+    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
+    const { getValidConnection } = await import(
+      "@/lib/integrations/connections-store.server"
+    )
+    const { spotifyProvider } = await import("@/lib/integrations/spotify/provider")
+
     const user = await requireServerAuthUser()
     const connection = await getValidConnection(user.id, spotifyProvider.id)
     if (!connection) {
@@ -121,6 +144,12 @@ export const getHubPlaylistPreview = createServerFn({ method: "GET" }).handler(
 export const playSpotifyHubPlaylist = createServerFn({ method: "POST" })
   .validator((data: { deviceId: string }) => data)
   .handler(async ({ data }) => {
+    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
+    const { getValidConnection } = await import(
+      "@/lib/integrations/connections-store.server"
+    )
+    const { spotifyProvider } = await import("@/lib/integrations/spotify/provider")
+
     const user = await requireServerAuthUser()
     const connection = await getValidConnection(user.id, spotifyProvider.id)
     if (!connection) {

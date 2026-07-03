@@ -1,9 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
 
-import { requireServerAuthUser } from "@/lib/auth/server"
-import { getValidConnection } from "@/lib/integrations/connections-store.server"
-import { createServiceRoleClient } from "@/lib/supabase/admin"
-
 export type ConnectionSummary = {
   provider: string
   accountLabel: string | null
@@ -14,6 +10,10 @@ export type ConnectionSummary = {
 export const getConnection = createServerFn({ method: "GET" })
   .validator((data: { provider: string }) => data)
   .handler(async ({ data }): Promise<ConnectionSummary | null> => {
+    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
+    const { getValidConnection } = await import(
+      "@/lib/integrations/connections-store.server"
+    )
     const user = await requireServerAuthUser()
     const connection = await getValidConnection(user.id, data.provider)
     if (!connection) {
@@ -29,6 +29,8 @@ export const getConnection = createServerFn({ method: "GET" })
 export const disconnectProvider = createServerFn({ method: "POST" })
   .validator((data: { provider: string }) => data)
   .handler(async ({ data }) => {
+    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
+    const { createServiceRoleClient } = await import("@/lib/supabase/admin")
     const user = await requireServerAuthUser()
     const supabase = createServiceRoleClient()
     await supabase
