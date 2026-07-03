@@ -10,10 +10,10 @@ export type ConnectionSummary = {
 export const getConnection = createServerFn({ method: "GET" })
   .validator((data: { provider: string }) => data)
   .handler(async ({ data }): Promise<ConnectionSummary | null> => {
-    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
-    const { getValidConnection } = await import(
-      "@/lib/integrations/connections-store.server"
-    )
+    const [{ requireServerAuthUser }, { getValidConnection }] = await Promise.all([
+      import("@/lib/auth/auth.server"),
+      import("@/lib/integrations/connections-store.server"),
+    ])
     const user = await requireServerAuthUser()
     const connection = await getValidConnection(user.id, data.provider)
     if (!connection) {
@@ -29,8 +29,10 @@ export const getConnection = createServerFn({ method: "GET" })
 export const disconnectProvider = createServerFn({ method: "POST" })
   .validator((data: { provider: string }) => data)
   .handler(async ({ data }) => {
-    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
-    const { createServiceRoleClient } = await import("@/lib/supabase/admin")
+    const [{ requireServerAuthUser }, { createServiceRoleClient }] = await Promise.all([
+      import("@/lib/auth/auth.server"),
+      import("@/lib/supabase/admin"),
+    ])
     const user = await requireServerAuthUser()
     const supabase = createServiceRoleClient()
     await supabase

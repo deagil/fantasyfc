@@ -70,7 +70,7 @@ export function ScrollFade({
     return () => {
       resizeObserver.disconnect()
     }
-  }, [updateEdges, children])
+  }, [updateEdges])
 
   const showVertical = orientation === "vertical" || orientation === "both"
   const showHorizontal = orientation === "horizontal" || orientation === "both"

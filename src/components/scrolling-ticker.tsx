@@ -19,8 +19,20 @@ export function ScrollingTicker({ text, className }: ScrollingTickerProps) {
       return
     }
 
-    setShouldScroll(measure.scrollWidth > container.clientWidth)
-  }, [text])
+    const updateShouldScroll = () => {
+      setShouldScroll(measure.scrollWidth > container.clientWidth)
+    }
+
+    updateShouldScroll()
+
+    const resizeObserver = new ResizeObserver(updateShouldScroll)
+    resizeObserver.observe(measure)
+    resizeObserver.observe(container)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
 
   return (
     <div ref={containerRef} className={cn("min-w-0 overflow-hidden", className)}>

@@ -43,27 +43,6 @@ export function SpotifyConnectControl() {
       : null
   )
 
-  useEffect(() => {
-    let cancelled = false
-
-    void fetchConnection({ data: { provider: "spotify" } })
-      .then((connection) => {
-        if (!cancelled) {
-          setAccountLabel(connection ? (connection.accountLabel ?? "Spotify") : null)
-          setIsLoading(false)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setIsLoading(false)
-        }
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [fetchConnection])
-
   const prepareConnectUrl = useCallback(async () => {
     setConnectError(null)
     setConnectUrl(null)
@@ -97,10 +76,34 @@ export function SpotifyConnectControl() {
   }, [beginConnect])
 
   useEffect(() => {
-    if (!isLoading && !accountLabel) {
-      void prepareConnectUrl()
+    let cancelled = false
+
+    void fetchConnection({ data: { provider: "spotify" } })
+      .then(async (connection) => {
+        if (cancelled) {
+          return
+        }
+
+        if (connection) {
+          setAccountLabel(connection.accountLabel ?? "Spotify")
+          setIsLoading(false)
+          return
+        }
+
+        setAccountLabel(null)
+        setIsLoading(false)
+        await prepareConnectUrl()
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
     }
-  }, [accountLabel, isLoading, prepareConnectUrl])
+  }, [fetchConnection, prepareConnectUrl])
 
   const handleDisconnect = async () => {
     await disconnect({ data: { provider: "spotify" } })
@@ -149,7 +152,7 @@ export function SpotifyConnectControl() {
               variant="outline"
               size="sm"
               nativeButton={false}
-              render={<a href={connectUrl} />}
+              render={<a href={connectUrl} aria-label={connectLabel} />}
             >
               {connectLabel}
             </Button>

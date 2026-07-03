@@ -8,8 +8,10 @@ export const getAuthUser = createServerFn({ method: "GET" }).handler(async () =>
 export const verifyOtpServer = createServerFn({ method: "POST" })
   .validator((data: { email: string; token: string }) => data)
   .handler(async ({ data }) => {
-    const { createServerSupabaseClient } = await import("@/lib/supabase/server")
-    const { ensureUserProfile } = await import("@/lib/auth/profile.server")
+    const [{ createServerSupabaseClient }, { ensureUserProfile }] = await Promise.all([
+      import("@/lib/supabase/server"),
+      import("@/lib/auth/profile.server"),
+    ])
     const supabase = createServerSupabaseClient()
     const { data: session, error } = await supabase.auth.verifyOtp({
       email: data.email,

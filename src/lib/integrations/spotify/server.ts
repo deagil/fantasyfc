@@ -21,10 +21,10 @@ export const startSpotifyConnect = createServerFn({ method: "POST" })
     (data: { origin?: string; accessToken: string; refreshToken: string }) => data
   )
   .handler(async ({ data }) => {
-    const { createServerSupabaseClient } = await import("@/lib/supabase/server")
-    const { beginSpotifyConnect } = await import(
-      "@/lib/integrations/spotify/oauth.server"
-    )
+    const [{ createServerSupabaseClient }, { beginSpotifyConnect }] = await Promise.all([
+      import("@/lib/supabase/server"),
+      import("@/lib/integrations/spotify/oauth.server"),
+    ])
 
     const supabase = createServerSupabaseClient()
     const { error } = await supabase.auth.setSession({
@@ -55,11 +55,15 @@ export const handleSpotifyCallback = createServerFn({ method: "POST" })
  */
 export const getSpotifyAccessToken = createServerFn({ method: "GET" }).handler(
   async () => {
-    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
-    const { getValidConnection } = await import(
-      "@/lib/integrations/connections-store.server"
-    )
-    const { spotifyProvider } = await import("@/lib/integrations/spotify/provider")
+    const [
+      { requireServerAuthUser },
+      { getValidConnection },
+      { spotifyProvider },
+    ] = await Promise.all([
+      import("@/lib/auth/auth.server"),
+      import("@/lib/integrations/connections-store.server"),
+      import("@/lib/integrations/spotify/provider"),
+    ])
 
     const user = await requireServerAuthUser()
     const connection = await getValidConnection(user.id, spotifyProvider.id)
@@ -69,11 +73,15 @@ export const getSpotifyAccessToken = createServerFn({ method: "GET" }).handler(
 
 export const getHubPlaylistPreview = createServerFn({ method: "GET" }).handler(
   async () => {
-    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
-    const { getValidConnection } = await import(
-      "@/lib/integrations/connections-store.server"
-    )
-    const { spotifyProvider } = await import("@/lib/integrations/spotify/provider")
+    const [
+      { requireServerAuthUser },
+      { getValidConnection },
+      { spotifyProvider },
+    ] = await Promise.all([
+      import("@/lib/auth/auth.server"),
+      import("@/lib/integrations/connections-store.server"),
+      import("@/lib/integrations/spotify/provider"),
+    ])
 
     const user = await requireServerAuthUser()
     const connection = await getValidConnection(user.id, spotifyProvider.id)
@@ -108,11 +116,15 @@ export const getHubPlaylistPreview = createServerFn({ method: "GET" }).handler(
 export const playSpotifyHubPlaylist = createServerFn({ method: "POST" })
   .validator((data: { deviceId: string }) => data)
   .handler(async ({ data }) => {
-    const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
-    const { getValidConnection } = await import(
-      "@/lib/integrations/connections-store.server"
-    )
-    const { spotifyProvider } = await import("@/lib/integrations/spotify/provider")
+    const [
+      { requireServerAuthUser },
+      { getValidConnection },
+      { spotifyProvider },
+    ] = await Promise.all([
+      import("@/lib/auth/auth.server"),
+      import("@/lib/integrations/connections-store.server"),
+      import("@/lib/integrations/spotify/provider"),
+    ])
 
     const user = await requireServerAuthUser()
     const connection = await getValidConnection(user.id, spotifyProvider.id)

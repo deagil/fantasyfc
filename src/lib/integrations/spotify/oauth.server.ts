@@ -4,16 +4,17 @@ import { resolveAppUrl, spotifyRedirectUri } from "@/lib/app-url"
 
 /** Sets pending OAuth state server-side and returns the Spotify authorize URL. */
 export async function beginSpotifyConnect(preferredOrigin?: string): Promise<string> {
-  const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
-  const {
-    generateCodeChallenge,
-    generateCodeVerifier,
-    generateState,
-  } = await import("@/lib/integrations/spotify/pkce")
-  const { saveSpotifyOAuthPending } = await import(
-    "@/lib/integrations/spotify/oauth-pending-store.server"
-  )
-  const { spotifyProvider } = await import("@/lib/integrations/spotify/provider")
+  const [
+    { requireServerAuthUser },
+    { generateCodeChallenge, generateCodeVerifier, generateState },
+    { saveSpotifyOAuthPending },
+    { spotifyProvider },
+  ] = await Promise.all([
+    import("@/lib/auth/auth.server"),
+    import("@/lib/integrations/spotify/pkce"),
+    import("@/lib/integrations/spotify/oauth-pending-store.server"),
+    import("@/lib/integrations/spotify/provider"),
+  ])
 
   const user = await requireServerAuthUser()
 
@@ -37,14 +38,17 @@ export async function beginSpotifyConnect(preferredOrigin?: string): Promise<str
 }
 
 export async function completeSpotifyConnect(code: string, state: string) {
-  const { requireServerAuthUser } = await import("@/lib/auth/auth.server")
-  const { saveConnection } = await import(
-    "@/lib/integrations/connections-store.server"
-  )
-  const { consumeSpotifyOAuthPending } = await import(
-    "@/lib/integrations/spotify/oauth-pending-store.server"
-  )
-  const { spotifyProvider } = await import("@/lib/integrations/spotify/provider")
+  const [
+    { requireServerAuthUser },
+    { saveConnection },
+    { consumeSpotifyOAuthPending },
+    { spotifyProvider },
+  ] = await Promise.all([
+    import("@/lib/auth/auth.server"),
+    import("@/lib/integrations/connections-store.server"),
+    import("@/lib/integrations/spotify/oauth-pending-store.server"),
+    import("@/lib/integrations/spotify/provider"),
+  ])
 
   const user = await requireServerAuthUser()
 
