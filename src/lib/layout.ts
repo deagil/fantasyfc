@@ -5,7 +5,7 @@ export const contentContainerClassName = "mx-auto w-full max-w-7xl px-3"
  * so 1×1 cells stay square. Three row units on desktop; six on mobile stack.
  */
 export const hubTileGridClassName =
-  "@container/tiles [container-type:inline-size] grid grid-cols-2 gap-4 [grid-template-rows:repeat(6,calc((100cqw-1rem)/2))] lg:grid-cols-4 lg:[grid-template-rows:repeat(3,calc(round(down,(100cqw-3rem)/4,1px)))]"
+  "@container/tiles [container-type:inline-size] grid grid-cols-2 gap-2 [grid-template-rows:repeat(6,calc((100cqw-0.875rem)/2))] lg:grid-cols-4 lg:[grid-template-rows:repeat(3,calc(round(down,(100cqw-2.625rem)/4,1px)))]"
 
 export const appShellClassName = "app-shell relative min-h-svh text-(--shell-foreground)"
 

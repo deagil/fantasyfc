@@ -97,9 +97,39 @@ export type FplTeam = {
   short_name: string
 }
 
+export type FplElement = {
+  id: number
+  web_name: string
+}
+
+export type FplPick = {
+  element: number
+  position: number
+  multiplier: number
+  is_captain: boolean
+  is_vice_captain: boolean
+  element_type: number
+}
+
+export type FplEntryPicks = {
+  picks: FplPick[]
+}
+
+export type FplEventLiveElement = {
+  id: number
+  stats: {
+    total_points: number
+  }
+}
+
+export type FplEventLive = {
+  elements: FplEventLiveElement[]
+}
+
 export type FplBootstrap = {
   events: FplEvent[]
   teams: FplTeam[]
+  elements: FplElement[]
 }
 
 export type FplFixture = {

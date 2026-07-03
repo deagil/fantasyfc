@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 
 import { contentContainerClassName, mobileContentTopSpacerClassName } from "@/lib/layout"
@@ -26,21 +26,27 @@ function getTransitionMs(fromIndex: number, toIndex: number): number {
   return BASE_TRANSITION_MS + distance * TRANSITION_MS_PER_PAGE
 }
 
+function subscribePrefersReducedMotion(onStoreChange: () => void): () => void {
+  const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
+  mediaQuery.addEventListener("change", onStoreChange)
+  return () => mediaQuery.removeEventListener("change", onStoreChange)
+}
+
+function getPrefersReducedMotionSnapshot(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+}
+
 function usePrefersReducedMotion(): boolean {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  return useSyncExternalStore(
+    subscribePrefersReducedMotion,
+    getPrefersReducedMotionSnapshot,
+    () => false
+  )
+}
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
-    const onChange = () => {
-      setPrefersReducedMotion(mediaQuery.matches)
-    }
-
-    onChange()
-    mediaQuery.addEventListener("change", onChange)
-    return () => mediaQuery.removeEventListener("change", onChange)
-  }, [])
-
-  return prefersReducedMotion
+type CarouselViewState = {
+  displayIndex: number
+  transitionMs: number
 }
 
 export function PageCarousel({ className }: { className?: string }) {
@@ -60,31 +66,34 @@ export function PageCarousel({ className }: { className?: string }) {
 
   const urlIndex = getNavPageIndex(tab)
 
-  const [displayIndex, setDisplayIndex] = useState(urlIndex)
+  const [viewState, setViewState] = useState<CarouselViewState>({
+    displayIndex: urlIndex,
+    transitionMs: 0,
+  })
+  const [trackedUrlIndex, setTrackedUrlIndex] = useState(urlIndex)
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffsetX, setDragOffsetX] = useState(0)
-  const [transitionMs, setTransitionMs] = useState(0)
+
+  const { displayIndex, transitionMs } = viewState
 
   useEffect(() => {
-    if (isDragging) {
-      return
-    }
-
     const page = navPages[urlIndex]
     if (page && !page.enabled) {
       navigate({ to: "/", search: tabSearch(defaultNavTabId), replace: true })
-      return
     }
+  }, [urlIndex, navigate])
 
+  if (!isDragging && urlIndex !== trackedUrlIndex) {
     const previousIndex = previousIndexRef.current
-    if (previousIndex !== urlIndex) {
-      setTransitionMs(
-        prefersReducedMotion ? 0 : getTransitionMs(previousIndex, urlIndex)
-      )
-      setDisplayIndex(urlIndex)
-      previousIndexRef.current = urlIndex
-    }
-  }, [urlIndex, isDragging, prefersReducedMotion, navigate])
+    previousIndexRef.current = urlIndex
+    setTrackedUrlIndex(urlIndex)
+    setViewState({
+      displayIndex: urlIndex,
+      transitionMs: prefersReducedMotion
+        ? 0
+        : getTransitionMs(previousIndex, urlIndex),
+    })
+  }
 
   const commitToIndex = useCallback(
     (index: number, replace: boolean) => {
@@ -93,10 +102,13 @@ export function PageCarousel({ className }: { className?: string }) {
         return
       }
 
-      setTransitionMs(
-        prefersReducedMotion ? 0 : getTransitionMs(displayIndex, index)
-      )
-      setDisplayIndex(index)
+      setTrackedUrlIndex(index)
+      setViewState({
+        displayIndex: index,
+        transitionMs: prefersReducedMotion
+          ? 0
+          : getTransitionMs(displayIndex, index),
+      })
       previousIndexRef.current = index
       navigate({ to: "/", search: tabSearch(page.id), replace })
     },
@@ -123,7 +135,10 @@ export function PageCarousel({ className }: { className?: string }) {
     if (dragRef.current.axis === "x") {
       event.currentTarget.releasePointerCapture(event.pointerId)
     }
-    setTransitionMs(prefersReducedMotion ? 0 : SNAP_BACK_MS)
+    setViewState((current) => ({
+      ...current,
+      transitionMs: prefersReducedMotion ? 0 : SNAP_BACK_MS,
+    }))
     resetDrag()
   }
 
@@ -142,7 +157,7 @@ export function PageCarousel({ className }: { className?: string }) {
       offsetX: 0,
       axis: null,
     }
-    setTransitionMs(0)
+    setViewState((current) => ({ ...current, transitionMs: 0 }))
     setIsDragging(true)
     setDragOffsetX(0)
   }
@@ -228,7 +243,10 @@ export function PageCarousel({ className }: { className?: string }) {
     }
 
     if (offsetX !== 0) {
-      setTransitionMs(prefersReducedMotion ? 0 : SNAP_BACK_MS)
+      setViewState((current) => ({
+      ...current,
+      transitionMs: prefersReducedMotion ? 0 : SNAP_BACK_MS,
+    }))
     }
   }
 

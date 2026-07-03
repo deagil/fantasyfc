@@ -15,6 +15,7 @@ type FplBootstrapContextValue = {
   bootstrap: FplBootstrap | null
   fixtures: FplFixture[]
   teamsById: Map<number, FplBootstrap["teams"][number]>
+  elementsById: Map<number, FplBootstrap["elements"][number]>
   isLoading: boolean
   error: string | null
   refreshBootstrap: () => Promise<void>
@@ -87,16 +88,25 @@ export function FplBootstrapProvider({ children }: { children: React.ReactNode }
     return map
   }, [bootstrap])
 
+  const elementsById = useMemo(() => {
+    const map = new Map<number, FplBootstrap["elements"][number]>()
+    for (const element of bootstrap?.elements ?? []) {
+      map.set(element.id, element)
+    }
+    return map
+  }, [bootstrap])
+
   const value = useMemo(
     () => ({
       bootstrap,
       fixtures,
       teamsById,
+      elementsById,
       isLoading,
       error,
       refreshBootstrap: loadBootstrap,
     }),
-    [bootstrap, fixtures, teamsById, isLoading, error, loadBootstrap]
+    [bootstrap, fixtures, teamsById, elementsById, isLoading, error, loadBootstrap]
   )
 
   return (

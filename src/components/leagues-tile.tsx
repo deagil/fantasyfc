@@ -19,7 +19,7 @@ import {
   type LeagueTabId,
 } from "@/lib/fpl/leagues"
 import { getFplLeagueStandings } from "@/lib/fpl/server"
-import type { FplClassicLeague, FplLeagueStanding } from "@/lib/fpl/types"
+import type { FplClassicLeague, FplEntry, FplLeagueStanding } from "@/lib/fpl/types"
 import { useTeam } from "@/lib/fpl/team-context"
 import { cn } from "@/lib/utils"
 
@@ -166,6 +166,70 @@ function LeagueEmptyState({ tab }: { tab: LeagueTabId }) {
   )
 }
 
+function LeaguePanel({
+  tab,
+  privateLeagues,
+  systemLeagues,
+  isLoggedIn,
+  isLoading,
+  entry,
+  error,
+  drawerOpen,
+  selectedLeague,
+  onSelectLeague,
+}: {
+  tab: LeagueTabId
+  privateLeagues: FplClassicLeague[]
+  systemLeagues: FplClassicLeague[]
+  isLoggedIn: boolean
+  isLoading: boolean
+  entry: FplEntry | null
+  error: string | null
+  drawerOpen: boolean
+  selectedLeague: FplClassicLeague | null
+  onSelectLeague: (league: FplClassicLeague) => void
+}) {
+  const leagues = tab === "private" ? privateLeagues : systemLeagues
+
+  if (!isLoggedIn) {
+    return (
+      <DataTile.EmptyState>
+        Connect your FPL team to see positions in your leagues.
+      </DataTile.EmptyState>
+    )
+  }
+
+  if (isLoading && !entry) {
+    return (
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    )
+  }
+
+  if (error && !entry) {
+    return (
+      <DataTile.EmptyState className="text-destructive">
+        {error}
+      </DataTile.EmptyState>
+    )
+  }
+
+  if (leagues.length === 0) {
+    return <LeagueEmptyState tab={tab} />
+  }
+
+  return (
+    <LeagueList
+      leagues={leagues}
+      selectedLeagueId={drawerOpen ? (selectedLeague?.id ?? null) : null}
+      onSelect={onSelectLeague}
+    />
+  )
+}
+
 export function LeaguesTile({
   className,
   comingSoon = false,
@@ -224,48 +288,6 @@ export function LeaguesTile({
     [fetchStandings]
   )
 
-  const renderLeaguePanel = (tab: LeagueTabId) => {
-    const leagues = tab === "private" ? privateLeagues : systemLeagues
-
-    if (!isLoggedIn) {
-      return (
-        <DataTile.EmptyState>
-          Connect your FPL team to see positions in your leagues.
-        </DataTile.EmptyState>
-      )
-    }
-
-    if (isLoading && !entry) {
-      return (
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-      )
-    }
-
-    if (error && !entry) {
-      return (
-        <DataTile.EmptyState className="text-destructive">
-          {error}
-        </DataTile.EmptyState>
-      )
-    }
-
-    if (leagues.length === 0) {
-      return <LeagueEmptyState tab={tab} />
-    }
-
-    return (
-      <LeagueList
-        leagues={leagues}
-        selectedLeagueId={drawerOpen ? (selectedLeague?.id ?? null) : null}
-        onSelect={handleSelectLeague}
-      />
-    )
-  }
-
   return (
     <>
       <DataTile size="2x2" interactive comingSoon={comingSoon} className={className}>
@@ -291,7 +313,18 @@ export function LeaguesTile({
             align="between"
             className="min-h-0 flex-1 gap-2 overflow-hidden pt-0"
           >
-            {renderLeaguePanel(leagueTab)}
+            <LeaguePanel
+              tab={leagueTab}
+              privateLeagues={privateLeagues}
+              systemLeagues={systemLeagues}
+              isLoggedIn={isLoggedIn}
+              isLoading={isLoading}
+              entry={entry}
+              error={error}
+              drawerOpen={drawerOpen}
+              selectedLeague={selectedLeague}
+              onSelectLeague={handleSelectLeague}
+            />
           </DataTile.Content>
         </Tabs>
       </DataTile>

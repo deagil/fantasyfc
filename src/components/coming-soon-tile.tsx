@@ -3,7 +3,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { COMING_SOON_LABEL } from "@/lib/nav-pages"
+import { COMING_SOON_LABEL } from "@/lib/coming-soon"
 import { cn } from "@/lib/utils"
 
 type ComingSoonTileProps = {

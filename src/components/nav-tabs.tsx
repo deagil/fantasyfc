@@ -6,7 +6,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { COMING_SOON_LABEL, navPages, tabSearch } from "@/lib/nav-pages"
+import { COMING_SOON_LABEL } from "@/lib/coming-soon"
+import { navPages, tabSearch } from "@/lib/nav-pages"
 import { cn } from "@/lib/utils"
 
 type NavTabsProps = {

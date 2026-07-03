@@ -11,8 +11,6 @@ import {
 import { TileGridPage } from "@/components/tile-grid-page"
 import { CentralPage } from "@/components/central-page"
 
-export const COMING_SOON_LABEL = "Coming soon"
-
 export const defaultNavTabId = "hub" as const
 
 export type NavTabId =

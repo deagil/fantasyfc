@@ -3,11 +3,12 @@ import {
   useCallback,
   useContext,
   useMemo,
-  useState,
+  useSyncExternalStore,
 } from "react"
 
 import {
   getStoredKickoffTheme,
+  subscribeKickoffTheme,
   type KickoffThemeId,
   setStoredKickoffTheme,
 } from "@/lib/kickoff-theme"
@@ -19,23 +20,20 @@ type KickoffThemeContextValue = {
 
 const KickoffThemeContext = createContext<KickoffThemeContextValue | null>(null)
 
-function getInitialKickoffTheme(): KickoffThemeId {
-  if (typeof window === "undefined") {
-    return "late-kickoff"
-  }
-
-  return getStoredKickoffTheme()
-}
+const defaultKickoffTheme: KickoffThemeId = "late-kickoff"
 
 export function KickoffThemeProvider({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [theme, setThemeState] = useState<KickoffThemeId>(getInitialKickoffTheme)
+  const theme = useSyncExternalStore(
+    subscribeKickoffTheme,
+    getStoredKickoffTheme,
+    () => defaultKickoffTheme
+  )
 
   const setTheme = useCallback((nextTheme: KickoffThemeId) => {
-    setThemeState(nextTheme)
     setStoredKickoffTheme(nextTheme)
   }, [])
 

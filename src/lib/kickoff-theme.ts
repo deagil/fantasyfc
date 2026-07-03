@@ -1,4 +1,5 @@
 const STORAGE_KEY = "deadline-kickoff-theme"
+const THEME_CHANGE_EVENT = "deadline-kickoff-theme-change"
 
 export const kickoffThemeIds = ["early-kickoff", "late-kickoff"] as const
 
@@ -34,6 +35,17 @@ export function getStoredKickoffTheme(): KickoffThemeId {
   return "late-kickoff"
 }
 
+export function subscribeKickoffTheme(onStoreChange: () => void): () => void {
+  const handler = () => onStoreChange()
+  window.addEventListener("storage", handler)
+  window.addEventListener(THEME_CHANGE_EVENT, handler)
+  return () => {
+    window.removeEventListener("storage", handler)
+    window.removeEventListener(THEME_CHANGE_EVENT, handler)
+  }
+}
+
 export function setStoredKickoffTheme(theme: KickoffThemeId): void {
   localStorage.setItem(STORAGE_KEY, theme)
+  window.dispatchEvent(new Event(THEME_CHANGE_EVENT))
 }
