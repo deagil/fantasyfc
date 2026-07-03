@@ -69,7 +69,7 @@ function LeagueRow({
       data-selected={isSelected ? "true" : undefined}
       onClick={() => onSelect(league)}
       className={cn(
-        "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left active:scale-[0.99]"
+        "flex w-full items-center gap-3 px-4 py-2.5 text-left active:scale-[0.99]"
       )}
     >
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -139,7 +139,10 @@ function LeagueList({
   onSelect: (league: FplClassicLeague) => void
 }) {
   return (
-    <ScrollFade className="flex min-h-0 flex-1" contentClassName="-mx-1 flex flex-col gap-0.5">
+    <ScrollFade
+      className="flex min-h-0 w-full min-w-0 flex-1"
+      contentClassName="flex w-full flex-col"
+    >
       {leagues.map((league) => (
         <LeagueRow
           key={league.id}
@@ -195,7 +198,7 @@ function LeaguePanel({
 
   if (!isLoggedIn) {
     return (
-      <DataTile.EmptyState>
+      <DataTile.EmptyState className="px-3 lg:px-4">
         Connect your FPL team to see positions in your leagues.
       </DataTile.EmptyState>
     )
@@ -203,7 +206,7 @@ function LeaguePanel({
 
   if (isLoading && !entry) {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 px-3 lg:px-4">
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
@@ -213,14 +216,18 @@ function LeaguePanel({
 
   if (error && !entry) {
     return (
-      <DataTile.EmptyState className="text-destructive">
+      <DataTile.EmptyState className="px-3 text-destructive lg:px-4">
         {error}
       </DataTile.EmptyState>
     )
   }
 
   if (leagues.length === 0) {
-    return <LeagueEmptyState tab={tab} />
+    return (
+      <div className="px-3 lg:px-4">
+        <LeagueEmptyState tab={tab} />
+      </div>
+    )
   }
 
   return (
@@ -329,7 +336,7 @@ export function LeaguesTile({
 
           <DataTile.Content
             align="between"
-            className="min-h-0 flex-1 gap-2 overflow-hidden pt-0"
+            className="min-h-0 flex-1 gap-2 overflow-hidden px-0 pt-0"
           >
             <LeaguePanel
               tab={leagueTab}
