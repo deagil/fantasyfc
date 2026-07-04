@@ -491,27 +491,10 @@
   }
 }
 
-@keyframes vt-slide-in-from-right {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
-}
-@keyframes vt-slide-out-to-left {
-  from { transform: translateX(0); }
-  to { transform: translateX(-25%); }
-}
-@keyframes vt-slide-in-from-left {
-  from { transform: translateX(-25%); }
-  to { transform: translateX(0); }
-}
-@keyframes vt-slide-out-to-right {
-  from { transform: translateX(0); }
-  to { transform: translateX(100%); }
-}
-
-@keyframes vt-title-fade-in {
+@keyframes vt-page-fade-in {
   from {
     opacity: 0;
-    filter: blur(6px);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
@@ -519,45 +502,57 @@
   }
 }
 
-@keyframes vt-title-fade-out {
+@keyframes vt-page-fade-out {
   from {
     opacity: 1;
     filter: blur(0);
   }
   to {
     opacity: 0;
-    filter: blur(6px);
+    filter: blur(4px);
   }
 }
 
 ::view-transition-group(vt-fixtures-title),
-::view-transition-group(vt-scouts-title) {
+::view-transition-group(vt-scouts-title),
+::view-transition-group(vt-league-title),
+::view-transition-group(vt-page-content) {
   animation-duration: 0ms;
   overflow: visible;
 }
 
 ::view-transition-image-pair(vt-fixtures-title),
-::view-transition-image-pair(vt-scouts-title) {
+::view-transition-image-pair(vt-scouts-title),
+::view-transition-image-pair(vt-league-title),
+::view-transition-image-pair(vt-page-content) {
   overflow: visible;
 }
 
 ::view-transition-old(vt-fixtures-title),
 ::view-transition-new(vt-fixtures-title),
 ::view-transition-old(vt-scouts-title),
-::view-transition-new(vt-scouts-title) {
+::view-transition-new(vt-scouts-title),
+::view-transition-old(vt-league-title),
+::view-transition-new(vt-league-title),
+::view-transition-old(vt-page-content),
+::view-transition-new(vt-page-content) {
   height: 100%;
   width: 100%;
   mix-blend-mode: normal;
 }
 
 ::view-transition-old(vt-fixtures-title),
-::view-transition-old(vt-scouts-title) {
-  animation: vt-title-fade-out 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+::view-transition-old(vt-scouts-title),
+::view-transition-old(vt-league-title),
+::view-transition-old(vt-page-content) {
+  animation: vt-page-fade-out 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 ::view-transition-new(vt-fixtures-title),
-::view-transition-new(vt-scouts-title) {
-  animation: vt-title-fade-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+::view-transition-new(vt-scouts-title),
+::view-transition-new(vt-league-title),
+::view-transition-new(vt-page-content) {
+  animation: vt-page-fade-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 ::view-transition-group(root) {
@@ -567,24 +562,22 @@
 
 :root:active-view-transition-type(push) {
   &::view-transition-old(root) {
-    animation-name: vt-slide-out-to-left;
+    animation-name: vt-page-fade-out;
     z-index: 1;
   }
   &::view-transition-new(root) {
-    animation-name: vt-slide-in-from-right;
+    animation-name: vt-page-fade-in;
     z-index: 2;
-    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
   }
 }
 
 :root:active-view-transition-type(pop) {
   &::view-transition-old(root) {
-    animation-name: vt-slide-out-to-right;
+    animation-name: vt-page-fade-out;
     z-index: 2;
-    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
   }
   &::view-transition-new(root) {
-    animation-name: vt-slide-in-from-left;
+    animation-name: vt-page-fade-in;
     z-index: 1;
   }
 }

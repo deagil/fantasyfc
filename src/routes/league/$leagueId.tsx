@@ -73,7 +73,10 @@ function LeagueDetailPage() {
           "flex min-h-0 flex-1 flex-col pb-28 lg:pb-3 lg:pt-2"
         )}
       >
-        <div className={hubTileGridClassName}>
+        <div
+          className={hubTileGridClassName}
+          style={{ viewTransitionName: "vt-page-content" }}
+        >
           <DataTile
             className="col-span-2 row-span-3 lg:col-start-1 lg:row-start-1"
           >

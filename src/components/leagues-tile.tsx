@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react"
-import { Link } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { ArrowDownIcon, ArrowUpIcon } from "lucide-react"
 
 import { LeagueStandingsList } from "@/components/league-standings-list"
@@ -32,6 +32,8 @@ import { useTeam } from "@/lib/fpl/team-context"
 import { cn } from "@/lib/utils"
 
 const EMPTY_LEAGUE_IDS: readonly number[] = []
+/** Matches vaul drawer dismiss duration (`vaul/style.css`). */
+const DRAWER_DISMISS_MS = 500
 
 function LeagueRow({
   league,
@@ -192,6 +194,7 @@ export function LeaguesTile({
   comingSoon?: boolean
 }) {
   const isDesktop = useMediaQuery("(min-width: 1024px)")
+  const navigate = useNavigate()
   const { teamId, entry, isLoggedIn, isLoading, error } = useTeam()
   const { selectedLeague, selectLeague, closeLeagueDrawer } =
     useLeaguesInspector()
@@ -309,6 +312,28 @@ export function LeaguesTile({
     }
   }, [drawerLeague])
 
+  const handleOpenLeagueDetail = useCallback(() => {
+    if (!drawerLeague) {
+      return
+    }
+
+    const leagueId = String(drawerLeague.id)
+
+    if (isDesktop) {
+      closeLeagueDrawer()
+    } else {
+      setDrawerOpen(false)
+      setMobileSelectedLeague(null)
+    }
+
+    window.setTimeout(() => {
+      void navigate({
+        to: "/league/$leagueId",
+        params: { leagueId },
+      })
+    }, DRAWER_DISMISS_MS)
+  }, [closeLeagueDrawer, drawerLeague, isDesktop, navigate])
+
   return (
     <>
       <DataTile size="2x2" interactive comingSoon={comingSoon} className={className}>
@@ -354,14 +379,13 @@ export function LeaguesTile({
           <DrawerPanel
             title={
               drawerLeague ? (
-                <Link
-                  to="/league/$leagueId"
-                  params={{ leagueId: String(drawerLeague.id) }}
-                  className="block truncate hover:underline focus-visible:underline focus-visible:outline-none"
-                  style={{ viewTransitionName: "vt-league-title" }}
+                <button
+                  type="button"
+                  onClick={handleOpenLeagueDetail}
+                  className="block w-full truncate hover:underline focus-visible:underline focus-visible:outline-none"
                 >
                   {drawerLeague.name}
-                </Link>
+                </button>
               ) : (
                 "League"
               )
