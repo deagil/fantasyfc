@@ -194,9 +194,11 @@
       --hub-row-gap-total: 1rem;
       --hub-desktop-chrome: 5.25rem;
       --hub-layout-columns: 4;
+      --hub-cell-divisor: 4;
+      --hub-cell-gap-for-size: 1.5rem;
       --hub-content-padding-x: 0.75rem;
       --hub-cell: min(
-        (100cqw - var(--hub-col-gap-total)) / var(--hub-layout-columns),
+        (100cqw - var(--hub-cell-gap-for-size)) / var(--hub-cell-divisor),
         (100svh - var(--hub-desktop-chrome) - var(--hub-row-gap-total)) / 3
       );
     }
@@ -206,10 +208,6 @@
       --hub-col-gap-total: 2rem;
       --hub-inspector-bleed: calc(
         var(--hub-content-padding-x) + 0.5 * var(--hub-cell)
-      );
-      --hub-cell: min(
-        (100cqw - var(--hub-col-gap-total)) / var(--hub-layout-columns),
-        (100svh - var(--hub-desktop-chrome) - var(--hub-row-gap-total)) / 3
       );
     }
 
