@@ -217,6 +217,23 @@
       grid-template-columns: repeat(4, round(down, var(--hub-cell), 1px));
       grid-template-rows: repeat(3, round(down, var(--hub-cell), 1px));
     }
+
+    /* League standings dock: right third of hub content width, flush to bottom */
+    :root {
+      --hub-content-max: 80rem;
+      --hub-content-padding-x: 0.75rem;
+      --hub-content-inner-width: calc(
+        min(100vw, var(--hub-content-max)) - 2 * var(--hub-content-padding-x)
+      );
+      --hub-content-inset-x: max(
+        var(--hub-content-padding-x),
+        calc((100vw - min(100vw, var(--hub-content-max))) / 2 + var(--hub-content-padding-x))
+      );
+      --hub-dock-sheet-width: calc(var(--hub-content-inner-width) / 3);
+      --hub-dock-sheet-left: calc(
+        var(--hub-content-inset-x) + (2 / 3) * var(--hub-content-inner-width)
+      );
+    }
   }
 
   /* Late kickoff — plum night, white tiles, pink hover */

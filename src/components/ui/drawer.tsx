@@ -16,9 +16,9 @@ const drawerSizeClassNames: Record<DrawerSize, string> = {
 const drawerAlignClassNames: Record<DrawerAlign, string> = {
   full: "",
   "dock-right": cn(
-    "lg:data-[vaul-drawer-direction=bottom]:inset-x-auto lg:data-[vaul-drawer-direction=bottom]:right-4 lg:data-[vaul-drawer-direction=bottom]:left-auto",
-    "lg:data-[vaul-drawer-direction=bottom]:w-[min(33vw,22rem)]",
-    "lg:data-[vaul-drawer-direction=bottom]:rounded-[min(var(--radius-4xl),24px)] lg:data-[vaul-drawer-direction=bottom]:border lg:data-[vaul-drawer-direction=bottom]:border-border"
+    "lg:data-[vaul-drawer-direction=bottom]:inset-x-auto lg:data-[vaul-drawer-direction=bottom]:left-[var(--hub-dock-sheet-left)] lg:data-[vaul-drawer-direction=bottom]:right-auto",
+    "lg:data-[vaul-drawer-direction=bottom]:w-[var(--hub-dock-sheet-width)]",
+    "lg:data-[vaul-drawer-direction=bottom]:rounded-none lg:data-[vaul-drawer-direction=bottom]:border-x"
   ),
 }
 
@@ -82,11 +82,11 @@ function DrawerContent({
         className={cn(
           "group/drawer-content fixed z-50 flex flex-col overflow-hidden text-sm bg-popover shadow-xl",
           drawerSizeClassNames[size],
-          drawerAlignClassNames[align],
           "data-[vaul-drawer-direction=bottom]:inset-x-0 data-[vaul-drawer-direction=bottom]:bottom-0 data-[vaul-drawer-direction=bottom]:mt-0 data-[vaul-drawer-direction=bottom]:rounded-t-[min(var(--radius-4xl),24px)] data-[vaul-drawer-direction=bottom]:border-t data-[vaul-drawer-direction=bottom]:border-border",
           "data-[vaul-drawer-direction=left]:inset-y-0 data-[vaul-drawer-direction=left]:left-0 data-[vaul-drawer-direction=left]:h-auto data-[vaul-drawer-direction=left]:w-3/4 data-[vaul-drawer-direction=left]:sm:max-w-sm",
           "data-[vaul-drawer-direction=right]:inset-y-0 data-[vaul-drawer-direction=right]:right-0 data-[vaul-drawer-direction=right]:h-auto data-[vaul-drawer-direction=right]:w-3/4 data-[vaul-drawer-direction=right]:sm:max-w-sm",
           "data-[vaul-drawer-direction=top]:inset-x-0 data-[vaul-drawer-direction=top]:top-0 data-[vaul-drawer-direction=top]:mb-24 data-[vaul-drawer-direction=top]:h-auto data-[vaul-drawer-direction=top]:max-h-[80vh]",
+          drawerAlignClassNames[align],
           className
         )}
         {...props}
