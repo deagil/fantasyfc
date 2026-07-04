@@ -218,10 +218,15 @@
       grid-template-rows: repeat(3, round(down, var(--hub-cell), 1px));
     }
 
-    /* League standings dock: right half of hub content width, flush to bottom */
+    /* League standings dock: 2× tile width, aligned to the right grid columns */
     :root {
       --hub-content-max: 80rem;
       --hub-content-padding-x: 0.75rem;
+      --hub-col-gap-total: 1.5rem;
+      --hub-row-gap-total: 1rem;
+      --hub-desktop-chrome: 5.25rem;
+      --hub-cell-gap-for-size: 1.5rem;
+      --hub-grid-gap: 0.5rem;
       --hub-content-inner-width: calc(
         min(100vw, var(--hub-content-max)) - 2 * var(--hub-content-padding-x)
       );
@@ -229,9 +234,26 @@
         var(--hub-content-padding-x),
         calc((100vw - min(100vw, var(--hub-content-max))) / 2 + var(--hub-content-padding-x))
       );
-      --hub-dock-sheet-width: calc(var(--hub-content-inner-width) / 2);
+      --hub-cell-viewport: round(
+        down,
+        min(
+          (var(--hub-content-inner-width) - var(--hub-cell-gap-for-size)) / 4,
+          (100svh - var(--hub-desktop-chrome) - var(--hub-row-gap-total)) / 3
+        ),
+        1px
+      );
+      --hub-grid-width: calc(
+        4 * var(--hub-cell-viewport) + var(--hub-col-gap-total)
+      );
+      --hub-dock-sheet-width: round(
+        down,
+        calc(2 * var(--hub-cell-viewport) + var(--hub-grid-gap)),
+        1px
+      );
       --hub-dock-sheet-left: calc(
-        var(--hub-content-inset-x) + var(--hub-content-inner-width) / 2
+        var(--hub-content-inset-x) +
+          (var(--hub-content-inner-width) - var(--hub-grid-width)) / 2 +
+          2 * var(--hub-cell-viewport) + 2 * var(--hub-grid-gap)
       );
     }
   }
