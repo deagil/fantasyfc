@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { ArrowDownIcon, ArrowUpIcon, MinusIcon } from "lucide-react"
 
 import { ScrollFade } from "@/components/scroll-fade"
@@ -12,7 +12,11 @@ import {
   drawerChromeOffsetClassName,
 } from "@/components/ui/drawer"
 import { DataTile } from "@/components/data-tile"
-import { useFplStandingsQuery } from "@/lib/fpl/hooks"
+import { useMediaQuery } from "@/hooks/use-media-query"
+import {
+  useFplStandingsQuery,
+  usePrefetchFplLeagueStandings,
+} from "@/lib/fpl/hooks"
 import {
   formatLeagueRank,
   getLeagueRankChange,
@@ -245,6 +249,7 @@ export function LeaguesTile({
   className?: string
   comingSoon?: boolean
 }) {
+  const isDesktop = useMediaQuery("(min-width: 1024px)")
   const { teamId, entry, isLoggedIn, isLoading, error } = useTeam()
   const [leagueTab, setLeagueTab] = useState<LeagueTabId>("private")
   const [selectedLeague, setSelectedLeague] = useState<FplClassicLeague | null>(
@@ -252,6 +257,14 @@ export function LeaguesTile({
   )
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [leagueIdCopied, setLeagueIdCopied] = useState(false)
+
+  const classicLeagues = entry?.leagues.classic ?? []
+  const leagueIds = useMemo(
+    () => classicLeagues.map((league) => league.id),
+    [classicLeagues]
+  )
+
+  usePrefetchFplLeagueStandings(isLoggedIn ? leagueIds : [])
 
   const standingsQuery = useFplStandingsQuery(selectedLeague?.id, {
     enabled: drawerOpen && selectedLeague !== null,
@@ -264,7 +277,6 @@ export function LeaguesTile({
     ? "Could not load standings."
     : null
 
-  const classicLeagues = entry?.leagues.classic ?? []
   const privateLeagues = getLeaguesForTab(classicLeagues, "private")
   const systemLeagues = getLeaguesForTab(classicLeagues, "system")
 
@@ -345,8 +357,18 @@ export function LeaguesTile({
         </Tabs>
       </DataTile>
 
-      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <DrawerContent size="md">
+      <Drawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        direction={isDesktop ? "right" : "bottom"}
+      >
+        <DrawerContent
+          size="md"
+          className={cn(
+            isDesktop &&
+              "top-4! right-4! bottom-4! left-auto! h-auto! w-full max-w-md rounded-2xl border border-border data-[vaul-drawer-direction=right]:max-w-md"
+          )}
+        >
           <DrawerPanel
             title={selectedLeague?.name ?? "League"}
             leading={

@@ -1,5 +1,8 @@
-import { useQuery } from "@tanstack/react-query"
+import { useEffect } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useServerFn } from "@tanstack/react-start"
+
+import type { QueryClient } from "@tanstack/react-query"
 
 import {
   FPL_STALE_TIME,
@@ -21,7 +24,40 @@ import {
   getFplFixtures,
   getFplLeagueStandings,
 } from "@/lib/fpl/server"
-import type { FplBootstrap, FplElement, FplFixture } from "@/lib/fpl/types"
+import type { FplBootstrap, FplElement, FplFixture, FplLeagueStandings } from "@/lib/fpl/types"
+
+type FetchStandingsFn = (args: {
+  data: { leagueId: number; page?: number }
+}) => Promise<FplLeagueStandings>
+
+export function prefetchFplLeagueStandings(
+  queryClient: QueryClient,
+  fetchStandings: FetchStandingsFn,
+  leagueIds: readonly number[],
+  page = 1
+): void {
+  for (const leagueId of leagueIds) {
+    void queryClient.prefetchQuery({
+      queryKey: fplKeys.standings(leagueId, page),
+      queryFn: () => fetchStandings({ data: { leagueId, page } }),
+      staleTime: FPL_STALE_TIME.standings,
+    })
+  }
+}
+
+export function usePrefetchFplLeagueStandings(leagueIds: readonly number[]) {
+  const queryClient = useQueryClient()
+  const fetchStandings = useServerFn(getFplLeagueStandings)
+  const leagueIdsKey = leagueIds.join(",")
+
+  useEffect(() => {
+    if (leagueIds.length === 0) {
+      return
+    }
+
+    prefetchFplLeagueStandings(queryClient, fetchStandings, leagueIds)
+  }, [queryClient, fetchStandings, leagueIds, leagueIdsKey])
+}
 
 export function useFplBootstrapQuery() {
   const fetchBootstrap = useServerFn(getFplBootstrap)
