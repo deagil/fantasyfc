@@ -3,11 +3,7 @@ import { useCallback, useState } from "react"
 import { ScrollFade } from "@/components/scroll-fade"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-} from "@/components/ui/sidebar"
+import { SidebarContent, SidebarHeader } from "@/components/ui/sidebar"
 import { useFplStandingsQuery } from "@/lib/fpl/hooks"
 import { useLeaguesInspector } from "@/lib/fpl/leagues-inspector-context"
 import type { FplClassicLeague, FplLeagueStanding } from "@/lib/fpl/types"
@@ -125,8 +121,8 @@ export function LeagueInspectorPanel() {
   }
 
   return (
-    <Sidebar
-      collapsible="none"
+    <aside
+      data-slot="league-inspector"
       className="hub-inspector-column hidden h-full shrink-0 flex-col overflow-hidden rounded-[2px] bg-(--tile-bg) text-(--tile-fg) shadow-none lg:flex"
     >
       <SidebarHeader className="shrink-0 border-b border-(--tile-border) px-3 py-3">
@@ -170,6 +166,6 @@ export function LeagueInspectorPanel() {
           <LeagueInspectorStandings league={selectedLeague} />
         </ScrollFade>
       </SidebarContent>
-    </Sidebar>
+    </aside>
   )
 }
