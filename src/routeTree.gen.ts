@@ -15,6 +15,7 @@ import { Route as ScoutsRouteImport } from './routes/scouts'
 import { Route as FixturesRouteImport } from './routes/fixtures'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as LeagueLeagueIdRouteImport } from './routes/league/$leagueId'
 import { Route as AppTransfersRouteImport } from './routes/_app/transfers'
 import { Route as AppSquadRouteImport } from './routes/_app/squad'
 import { Route as AppSeasonRouteImport } from './routes/_app/season'
@@ -49,6 +50,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const LeagueLeagueIdRoute = LeagueLeagueIdRouteImport.update({
+  id: '/league/$leagueId',
+  path: '/league/$leagueId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppTransfersRoute = AppTransfersRouteImport.update({
   id: '/transfers',
   path: '/transfers',
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/season': typeof AppSeasonRoute
   '/squad': typeof AppSquadRoute
   '/transfers': typeof AppTransfersRoute
+  '/league/$leagueId': typeof LeagueLeagueIdRoute
 }
 export interface FileRoutesByTo {
   '/fixtures': typeof FixturesRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/season': typeof AppSeasonRoute
   '/squad': typeof AppSquadRoute
   '/transfers': typeof AppTransfersRoute
+  '/league/$leagueId': typeof LeagueLeagueIdRoute
   '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/_app/season': typeof AppSeasonRoute
   '/_app/squad': typeof AppSquadRoute
   '/_app/transfers': typeof AppTransfersRoute
+  '/league/$leagueId': typeof LeagueLeagueIdRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/season'
     | '/squad'
     | '/transfers'
+    | '/league/$leagueId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/fixtures'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/season'
     | '/squad'
     | '/transfers'
+    | '/league/$leagueId'
     | '/'
   id:
     | '__root__'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/_app/season'
     | '/_app/squad'
     | '/_app/transfers'
+    | '/league/$leagueId'
     | '/_app/'
   fileRoutesById: FileRoutesById
 }
@@ -148,6 +160,7 @@ export interface RootRouteChildren {
   ScoutsRoute: typeof ScoutsRoute
   SpotifyCallbackRoute: typeof SpotifyCallbackRoute
   SpotifyConnectRoute: typeof SpotifyConnectRoute
+  LeagueLeagueIdRoute: typeof LeagueLeagueIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRouteRoute
+    }
+    '/league/$leagueId': {
+      id: '/league/$leagueId'
+      path: '/league/$leagueId'
+      fullPath: '/league/$leagueId'
+      preLoaderRoute: typeof LeagueLeagueIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/transfers': {
       id: '/_app/transfers'
@@ -251,6 +271,7 @@ const rootRouteChildren: RootRouteChildren = {
   ScoutsRoute: ScoutsRoute,
   SpotifyCallbackRoute: SpotifyCallbackRoute,
   SpotifyConnectRoute: SpotifyConnectRoute,
+  LeagueLeagueIdRoute: LeagueLeagueIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

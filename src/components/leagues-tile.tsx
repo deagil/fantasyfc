@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
-import { ArrowDownIcon, ArrowUpIcon, MinusIcon } from "lucide-react"
+import { ArrowDownIcon, ArrowUpIcon } from "lucide-react"
 
+import { LeagueStandingsList } from "@/components/league-standings-list"
 import { ScrollFade } from "@/components/scroll-fade"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -17,43 +18,19 @@ import {
   useFplStandingsQuery,
   usePrefetchFplLeagueStandings,
 } from "@/lib/fpl/hooks"
+import type { LeagueTabId } from "@/lib/fpl/leagues"
 import {
   formatLeagueRank,
   getLeagueRankChange,
   getLeaguesForTab,
   isLeagueTabId,
-  type LeagueTabId,
 } from "@/lib/fpl/leagues"
 import { useLeaguesInspector } from "@/lib/fpl/leagues-inspector-context"
-import type { FplClassicLeague, FplEntry, FplLeagueStanding } from "@/lib/fpl/types"
+import type { FplClassicLeague, FplEntry } from "@/lib/fpl/types"
 import { useTeam } from "@/lib/fpl/team-context"
 import { cn } from "@/lib/utils"
 
-function RankChangeIndicator({ change }: { change: number }) {
-  if (change > 0) {
-    return (
-      <span className="inline-flex items-center gap-0.5 text-xs font-medium text-chart-2">
-        <ArrowUpIcon className="size-3" />
-        {change}
-      </span>
-    )
-  }
-
-  if (change < 0) {
-    return (
-      <span className="inline-flex items-center gap-0.5 text-xs font-medium text-destructive">
-        <ArrowDownIcon className="size-3" />
-        {Math.abs(change)}
-      </span>
-    )
-  }
-
-  return (
-    <span className="inline-flex items-center text-xs text-muted-foreground">
-      <MinusIcon className="size-3" />
-    </span>
-  )
-}
+const EMPTY_LEAGUE_IDS: readonly number[] = []
 
 function LeagueRow({
   league,
@@ -95,41 +72,6 @@ function LeagueRow({
         </span>
       </div>
     </button>
-  )
-}
-
-function StandingRow({
-  standing,
-  isCurrentTeam,
-}: {
-  standing: FplLeagueStanding
-  isCurrentTeam: boolean
-}) {
-  const rankChange = standing.last_rank - standing.rank
-
-  return (
-    <div
-      className={cn(
-        "flex w-full items-center gap-3 px-4 py-2.5",
-        isCurrentTeam && "bg-chart-2/10 ring-1 ring-inset ring-chart-2/20"
-      )}
-    >
-      <span className="w-8 shrink-0 text-sm font-medium tabular-nums text-muted-foreground">
-        {standing.rank}
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="truncate text-sm font-medium">{standing.entry_name}</span>
-        <span className="truncate text-xs text-muted-foreground">
-          {standing.player_name}
-        </span>
-      </div>
-      <div className="flex shrink-0 flex-col items-end gap-0.5">
-        <span className="text-sm font-semibold tabular-nums">
-          {standing.total}
-        </span>
-        <RankChangeIndicator change={rankChange} />
-      </div>
-    </div>
   )
 }
 
@@ -250,7 +192,7 @@ export function LeaguesTile({
 }) {
   const isDesktop = useMediaQuery("(min-width: 1024px)")
   const { teamId, entry, isLoggedIn, isLoading, error } = useTeam()
-  const { selectedLeague: inspectorLeague, selectLeague, closeInspector } =
+  const { selectedLeague, selectLeague, closeLeagueDrawer } =
     useLeaguesInspector()
   const [leagueTab, setLeagueTab] = useState<LeagueTabId>("private")
   const [mobileSelectedLeague, setMobileSelectedLeague] =
@@ -264,11 +206,11 @@ export function LeaguesTile({
     [classicLeagues]
   )
 
-  usePrefetchFplLeagueStandings(isLoggedIn ? leagueIds : [])
+  usePrefetchFplLeagueStandings(isLoggedIn ? leagueIds : EMPTY_LEAGUE_IDS)
 
-  const drawerLeague = isDesktop ? inspectorLeague : mobileSelectedLeague
+  const drawerLeague = isDesktop ? selectedLeague : mobileSelectedLeague
   const isDrawerOpen = isDesktop
-    ? inspectorLeague !== null
+    ? selectedLeague !== null
     : drawerOpen && mobileSelectedLeague !== null
 
   const standingsQuery = useFplStandingsQuery(drawerLeague?.id, {
@@ -286,7 +228,7 @@ export function LeaguesTile({
   const systemLeagues = getLeaguesForTab(classicLeagues, "system")
 
   const selectedLeagueId = isDesktop
-    ? (inspectorLeague?.id ?? null)
+    ? (selectedLeague?.id ?? null)
     : drawerOpen
       ? (mobileSelectedLeague?.id ?? null)
       : null
@@ -299,13 +241,13 @@ export function LeaguesTile({
 
       setLeagueTab(value)
       if (isDesktop) {
-        closeInspector()
+        closeLeagueDrawer()
       } else {
         setMobileSelectedLeague(null)
         setDrawerOpen(false)
       }
     },
-    [closeInspector, isDesktop]
+    [closeLeagueDrawer, isDesktop]
   )
 
   const stopCarouselPointer = useCallback(
@@ -318,8 +260,8 @@ export function LeaguesTile({
   const handleSelectLeague = useCallback(
     (league: FplClassicLeague) => {
       if (isDesktop) {
-        if (inspectorLeague?.id === league.id) {
-          closeInspector()
+        if (selectedLeague?.id === league.id) {
+          closeLeagueDrawer()
           return
         }
 
@@ -332,14 +274,14 @@ export function LeaguesTile({
       setDrawerOpen(true)
       setLeagueIdCopied(false)
     },
-    [closeInspector, inspectorLeague?.id, isDesktop, selectLeague]
+    [closeLeagueDrawer, selectedLeague?.id, isDesktop, selectLeague]
   )
 
   const handleDrawerOpenChange = useCallback(
     (open: boolean) => {
       if (isDesktop) {
         if (!open) {
-          closeInspector()
+          closeLeagueDrawer()
         }
         return
       }
@@ -349,7 +291,7 @@ export function LeaguesTile({
         setMobileSelectedLeague(null)
       }
     },
-    [closeInspector, isDesktop]
+    [closeLeagueDrawer, isDesktop]
   )
 
   const copyLeagueId = useCallback(async () => {
@@ -425,32 +367,14 @@ export function LeaguesTile({
             }
             bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
           >
-            <ScrollFade
-              className="flex min-h-0 w-full flex-1"
+            <LeagueStandingsList
+              standings={standings}
+              currentTeamId={teamId}
+              isLoading={standingsLoading}
+              error={standingsError}
               fadeFrom="--popover"
-              contentClassName={cn(
-                drawerChromeOffsetClassName,
-                "flex w-full flex-col pb-4"
-              )}
-            >
-              {standingsLoading ? (
-                <div className="flex w-full flex-col gap-2 px-4">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              ) : standingsError ? (
-                <p className="px-4 text-sm text-destructive">{standingsError}</p>
-              ) : (
-                standings.map((standing) => (
-                  <StandingRow
-                    key={standing.id}
-                    standing={standing}
-                    isCurrentTeam={standing.entry === teamId}
-                  />
-                ))
-              )}
-            </ScrollFade>
+              contentClassName={cn(drawerChromeOffsetClassName, "pb-4")}
+            />
           </DrawerPanel>
         </DrawerContent>
       </Drawer>
