@@ -1,21 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { useServerFn } from "@tanstack/react-start"
+import { useMemo } from "react"
 
 import { DataTile } from "@/components/data-tile"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useNow } from "@/hooks/use-now"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
+import { useFplTopScorersQuery } from "@/lib/fpl/hooks"
 import { resolveGameweekPhase, type GameweekPhase } from "@/lib/fpl/gameweek"
-import {
-  buildPointsByElementId,
-  getTopScorers,
-  type TeamTopScorer,
-} from "@/lib/fpl/picks"
-import { getFplEntryPicks, getFplEventLive } from "@/lib/fpl/server"
+import type { TeamTopScorer } from "@/lib/fpl/picks"
 import { useTeam } from "@/lib/fpl/team-context"
 import { cn } from "@/lib/utils"
-
-const LIVE_REFRESH_MS = 60_000
 
 function canLoadTopScorers(phase: GameweekPhase | null): phase is GameweekPhase {
   if (!phase) {
@@ -75,11 +68,6 @@ export function NewsTile({
   const { bootstrap, fixtures, teamsById, elementsById, isLoading: isBootstrapLoading } =
     useFplBootstrap()
   const { teamId, isLoggedIn, isLoading: isTeamLoading } = useTeam()
-  const fetchPicks = useServerFn(getFplEntryPicks)
-  const fetchLive = useServerFn(getFplEventLive)
-  const [topScorers, setTopScorers] = useState<TeamTopScorer[] | null>(null)
-  const [isScorersLoading, setIsScorersLoading] = useState(false)
-  const [scorersError, setScorersError] = useState<string | null>(null)
 
   const phase = useMemo(() => {
     if (!bootstrap) {
@@ -94,55 +82,20 @@ export function NewsTile({
   const shouldLoadTopScorers =
     isLoggedIn && teamId !== null && canLoadTopScorers(phase)
 
-  const loadTopScorers = useCallback(async () => {
-    if (!teamId || eventId === null) {
-      return
-    }
+  const topScorersQuery = useFplTopScorersQuery({
+    teamId,
+    eventId,
+    elementsById,
+    enabled: shouldLoadTopScorers,
+    isLive: phaseType === "live",
+  })
 
-    setIsScorersLoading(true)
-    setScorersError(null)
-
-    try {
-      const [picksData, liveData] = await Promise.all([
-        fetchPicks({ data: { teamId, event: eventId } }),
-        fetchLive({ data: { event: eventId } }),
-      ])
-
-      const pointsByElementId = buildPointsByElementId(liveData.elements)
-      setTopScorers(
-        getTopScorers(picksData.picks, pointsByElementId, elementsById)
-      )
-    } catch {
-      setTopScorers(null)
-      setScorersError("Could not load top scorers.")
-    } finally {
-      setIsScorersLoading(false)
-    }
-  }, [elementsById, eventId, fetchLive, fetchPicks, teamId])
-
-  useEffect(() => {
-    if (!shouldLoadTopScorers) {
-      setTopScorers(null)
-      setScorersError(null)
-      return
-    }
-
-    void loadTopScorers()
-  }, [loadTopScorers, shouldLoadTopScorers])
-
-  useEffect(() => {
-    if (phaseType !== "live" || !shouldLoadTopScorers) {
-      return
-    }
-
-    const intervalId = window.setInterval(() => {
-      void loadTopScorers()
-    }, LIVE_REFRESH_MS)
-
-    return () => {
-      window.clearInterval(intervalId)
-    }
-  }, [loadTopScorers, phaseType, shouldLoadTopScorers])
+  const topScorers = topScorersQuery.data ?? null
+  const isScorersLoading =
+    topScorersQuery.isPending && topScorers === null
+  const scorersError = topScorersQuery.error
+    ? "Could not load top scorers."
+    : null
 
   const subtitle = phase ? `GW${phase.event.id} Top Scorers` : "Top Scorers"
 
@@ -165,7 +118,7 @@ export function NewsTile({
             <TopScorersSkeleton />
           ) : isTeamLoading && !teamId ? (
             <TopScorersSkeleton />
-          ) : isScorersLoading && !topScorers ? (
+          ) : isScorersLoading ? (
             <TopScorersSkeleton />
           ) : scorersError && !topScorers ? (
             <DataTile.EmptyState className="text-center text-destructive">

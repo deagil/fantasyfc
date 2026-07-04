@@ -6,8 +6,15 @@ import {
   useMemo,
   useState,
 } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useServerFn } from "@tanstack/react-start"
 
+import { useFplEntryQuery, useFplHistoryQuery } from "@/lib/fpl/hooks"
+import {
+  invalidateFplTeamQueries,
+  removeFplTeamQueries,
+  fplKeys,
+} from "@/lib/fpl/queries"
 import { getFplEntry, getFplEntryHistory } from "@/lib/fpl/server"
 import { getStoredTeamId, setStoredTeamId } from "@/lib/fpl/storage"
 import type { FplEntry, FplEntryHistory } from "@/lib/fpl/types"
@@ -26,93 +33,102 @@ type TeamContextValue = {
 
 const TeamContext = createContext<TeamContextValue | null>(null)
 
+function getQueryErrorMessage(error: unknown): string | null {
+  if (!error) {
+    return null
+  }
+
+  return "Could not load team. Check the team ID and try again."
+}
+
 export function TeamProvider({ children }: { children: React.ReactNode }) {
-  const getEntry = useServerFn(getFplEntry)
-  const getHistory = useServerFn(getFplEntryHistory)
+  const queryClient = useQueryClient()
+  const fetchEntry = useServerFn(getFplEntry)
+  const fetchHistory = useServerFn(getFplEntryHistory)
   const [teamId, setTeamIdState] = useState<number | null>(null)
-  const [entry, setEntry] = useState<FplEntry | null>(null)
-  const [history, setHistory] = useState<FplEntryHistory | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const loadTeam = useCallback(
-    async (nextTeamId: number) => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const [nextEntry, nextHistory] = await Promise.all([
-          getEntry({ data: { teamId: nextTeamId } }),
-          getHistory({ data: { teamId: nextTeamId } }),
-        ])
-        setEntry(nextEntry)
-        setHistory(nextHistory)
-      } catch {
-        setEntry(null)
-        setHistory(null)
-        setError("Could not load team. Check the team ID and try again.")
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    [getEntry, getHistory]
-  )
+  const [isSettingTeam, setIsSettingTeam] = useState(false)
+  const [setTeamError, setSetTeamError] = useState<string | null>(null)
 
   useEffect(() => {
     const storedTeamId = getStoredTeamId()
-    if (!storedTeamId) {
-      return
+    if (storedTeamId) {
+      setTeamIdState(storedTeamId)
     }
+  }, [])
 
-    setTeamIdState(storedTeamId)
-    void loadTeam(storedTeamId)
-  }, [loadTeam])
+  const entryQuery = useFplEntryQuery(teamId)
+  const historyQuery = useFplHistoryQuery(teamId)
+
+  const entry = entryQuery.data ?? null
+  const history = historyQuery.data ?? null
+
+  const isLoading =
+    isSettingTeam ||
+    (teamId !== null &&
+      ((entryQuery.isPending && !entryQuery.data) ||
+        (historyQuery.isPending && !historyQuery.data)))
+
+  const error =
+    setTeamError ??
+    getQueryErrorMessage(entryQuery.error) ??
+    getQueryErrorMessage(historyQuery.error)
 
   const setTeamId = useCallback(
     async (nextTeamId: number) => {
+      const previousTeamId = teamId
+      setIsSettingTeam(true)
+      setSetTeamError(null)
       setStoredTeamId(nextTeamId)
       setTeamIdState(nextTeamId)
-      setIsLoading(true)
-      setError(null)
 
       try {
-        const [nextEntry, nextHistory] = await Promise.all([
-          getEntry({ data: { teamId: nextTeamId } }),
-          getHistory({ data: { teamId: nextTeamId } }),
+        await Promise.all([
+          queryClient.fetchQuery({
+            queryKey: fplKeys.entry(nextTeamId),
+            queryFn: () => fetchEntry({ data: { teamId: nextTeamId } }),
+          }),
+          queryClient.fetchQuery({
+            queryKey: fplKeys.history(nextTeamId),
+            queryFn: () => fetchHistory({ data: { teamId: nextTeamId } }),
+          }),
         ])
-        setEntry(nextEntry)
-        setHistory(nextHistory)
+
+        if (previousTeamId !== null && previousTeamId !== nextTeamId) {
+          removeFplTeamQueries(queryClient, previousTeamId)
+        }
+
         return true
       } catch {
-        setStoredTeamId(null)
-        setTeamIdState(null)
-        setEntry(null)
-        setHistory(null)
-        setError("Could not load team. Check the team ID and try again.")
+        removeFplTeamQueries(queryClient, nextTeamId)
+        setStoredTeamId(previousTeamId)
+        setTeamIdState(previousTeamId)
+        setSetTeamError("Could not load team. Check the team ID and try again.")
         return false
       } finally {
-        setIsLoading(false)
+        setIsSettingTeam(false)
       }
     },
-    [getEntry, getHistory]
+    [fetchEntry, fetchHistory, queryClient, teamId]
   )
 
   const clearTeam = useCallback(() => {
+    if (teamId !== null) {
+      removeFplTeamQueries(queryClient, teamId)
+    }
+
     setStoredTeamId(null)
     setTeamIdState(null)
-    setEntry(null)
-    setHistory(null)
-    setError(null)
-    setIsLoading(false)
-  }, [])
+    setSetTeamError(null)
+    setIsSettingTeam(false)
+  }, [queryClient, teamId])
 
   const refreshEntry = useCallback(async () => {
     if (!teamId) {
       return
     }
 
-    await loadTeam(teamId)
-  }, [loadTeam, teamId])
+    await invalidateFplTeamQueries(queryClient, teamId)
+  }, [queryClient, teamId])
 
   const value = useMemo(
     () => ({
@@ -126,7 +142,16 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
       clearTeam,
       refreshEntry,
     }),
-    [teamId, entry, history, isLoading, error, setTeamId, clearTeam, refreshEntry]
+    [
+      teamId,
+      entry,
+      history,
+      isLoading,
+      error,
+      setTeamId,
+      clearTeam,
+      refreshEntry,
+    ]
   )
 
   return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>

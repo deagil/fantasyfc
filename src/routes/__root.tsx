@@ -5,6 +5,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools"
 import { AuthProvider } from "@/lib/auth/auth-context"
 import { KickoffThemeProvider } from "@/lib/kickoff-theme-context"
 import { SpotifyPlayerProvider } from "@/lib/integrations/spotify/player-context"
+import { QueryProvider } from "@/lib/query-provider"
 import appCss from "../styles.css?url"
 
 export const Route = createRootRoute({
@@ -44,11 +45,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <AuthProvider>
-          <KickoffThemeProvider>
-            <SpotifyPlayerProvider>{children}</SpotifyPlayerProvider>
-          </KickoffThemeProvider>
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <KickoffThemeProvider>
+              <SpotifyPlayerProvider>{children}</SpotifyPlayerProvider>
+            </KickoffThemeProvider>
+          </AuthProvider>
+        </QueryProvider>
         <TanStackDevtools
           config={{
             position: "bottom-right",

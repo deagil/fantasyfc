@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react"
-import { useServerFn } from "@tanstack/react-start"
 import { ArrowDownIcon, ArrowUpIcon, MinusIcon } from "lucide-react"
 
 import { ScrollFade } from "@/components/scroll-fade"
@@ -13,6 +12,7 @@ import {
   drawerChromeOffsetClassName,
 } from "@/components/ui/drawer"
 import { DataTile } from "@/components/data-tile"
+import { useFplStandingsQuery } from "@/lib/fpl/hooks"
 import {
   formatLeagueRank,
   getLeagueRankChange,
@@ -20,7 +20,6 @@ import {
   isLeagueTabId,
   type LeagueTabId,
 } from "@/lib/fpl/leagues"
-import { getFplLeagueStandings } from "@/lib/fpl/server"
 import type { FplClassicLeague, FplEntry, FplLeagueStanding } from "@/lib/fpl/types"
 import { useTeam } from "@/lib/fpl/team-context"
 import { cn } from "@/lib/utils"
@@ -247,16 +246,23 @@ export function LeaguesTile({
   comingSoon?: boolean
 }) {
   const { teamId, entry, isLoggedIn, isLoading, error } = useTeam()
-  const fetchStandings = useServerFn(getFplLeagueStandings)
   const [leagueTab, setLeagueTab] = useState<LeagueTabId>("private")
   const [selectedLeague, setSelectedLeague] = useState<FplClassicLeague | null>(
     null
   )
-  const [standings, setStandings] = useState<FplLeagueStanding[]>([])
-  const [standingsLoading, setStandingsLoading] = useState(false)
-  const [standingsError, setStandingsError] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [leagueIdCopied, setLeagueIdCopied] = useState(false)
+
+  const standingsQuery = useFplStandingsQuery(selectedLeague?.id, {
+    enabled: drawerOpen && selectedLeague !== null,
+  })
+
+  const standings = standingsQuery.data?.standings.results ?? []
+  const standingsLoading =
+    standingsQuery.isPending && standings.length === 0
+  const standingsError = standingsQuery.error
+    ? "Could not load standings."
+    : null
 
   const classicLeagues = entry?.leagues.classic ?? []
   const privateLeagues = getLeaguesForTab(classicLeagues, "private")
@@ -278,26 +284,11 @@ export function LeaguesTile({
     []
   )
 
-  const handleSelectLeague = useCallback(
-    async (league: FplClassicLeague) => {
-      setSelectedLeague(league)
-      setDrawerOpen(true)
-      setStandingsLoading(true)
-      setStandingsError(null)
-      setStandings([])
-      setLeagueIdCopied(false)
-
-      try {
-        const response = await fetchStandings({ data: { leagueId: league.id } })
-        setStandings(response.standings.results)
-      } catch {
-        setStandingsError("Could not load standings.")
-      } finally {
-        setStandingsLoading(false)
-      }
-    },
-    [fetchStandings]
-  )
+  const handleSelectLeague = useCallback((league: FplClassicLeague) => {
+    setSelectedLeague(league)
+    setDrawerOpen(true)
+    setLeagueIdCopied(false)
+  }, [])
 
   const copyLeagueId = useCallback(async () => {
     if (!selectedLeague) {

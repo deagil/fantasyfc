@@ -33,6 +33,10 @@ const config = defineConfig(({ mode }) => {
       nitro({ preset: "vercel" }),
       viteReact(),
     ],
+    test: {
+      environment: "node",
+      include: ["src/**/*.test.ts"],
+    },
   }
 })
 

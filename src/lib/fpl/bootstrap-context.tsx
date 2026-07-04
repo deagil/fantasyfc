@@ -2,13 +2,15 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useState,
 } from "react"
-import { useServerFn } from "@tanstack/react-start"
+import { useQueryClient } from "@tanstack/react-query"
 
-import { getFplBootstrap, getFplFixtures } from "@/lib/fpl/server"
+import {
+  useFplBootstrapQuery,
+  useFplFixturesQuery,
+} from "@/lib/fpl/hooks"
+import { invalidateFplSeasonQueries } from "@/lib/fpl/queries"
 import type { FplBootstrap, FplFixture } from "@/lib/fpl/types"
 
 type FplBootstrapContextValue = {
@@ -23,62 +25,31 @@ type FplBootstrapContextValue = {
 
 const FplBootstrapContext = createContext<FplBootstrapContextValue | null>(null)
 
-function getFixtureEventIds(bootstrap: FplBootstrap): number[] {
-  const currentEvent = bootstrap.events.find((event) => event.is_current)
-  const nextEvent = bootstrap.events.find((event) => event.is_next)
-  const ids = new Set<number>()
-
-  if (currentEvent) {
-    ids.add(currentEvent.id)
+function getQueryErrorMessage(error: unknown): string | null {
+  if (!error) {
+    return null
   }
 
-  if (nextEvent) {
-    ids.add(nextEvent.id)
-  }
-
-  if (ids.size === 0) {
-    const lastEvent = bootstrap.events.at(-1)
-    if (lastEvent) {
-      ids.add(lastEvent.id)
-    }
-  }
-
-  return [...ids]
+  return "Could not load gameweek data."
 }
 
 export function FplBootstrapProvider({ children }: { children: React.ReactNode }) {
-  const fetchBootstrap = useServerFn(getFplBootstrap)
-  const fetchFixtures = useServerFn(getFplFixtures)
-  const [bootstrap, setBootstrap] = useState<FplBootstrap | null>(null)
-  const [fixtures, setFixtures] = useState<FplFixture[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
+  const bootstrapQuery = useFplBootstrapQuery()
+  const fixturesQuery = useFplFixturesQuery(bootstrapQuery.data, {
+    enabled: !!bootstrapQuery.data,
+  })
 
-  const loadBootstrap = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
+  const bootstrap = bootstrapQuery.data ?? null
+  const fixtures = fixturesQuery.data ?? []
 
-    try {
-      const nextBootstrap = await fetchBootstrap()
-      setBootstrap(nextBootstrap)
+  const isLoading =
+    bootstrapQuery.isPending ||
+    (bootstrap !== null && fixturesQuery.isPending && fixtures.length === 0)
 
-      const eventIds = getFixtureEventIds(nextBootstrap)
-      const fixtureGroups = await Promise.all(
-        eventIds.map((eventId) => fetchFixtures({ data: { event: eventId } }))
-      )
-      setFixtures(fixtureGroups.flat())
-    } catch {
-      setBootstrap(null)
-      setFixtures([])
-      setError("Could not load gameweek data.")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [fetchBootstrap, fetchFixtures])
-
-  useEffect(() => {
-    void loadBootstrap()
-  }, [loadBootstrap])
+  const error =
+    getQueryErrorMessage(bootstrapQuery.error) ??
+    getQueryErrorMessage(fixturesQuery.error)
 
   const teamsById = useMemo(() => {
     const map = new Map<number, FplBootstrap["teams"][number]>()
@@ -96,6 +67,10 @@ export function FplBootstrapProvider({ children }: { children: React.ReactNode }
     return map
   }, [bootstrap])
 
+  const refreshBootstrap = useCallback(async () => {
+    await invalidateFplSeasonQueries(queryClient)
+  }, [queryClient])
+
   const value = useMemo(
     () => ({
       bootstrap,
@@ -104,9 +79,17 @@ export function FplBootstrapProvider({ children }: { children: React.ReactNode }
       elementsById,
       isLoading,
       error,
-      refreshBootstrap: loadBootstrap,
+      refreshBootstrap,
     }),
-    [bootstrap, fixtures, teamsById, elementsById, isLoading, error, loadBootstrap]
+    [
+      bootstrap,
+      fixtures,
+      teamsById,
+      elementsById,
+      isLoading,
+      error,
+      refreshBootstrap,
+    ]
   )
 
   return (
