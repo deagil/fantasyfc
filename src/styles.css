@@ -193,31 +193,12 @@
       --hub-col-gap-total: 1.5rem;
       --hub-row-gap-total: 1rem;
       --hub-desktop-chrome: 5.25rem;
-      --hub-layout-columns: 4;
       --hub-cell-divisor: 4;
       --hub-cell-gap-for-size: 1.5rem;
-      --hub-content-padding-x: 0.75rem;
-      --hub-inspector-bleed: 0px;
       --hub-cell: min(
         (100cqw - var(--hub-cell-gap-for-size)) / var(--hub-cell-divisor),
         (100svh - var(--hub-desktop-chrome) - var(--hub-row-gap-total)) / 3
       );
-    }
-
-    :root[data-leagues-inspector-open="true"] .hub-tile-container {
-      --hub-layout-columns: 5;
-      --hub-col-gap-total: 2rem;
-      --hub-inspector-bleed: calc(
-        var(--hub-content-padding-x) + 0.5 * var(--hub-cell)
-      );
-    }
-
-    :root[data-leagues-inspector-open="true"] .app-shell {
-      overflow-x: visible;
-    }
-
-    :root[data-leagues-inspector-open="true"] [data-hub-carousel] {
-      overflow: visible;
     }
 
     .hub-desktop-align {
@@ -225,46 +206,16 @@
         100%,
         round(
           down,
-          calc(
-            var(--hub-cell) * var(--hub-layout-columns) + var(--hub-col-gap-total)
-          ),
+          calc(var(--hub-cell) * 4 + var(--hub-col-gap-total)),
           1px
         )
       );
       margin-inline: auto;
-      transition:
-        width 200ms ease,
-        transform 200ms ease;
-    }
-
-    :root[data-leagues-inspector-open="true"] .hub-desktop-align {
-      /* Auto margin already shifts for the extra column; nudge left half the
-         inspector bleed so right-side overflow balances px-3 on both edges. */
-      transform: translateX(calc(var(--hub-inspector-bleed) * -0.5));
     }
 
     .hub-tile-grid {
       grid-template-columns: repeat(4, round(down, var(--hub-cell), 1px));
       grid-template-rows: repeat(3, round(down, var(--hub-cell), 1px));
-      transition:
-        grid-template-columns 200ms ease,
-        transform 200ms ease;
-    }
-
-    :root[data-leagues-inspector-open="true"] .hub-tile-grid {
-      grid-template-columns: repeat(5, round(down, var(--hub-cell), 1px));
-      overflow: visible;
-    }
-
-    :root[data-leagues-inspector-open="true"] [data-slot="league-inspector"] {
-      position: relative;
-      z-index: 2;
-      width: round(
-        down,
-        calc(var(--hub-cell) + var(--hub-inspector-bleed)),
-        1px
-      );
-      margin-right: round(down, calc(var(--hub-inspector-bleed) * -1), 1px);
     }
   }
 

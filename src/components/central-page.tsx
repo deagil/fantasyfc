@@ -1,18 +1,18 @@
 import { GameweekTile } from "@/components/gameweek-tile"
 import { ComingSoonTile } from "@/components/coming-soon-tile"
-import { HubDesktopLayout } from "@/components/hub-desktop-layout"
 import { LeaguesTile } from "@/components/leagues-tile"
 import { NewsTile } from "@/components/news-tile"
 import { NowPlayingTile } from "@/components/now-playing-tile"
 import { OverallTile } from "@/components/overall-tile"
 import { TransfersTile } from "@/components/transfers-tile"
 import { DataTile } from "@/components/tile-group"
+import { hubTileGridClassName } from "@/lib/layout"
 import { LeaguesInspectorProvider } from "@/lib/fpl/leagues-inspector-context"
 
 export function CentralPage() {
   return (
     <LeaguesInspectorProvider>
-      <HubDesktopLayout>
+      <div className={hubTileGridClassName}>
         <GameweekTile className="col-span-2 row-span-1 lg:col-start-1 lg:row-start-1" />
         <LeaguesTile className="col-span-2 row-span-2 lg:col-start-3 lg:row-start-1" />
         <OverallTile className="col-span-1 row-span-1 lg:col-start-1 lg:row-start-2" />
@@ -36,7 +36,7 @@ export function CentralPage() {
           </DataTile>
         </ComingSoonTile>
         <NowPlayingTile className="col-span-1 row-span-1 lg:col-start-4 lg:row-start-3" />
-      </HubDesktopLayout>
+      </div>
     </LeaguesInspectorProvider>
   )
 }

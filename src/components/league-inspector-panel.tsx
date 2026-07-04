@@ -1,9 +1,10 @@
 import { useCallback, useState } from "react"
+import { createPortal } from "react-dom"
+import { XIcon } from "lucide-react"
 
 import { ScrollFade } from "@/components/scroll-fade"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { SidebarContent, SidebarHeader } from "@/components/ui/sidebar"
 import { useFplStandingsQuery } from "@/lib/fpl/hooks"
 import { useLeaguesInspector } from "@/lib/fpl/leagues-inspector-context"
 import type { FplClassicLeague, FplLeagueStanding } from "@/lib/fpl/types"
@@ -116,59 +117,65 @@ export function LeagueInspectorPanel() {
     }
   }, [selectedLeague])
 
-  if (!isOpen || !selectedLeague) {
+  if (!isOpen || !selectedLeague || typeof document === "undefined") {
     return null
   }
 
-  return (
+  return createPortal(
     <aside
+      role="dialog"
+      aria-labelledby="league-inspector-title"
       data-slot="league-inspector"
       className={cn(
-        "hidden min-h-0 flex-col overflow-hidden rounded-[2px] bg-(--tile-bg) text-(--tile-fg) shadow-none",
-        "lg:col-start-5 lg:row-span-3 lg:row-start-1 lg:flex lg:h-full lg:min-h-0"
+        "fixed z-50 hidden min-h-0 flex-col overflow-hidden lg:flex",
+        "border border-(--tile-border) bg-(--tile-bg) text-(--tile-fg)",
+        "shadow-[0_8px_32px_rgb(61_25_91_/_0.12),0_2px_8px_rgb(61_25_91_/_0.06)]",
+        "lg:right-4 lg:bottom-4 lg:h-[min(68dvh,32rem)] lg:w-[min(33vw,22rem)] lg:rounded-[2px]",
+        "animate-in fade-in slide-in-from-bottom-4 duration-200 lg:slide-in-from-bottom-2"
       )}
     >
-      <SidebarHeader className="shrink-0 border-b border-(--tile-border) px-3 py-3">
-        <div className="flex items-start gap-2">
-          <div className="min-w-0 flex-1">
-            <h2 className="truncate font-heading text-sm font-semibold">
-              {selectedLeague.name}
-            </h2>
-            <p className="text-xs text-(--tile-muted-fg)">
-              {selectedLeague.rank_count.toLocaleString()} teams
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-col gap-1">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="shell-chrome-btn h-7 px-2 text-xs"
-              onClick={() => void copyLeagueId()}
-            >
-              {leagueIdCopied ? "Copied" : "Copy ID"}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="shell-chrome-btn h-7 px-2 text-xs"
-              onClick={closeInspector}
-            >
-              Close
-            </Button>
-          </div>
+      <header className="flex shrink-0 items-start gap-2 border-b border-(--tile-border) px-3 py-3">
+        <div className="min-w-0 flex-1">
+          <h2
+            id="league-inspector-title"
+            className="truncate font-heading text-sm font-semibold"
+          >
+            {selectedLeague.name}
+          </h2>
+          <p className="text-xs text-(--tile-muted-fg)">
+            {selectedLeague.rank_count.toLocaleString()} teams
+          </p>
         </div>
-      </SidebarHeader>
-      <SidebarContent className="min-h-0 flex-1 overflow-hidden p-0">
-        <ScrollFade
-          className="h-full min-h-0"
-          fadeFrom="--tile-bg"
-          contentClassName="flex flex-col pb-3"
-        >
-          <LeagueInspectorStandings league={selectedLeague} />
-        </ScrollFade>
-      </SidebarContent>
-    </aside>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="shell-chrome-btn h-7 px-2 text-xs"
+            onClick={() => void copyLeagueId()}
+          >
+            {leagueIdCopied ? "Copied" : "Copy ID"}
+          </Button>
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="outline"
+            className="shell-chrome-btn"
+            onClick={closeInspector}
+            aria-label="Close league standings"
+          >
+            <XIcon className="size-3.5" />
+          </Button>
+        </div>
+      </header>
+      <ScrollFade
+        className="min-h-0 flex-1"
+        fadeFrom="--tile-bg"
+        contentClassName="flex flex-col pb-3"
+      >
+        <LeagueInspectorStandings league={selectedLeague} />
+      </ScrollFade>
+    </aside>,
+    document.body
   )
 }

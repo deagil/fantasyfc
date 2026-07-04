@@ -7,6 +7,7 @@ import {
   useState,
 } from "react"
 
+import { LeagueInspectorPanel } from "@/components/league-inspector-panel"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import type { FplClassicLeague } from "@/lib/fpl/types"
 
@@ -30,18 +31,6 @@ export function LeaguesInspectorProvider({
     useState<FplClassicLeague | null>(null)
 
   const isOpen = isDesktop && selectedLeague !== null
-
-  useEffect(() => {
-    if (isOpen) {
-      document.documentElement.dataset.leaguesInspectorOpen = "true"
-    } else {
-      delete document.documentElement.dataset.leaguesInspectorOpen
-    }
-
-    return () => {
-      delete document.documentElement.dataset.leaguesInspectorOpen
-    }
-  }, [isOpen])
 
   useEffect(() => {
     if (!isDesktop) {
@@ -70,6 +59,7 @@ export function LeaguesInspectorProvider({
   return (
     <LeaguesInspectorContext.Provider value={value}>
       {children}
+      <LeagueInspectorPanel />
     </LeaguesInspectorContext.Provider>
   )
 }
