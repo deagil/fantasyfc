@@ -18,7 +18,7 @@ const drawerAlignClassNames: Record<DrawerAlign, string> = {
   "dock-right": cn(
     "lg:data-[vaul-drawer-direction=bottom]:inset-x-auto lg:data-[vaul-drawer-direction=bottom]:left-[var(--hub-dock-sheet-left)] lg:data-[vaul-drawer-direction=bottom]:right-auto",
     "lg:data-[vaul-drawer-direction=bottom]:w-[var(--hub-dock-sheet-width)]",
-    "lg:data-[vaul-drawer-direction=bottom]:rounded-none lg:data-[vaul-drawer-direction=bottom]:border-x"
+    "lg:data-[vaul-drawer-direction=bottom]:border-x"
   ),
 }
 
