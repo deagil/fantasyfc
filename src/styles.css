@@ -238,6 +238,8 @@
     }
 
     :root[data-leagues-inspector-open="true"] .hub-desktop-align {
+      /* Auto margin already shifts for the extra column; nudge left half the
+         inspector bleed so right-side overflow balances px-3 on both edges. */
       transform: translateX(calc(var(--hub-inspector-bleed) * -0.5));
     }
 
