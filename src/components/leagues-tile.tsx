@@ -24,6 +24,7 @@ import {
   isLeagueTabId,
   type LeagueTabId,
 } from "@/lib/fpl/leagues"
+import { useLeaguesInspector } from "@/lib/fpl/leagues-inspector-context"
 import type { FplClassicLeague, FplEntry, FplLeagueStanding } from "@/lib/fpl/types"
 import { useTeam } from "@/lib/fpl/team-context"
 import { cn } from "@/lib/utils"
@@ -182,8 +183,7 @@ function LeaguePanel({
   isLoading,
   entry,
   error,
-  drawerOpen,
-  selectedLeague,
+  selectedLeagueId,
   onSelectLeague,
 }: {
   tab: LeagueTabId
@@ -193,8 +193,7 @@ function LeaguePanel({
   isLoading: boolean
   entry: FplEntry | null
   error: string | null
-  drawerOpen: boolean
-  selectedLeague: FplClassicLeague | null
+  selectedLeagueId: number | null
   onSelectLeague: (league: FplClassicLeague) => void
 }) {
   const leagues = tab === "private" ? privateLeagues : systemLeagues
@@ -236,7 +235,7 @@ function LeaguePanel({
   return (
     <LeagueList
       leagues={leagues}
-      selectedLeagueId={drawerOpen ? (selectedLeague?.id ?? null) : null}
+      selectedLeagueId={selectedLeagueId}
       onSelect={onSelectLeague}
     />
   )
@@ -251,10 +250,11 @@ export function LeaguesTile({
 }) {
   const isDesktop = useMediaQuery("(min-width: 1024px)")
   const { teamId, entry, isLoggedIn, isLoading, error } = useTeam()
+  const { selectedLeague: inspectorLeague, selectLeague, closeInspector } =
+    useLeaguesInspector()
   const [leagueTab, setLeagueTab] = useState<LeagueTabId>("private")
-  const [selectedLeague, setSelectedLeague] = useState<FplClassicLeague | null>(
-    null
-  )
+  const [mobileSelectedLeague, setMobileSelectedLeague] =
+    useState<FplClassicLeague | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [leagueIdCopied, setLeagueIdCopied] = useState(false)
 
@@ -266,28 +266,42 @@ export function LeaguesTile({
 
   usePrefetchFplLeagueStandings(isLoggedIn ? leagueIds : [])
 
-  const standingsQuery = useFplStandingsQuery(selectedLeague?.id, {
-    enabled: drawerOpen && selectedLeague !== null,
+  const mobileStandingsQuery = useFplStandingsQuery(mobileSelectedLeague?.id, {
+    enabled: !isDesktop && drawerOpen && mobileSelectedLeague !== null,
   })
 
-  const standings = standingsQuery.data?.standings.results ?? []
+  const standings = mobileStandingsQuery.data?.standings.results ?? []
   const standingsLoading =
-    standingsQuery.isPending && standings.length === 0
-  const standingsError = standingsQuery.error
+    mobileStandingsQuery.isPending && standings.length === 0
+  const standingsError = mobileStandingsQuery.error
     ? "Could not load standings."
     : null
 
   const privateLeagues = getLeaguesForTab(classicLeagues, "private")
   const systemLeagues = getLeaguesForTab(classicLeagues, "system")
 
-  const handleLeagueTabChange = useCallback((value: string | number | null) => {
-    if (typeof value !== "string" || !isLeagueTabId(value)) {
-      return
-    }
+  const selectedLeagueId = isDesktop
+    ? (inspectorLeague?.id ?? null)
+    : drawerOpen
+      ? (mobileSelectedLeague?.id ?? null)
+      : null
 
-    setLeagueTab(value)
-    setSelectedLeague(null)
-  }, [])
+  const handleLeagueTabChange = useCallback(
+    (value: string | number | null) => {
+      if (typeof value !== "string" || !isLeagueTabId(value)) {
+        return
+      }
+
+      setLeagueTab(value)
+      if (isDesktop) {
+        closeInspector()
+      } else {
+        setMobileSelectedLeague(null)
+        setDrawerOpen(false)
+      }
+    },
+    [closeInspector, isDesktop]
+  )
 
   const stopCarouselPointer = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
@@ -296,25 +310,46 @@ export function LeaguesTile({
     []
   )
 
-  const handleSelectLeague = useCallback((league: FplClassicLeague) => {
-    setSelectedLeague(league)
-    setDrawerOpen(true)
-    setLeagueIdCopied(false)
+  const handleSelectLeague = useCallback(
+    (league: FplClassicLeague) => {
+      if (isDesktop) {
+        if (inspectorLeague?.id === league.id) {
+          closeInspector()
+          return
+        }
+
+        selectLeague(league)
+        return
+      }
+
+      setMobileSelectedLeague(league)
+      setDrawerOpen(true)
+      setLeagueIdCopied(false)
+    },
+    [closeInspector, inspectorLeague?.id, isDesktop, selectLeague]
+  )
+
+  const handleDrawerOpenChange = useCallback((open: boolean) => {
+    setDrawerOpen(open)
+    if (!open) {
+      setMobileSelectedLeague(null)
+    }
   }, [])
 
   const copyLeagueId = useCallback(async () => {
-    if (!selectedLeague) {
+    const league = mobileSelectedLeague
+    if (!league) {
       return
     }
 
     try {
-      await navigator.clipboard.writeText(String(selectedLeague.id))
+      await navigator.clipboard.writeText(String(league.id))
       setLeagueIdCopied(true)
       window.setTimeout(() => setLeagueIdCopied(false), 2000)
     } catch {
       // Clipboard unavailable — ignore silently
     }
-  }, [selectedLeague])
+  }, [mobileSelectedLeague])
 
   return (
     <>
@@ -349,72 +384,63 @@ export function LeaguesTile({
               isLoading={isLoading}
               entry={entry}
               error={error}
-              drawerOpen={drawerOpen}
-              selectedLeague={selectedLeague}
+              selectedLeagueId={selectedLeagueId}
               onSelectLeague={handleSelectLeague}
             />
           </DataTile.Content>
         </Tabs>
       </DataTile>
 
-      <Drawer
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        direction={isDesktop ? "right" : "bottom"}
-      >
-        <DrawerContent
-          size="md"
-          className={cn(
-            isDesktop &&
-              "top-4! right-4! bottom-4! left-auto! h-auto! w-full max-w-md rounded-2xl border border-border data-[vaul-drawer-direction=right]:max-w-md"
-          )}
-        >
-          <DrawerPanel
-            title={selectedLeague?.name ?? "League"}
-            leading={
-              selectedLeague ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="shell-chrome-btn"
-                  onClick={() => void copyLeagueId()}
-                >
-                  {leagueIdCopied ? "Copied" : "Copy ID"}
-                </Button>
-              ) : undefined
-            }
-            bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
-          >
-            <ScrollFade
-              className="flex min-h-0 w-full flex-1"
-              fadeFrom="--popover"
-              contentClassName={cn(
-                drawerChromeOffsetClassName,
-                "flex w-full flex-col pb-4"
-              )}
+      {!isDesktop ? (
+        <Drawer open={drawerOpen} onOpenChange={handleDrawerOpenChange}>
+          <DrawerContent size="md">
+            <DrawerPanel
+              title={mobileSelectedLeague?.name ?? "League"}
+              leading={
+                mobileSelectedLeague ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="shell-chrome-btn"
+                    onClick={() => void copyLeagueId()}
+                  >
+                    {leagueIdCopied ? "Copied" : "Copy ID"}
+                  </Button>
+                ) : undefined
+              }
+              bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
             >
-              {standingsLoading ? (
-                <div className="flex w-full flex-col gap-2 px-4">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              ) : standingsError ? (
-                <p className="px-4 text-sm text-destructive">{standingsError}</p>
-              ) : (
-                standings.map((standing) => (
-                  <StandingRow
-                    key={standing.id}
-                    standing={standing}
-                    isCurrentTeam={standing.entry === teamId}
-                  />
-                ))
-              )}
-            </ScrollFade>
-          </DrawerPanel>
-        </DrawerContent>
-      </Drawer>
+              <ScrollFade
+                className="flex min-h-0 w-full flex-1"
+                fadeFrom="--popover"
+                contentClassName={cn(
+                  drawerChromeOffsetClassName,
+                  "flex w-full flex-col pb-4"
+                )}
+              >
+                {standingsLoading ? (
+                  <div className="flex w-full flex-col gap-2 px-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ) : standingsError ? (
+                  <p className="px-4 text-sm text-destructive">{standingsError}</p>
+                ) : (
+                  standings.map((standing) => (
+                    <StandingRow
+                      key={standing.id}
+                      standing={standing}
+                      isCurrentTeam={standing.entry === teamId}
+                    />
+                  ))
+                )}
+              </ScrollFade>
+            </DrawerPanel>
+          </DrawerContent>
+        </Drawer>
+      ) : null}
     </>
   )
 }
