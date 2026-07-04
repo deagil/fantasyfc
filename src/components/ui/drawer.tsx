@@ -9,7 +9,7 @@ export type DrawerAlign = "full" | "dock-right"
 
 const drawerSizeClassNames: Record<DrawerSize, string> = {
   sm: "h-[50dvh]",
-  md: "h-[calc(75dvh+5dvh)]",
+  md: "h-[80dvh]",
   lg: "h-[90dvh]",
 }
 

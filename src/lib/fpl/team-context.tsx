@@ -15,6 +15,7 @@ import {
   removeFplTeamQueries,
   fplKeys,
 } from "@/lib/fpl/queries"
+import { toQueryErrorMessage } from "@/lib/fpl/query-error"
 import { getFplEntry, getFplEntryHistory } from "@/lib/fpl/server"
 import { getStoredTeamId, setStoredTeamId } from "@/lib/fpl/storage"
 import type { FplEntry, FplEntryHistory } from "@/lib/fpl/types"
@@ -32,14 +33,6 @@ type TeamContextValue = {
 }
 
 const TeamContext = createContext<TeamContextValue | null>(null)
-
-function getQueryErrorMessage(error: unknown): string | null {
-  if (!error) {
-    return null
-  }
-
-  return "Could not load team. Check the team ID and try again."
-}
 
 export function TeamProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient()
@@ -64,14 +57,18 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
 
   const isLoading =
     isSettingTeam ||
-    (teamId !== null &&
-      ((entryQuery.isPending && !entryQuery.data) ||
-        (historyQuery.isPending && !historyQuery.data)))
+    (teamId !== null && (entryQuery.isPending || historyQuery.isPending))
 
   const error =
     setTeamError ??
-    getQueryErrorMessage(entryQuery.error) ??
-    getQueryErrorMessage(historyQuery.error)
+    toQueryErrorMessage(
+      entryQuery.error,
+      "Could not load team. Check the team ID and try again."
+    ) ??
+    toQueryErrorMessage(
+      historyQuery.error,
+      "Could not load team. Check the team ID and try again."
+    )
 
   const setTeamId = useCallback(
     async (nextTeamId: number) => {

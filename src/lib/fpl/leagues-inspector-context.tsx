@@ -12,9 +12,8 @@ import type { FplClassicLeague } from "@/lib/fpl/types"
 
 type LeaguesInspectorContextValue = {
   selectedLeague: FplClassicLeague | null
-  isOpen: boolean
   selectLeague: (league: FplClassicLeague) => void
-  closeInspector: () => void
+  closeLeagueDrawer: () => void
 }
 
 const LeaguesInspectorContext =
@@ -29,8 +28,6 @@ export function LeaguesInspectorProvider({
   const [selectedLeague, setSelectedLeague] =
     useState<FplClassicLeague | null>(null)
 
-  const isOpen = isDesktop && selectedLeague !== null
-
   useEffect(() => {
     if (!isDesktop) {
       setSelectedLeague(null)
@@ -41,18 +38,17 @@ export function LeaguesInspectorProvider({
     setSelectedLeague(league)
   }, [])
 
-  const closeInspector = useCallback(() => {
+  const closeLeagueDrawer = useCallback(() => {
     setSelectedLeague(null)
   }, [])
 
   const value = useMemo(
     () => ({
       selectedLeague,
-      isOpen,
       selectLeague,
-      closeInspector,
+      closeLeagueDrawer,
     }),
-    [selectedLeague, isOpen, selectLeague, closeInspector]
+    [selectedLeague, selectLeague, closeLeagueDrawer]
   )
 
   return (

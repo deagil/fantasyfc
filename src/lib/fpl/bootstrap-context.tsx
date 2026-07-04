@@ -10,6 +10,7 @@ import {
   useFplBootstrapQuery,
   useFplFixturesQuery,
 } from "@/lib/fpl/hooks"
+import { toQueryErrorMessage } from "@/lib/fpl/query-error"
 import { invalidateFplSeasonQueries } from "@/lib/fpl/queries"
 import type { FplBootstrap, FplFixture } from "@/lib/fpl/types"
 
@@ -24,14 +25,6 @@ type FplBootstrapContextValue = {
 }
 
 const FplBootstrapContext = createContext<FplBootstrapContextValue | null>(null)
-
-function getQueryErrorMessage(error: unknown): string | null {
-  if (!error) {
-    return null
-  }
-
-  return "Could not load gameweek data."
-}
 
 export function FplBootstrapProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient()
@@ -48,8 +41,8 @@ export function FplBootstrapProvider({ children }: { children: React.ReactNode }
     (bootstrap !== null && fixturesQuery.isPending && fixtures.length === 0)
 
   const error =
-    getQueryErrorMessage(bootstrapQuery.error) ??
-    getQueryErrorMessage(fixturesQuery.error)
+    toQueryErrorMessage(bootstrapQuery.error, "Could not load gameweek data.") ??
+    toQueryErrorMessage(fixturesQuery.error, "Could not load gameweek data.")
 
   const teamsById = useMemo(() => {
     const map = new Map<number, FplBootstrap["teams"][number]>()

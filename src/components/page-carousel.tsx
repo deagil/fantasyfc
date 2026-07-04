@@ -262,7 +262,6 @@ export function PageCarousel({ className }: { className?: string }) {
         "relative left-1/2 w-screen max-w-none -translate-x-1/2 touch-pan-y overflow-hidden",
         className
       )}
-      data-hub-carousel=""
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}

@@ -11,17 +11,3 @@ export function createAppQueryClient(): QueryClient {
     },
   })
 }
-
-let browserQueryClient: QueryClient | undefined
-
-export function getQueryClient(): QueryClient {
-  if (typeof window === "undefined") {
-    return createAppQueryClient()
-  }
-
-  if (!browserQueryClient) {
-    browserQueryClient = createAppQueryClient()
-  }
-
-  return browserQueryClient
-}

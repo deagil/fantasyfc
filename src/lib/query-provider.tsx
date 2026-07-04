@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import type { Query } from "@tanstack/react-query"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client"
@@ -27,28 +27,39 @@ function shouldPersistQuery(query: Query): boolean {
 export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => createAppQueryClient())
 
-  if (typeof window === "undefined") {
+  const persister = useMemo(() => {
+    if (typeof window === "undefined") {
+      return null
+    }
+
+    return createSyncStoragePersister({
+      storage: window.localStorage,
+      key: "deadline-query-cache",
+    })
+  }, [])
+
+  const persistOptions = useMemo(() => {
+    if (!persister) {
+      return null
+    }
+
+    return {
+      persister,
+      maxAge: PERSIST_MAX_AGE,
+      dehydrateOptions: {
+        shouldDehydrateQuery: shouldPersistQuery,
+      },
+    }
+  }, [persister])
+
+  if (!persister || !persistOptions) {
     return (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     )
   }
 
-  const persister = createSyncStoragePersister({
-    storage: window.localStorage,
-    key: "deadline-query-cache",
-  })
-
   return (
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={{
-        persister,
-        maxAge: PERSIST_MAX_AGE,
-        dehydrateOptions: {
-          shouldDehydrateQuery: shouldPersistQuery,
-        },
-      }}
-    >
+    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       {children}
     </PersistQueryClientProvider>
   )

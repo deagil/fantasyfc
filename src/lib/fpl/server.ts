@@ -10,13 +10,20 @@ import type {
   FplFixture,
   FplLeagueStandings,
 } from "@/lib/fpl/types"
+import {
+  parseEventId,
+  parseLeagueId,
+  parseOptionalEventId,
+  parseStandingsPage,
+  parseTeamId,
+} from "@/lib/fpl/validate"
 
 const FPL_API_BASE = "https://fantasy.premierleague.com/api"
 
 const HOUR = 60 * 60 * 1000
 
 export const getFplEntry = createServerFn({ method: "POST" })
-  .validator((data: { teamId: number }) => data)
+  .validator((data: unknown) => ({ teamId: parseTeamId((data as { teamId: unknown }).teamId) }))
   .handler(async ({ data }) => {
     const response = await fetch(`${FPL_API_BASE}/entry/${data.teamId}/`)
 
@@ -28,7 +35,7 @@ export const getFplEntry = createServerFn({ method: "POST" })
   })
 
 export const getFplEntryHistory = createServerFn({ method: "POST" })
-  .validator((data: { teamId: number }) => data)
+  .validator((data: unknown) => ({ teamId: parseTeamId((data as { teamId: unknown }).teamId) }))
   .handler(async ({ data }) => {
     const response = await fetch(`${FPL_API_BASE}/entry/${data.teamId}/history/`)
 
@@ -66,11 +73,15 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
 )
 
 export const getFplFixtures = createServerFn({ method: "POST" })
-  .validator((data: { event?: number }) => data)
-  .handler(async ({ data }) =>
-    cached(`fixtures:${data.event ?? "all"}`, HOUR, async () => {
-      const url = data.event
-        ? `${FPL_API_BASE}/fixtures/?event=${data.event}`
+  .validator((data: unknown) => ({
+    event: parseOptionalEventId((data as { event?: unknown }).event),
+  }))
+  .handler(async ({ data }) => {
+    const event = data.event
+
+    return cached(`fixtures:${event ?? "all"}`, HOUR, async () => {
+      const url = event
+        ? `${FPL_API_BASE}/fixtures/?event=${event}`
         : `${FPL_API_BASE}/fixtures/`
       const response = await fetch(url)
 
@@ -80,10 +91,13 @@ export const getFplFixtures = createServerFn({ method: "POST" })
 
       return (await response.json()) as FplFixture[]
     })
-  )
+  })
 
 export const getFplEntryPicks = createServerFn({ method: "POST" })
-  .validator((data: { teamId: number; event: number }) => data)
+  .validator((data: unknown) => ({
+    teamId: parseTeamId((data as { teamId: unknown }).teamId),
+    event: parseEventId((data as { event: unknown }).event),
+  }))
   .handler(async ({ data }) => {
     const response = await fetch(
       `${FPL_API_BASE}/entry/${data.teamId}/event/${data.event}/picks/`
@@ -97,7 +111,7 @@ export const getFplEntryPicks = createServerFn({ method: "POST" })
   })
 
 export const getFplEventLive = createServerFn({ method: "POST" })
-  .validator((data: { event: number }) => data)
+  .validator((data: unknown) => ({ event: parseEventId((data as { event: unknown }).event) }))
   .handler(async ({ data }) => {
     const response = await fetch(`${FPL_API_BASE}/event/${data.event}/live/`)
 
@@ -109,13 +123,20 @@ export const getFplEventLive = createServerFn({ method: "POST" })
   })
 
 export const getFplLeagueStandings = createServerFn({ method: "POST" })
-  .validator((data: { leagueId: number; page?: number }) => data)
-  .handler(async ({ data }) => {
-    const page = data.page ?? 1
+  .validator((data: unknown) => {
+    const payload = data as { leagueId: unknown; page?: unknown }
 
-    return cached(`standings:${data.leagueId}:${page}`, HOUR, async () => {
+    return {
+      leagueId: parseLeagueId(payload.leagueId),
+      page: parseStandingsPage(payload.page),
+    }
+  })
+  .handler(async ({ data }) => {
+    const { leagueId, page } = data
+
+    return cached(`standings:${leagueId}:${page}`, HOUR, async () => {
       const response = await fetch(
-        `${FPL_API_BASE}/leagues-classic/${data.leagueId}/standings/?page=${page}`
+        `${FPL_API_BASE}/leagues-classic/${leagueId}/standings/?page=${page}`
       )
 
       if (!response.ok) {

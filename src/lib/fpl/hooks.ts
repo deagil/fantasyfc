@@ -13,8 +13,8 @@ import {
 import {
   buildPointsByElementId,
   getTopScorers,
-  type TeamTopScorer,
 } from "@/lib/fpl/picks"
+import type { TeamTopScorer } from "@/lib/fpl/picks"
 import {
   getFplBootstrap,
   getFplEntry,
@@ -24,7 +24,7 @@ import {
   getFplFixtures,
   getFplLeagueStandings,
 } from "@/lib/fpl/server"
-import type { FplBootstrap, FplElement, FplFixture, FplLeagueStandings } from "@/lib/fpl/types"
+import type { FplBootstrap, FplElement, FplLeagueStandings } from "@/lib/fpl/types"
 
 type FetchStandingsFn = (args: {
   data: { leagueId: number; page?: number }
@@ -51,12 +51,16 @@ export function usePrefetchFplLeagueStandings(leagueIds: readonly number[]) {
   const leagueIdsKey = leagueIds.join(",")
 
   useEffect(() => {
-    if (leagueIds.length === 0) {
+    if (leagueIdsKey.length === 0) {
       return
     }
 
-    prefetchFplLeagueStandings(queryClient, fetchStandings, leagueIds)
-  }, [queryClient, fetchStandings, leagueIds, leagueIdsKey])
+    prefetchFplLeagueStandings(
+      queryClient,
+      fetchStandings,
+      leagueIdsKey.split(",").map(Number)
+    )
+  }, [queryClient, fetchStandings, leagueIdsKey])
 }
 
 export function useFplBootstrapQuery() {
@@ -83,7 +87,7 @@ export function useFplFixturesQuery(
       const fixtureGroups = await Promise.all(
         eventIds.map((eventId) => fetchFixtures({ data: { event: eventId } }))
       )
-      return fixtureGroups.flat() as FplFixture[]
+      return fixtureGroups.flat()
     },
     enabled,
     staleTime: FPL_STALE_TIME.fixtures,
