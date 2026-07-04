@@ -193,22 +193,30 @@
       --hub-col-gap-total: 1.5rem;
       --hub-row-gap-total: 1rem;
       --hub-desktop-chrome: 5.25rem;
-      --hub-layout-width-units: 4;
-      --hub-inspector-width-units: 0;
+      --hub-layout-columns: 4;
+      --hub-content-padding-x: 0.75rem;
       --hub-cell: min(
-        (100cqw - var(--hub-col-gap-total)) / var(--hub-layout-width-units),
+        (100cqw - var(--hub-col-gap-total)) / var(--hub-layout-columns),
         (100svh - var(--hub-desktop-chrome) - var(--hub-row-gap-total)) / 3
       );
     }
 
     :root[data-leagues-inspector-open="true"] .hub-tile-container {
-      --hub-inspector-width-units: 1.5;
+      --hub-layout-columns: 5;
       --hub-col-gap-total: 2rem;
+      padding-right: 0;
       --hub-cell: min(
-        (100cqw - var(--hub-col-gap-total)) /
-          (var(--hub-layout-width-units) + var(--hub-inspector-width-units)),
+        (100cqw - var(--hub-col-gap-total)) / var(--hub-layout-columns),
         (100svh - var(--hub-desktop-chrome) - var(--hub-row-gap-total)) / 3
       );
+    }
+
+    :root[data-leagues-inspector-open="true"] .app-shell {
+      overflow-x: visible;
+    }
+
+    :root[data-leagues-inspector-open="true"] [data-hub-carousel] {
+      overflow: visible;
     }
 
     .hub-desktop-align {
@@ -217,9 +225,7 @@
         round(
           down,
           calc(
-            var(--hub-cell) *
-              (var(--hub-layout-width-units) + var(--hub-inspector-width-units)) +
-              var(--hub-col-gap-total)
+            var(--hub-cell) * var(--hub-layout-columns) + var(--hub-col-gap-total)
           ),
           1px
         )
@@ -234,18 +240,24 @@
       transition: grid-template-columns 200ms ease;
     }
 
-    :root[data-leagues-inspector-open="true"] .hub-tile-container {
-      --hub-cell: min(
-        (100cqw - var(--hub-col-gap-total)) /
-          (var(--hub-layout-width-units) + var(--hub-inspector-width-units)),
-        (100svh - var(--hub-desktop-chrome) - var(--hub-row-gap-total)) / 3
-      );
+    :root[data-leagues-inspector-open="true"] .hub-tile-grid {
+      grid-template-columns: repeat(5, round(down, var(--hub-cell), 1px));
+      overflow: visible;
     }
 
-    :root[data-leagues-inspector-open="true"] .hub-tile-grid {
-      grid-template-columns:
-        repeat(4, round(down, var(--hub-cell), 1px))
-        round(down, calc(var(--hub-cell) * 1.5), 1px);
+    :root[data-leagues-inspector-open="true"] [data-slot="league-inspector"] {
+      position: relative;
+      z-index: 2;
+      width: round(
+        down,
+        calc(var(--hub-cell) + var(--hub-content-padding-x) + 0.5 * var(--hub-cell)),
+        1px
+      );
+      margin-right: round(
+        down,
+        calc((var(--hub-content-padding-x) + 0.5 * var(--hub-cell)) * -1),
+        1px
+      );
     }
   }
 
