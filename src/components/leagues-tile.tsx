@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react"
+import { Link } from "@tanstack/react-router"
 import { ArrowDownIcon, ArrowUpIcon } from "lucide-react"
 
 import { LeagueStandingsList } from "@/components/league-standings-list"
@@ -351,7 +352,20 @@ export function LeaguesTile({
       <Drawer open={isDrawerOpen} onOpenChange={handleDrawerOpenChange}>
         <DrawerContent size="md" align={isDesktop ? "dock-right" : "full"}>
           <DrawerPanel
-            title={drawerLeague?.name ?? "League"}
+            title={
+              drawerLeague ? (
+                <Link
+                  to="/league/$leagueId"
+                  params={{ leagueId: String(drawerLeague.id) }}
+                  className="block truncate hover:underline focus-visible:underline focus-visible:outline-none"
+                  style={{ viewTransitionName: "vt-league-title" }}
+                >
+                  {drawerLeague.name}
+                </Link>
+              ) : (
+                "League"
+              )
+            }
             leading={
               drawerLeague ? (
                 <Button
