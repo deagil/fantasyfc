@@ -2,13 +2,15 @@ import { ChevronLeftIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { UserMenu } from "@/components/user-menu"
-import { contentContainerClassName } from "@/lib/layout"
+import { contentContainerClassName, pageChromeRowClassName } from "@/lib/layout"
 import { cn } from "@/lib/utils"
 
 type MobilePageHeaderProps = {
   title: string
   backLabel?: string
   onBack?: () => void
+  backRender?: React.ReactElement
+  titleStyle?: React.CSSProperties
   className?: string
 }
 
@@ -16,6 +18,8 @@ export function MobilePageHeader({
   title,
   backLabel = "Back",
   onBack,
+  backRender,
+  titleStyle,
   className,
 }: MobilePageHeaderProps) {
   return (
@@ -31,22 +35,30 @@ export function MobilePageHeader({
           "pt-[max(0.75rem,env(safe-area-inset-top))]"
         )}
       >
-        <div className="pointer-events-auto flex h-11 items-center gap-3">
+        <div className={cn(pageChromeRowClassName, "pointer-events-auto gap-3")}>
           <div className="flex min-w-0 flex-1 items-center gap-1">
-            {onBack ? (
+            {backRender ? (
               <Button
                 variant="ghost"
-                size="sm"
-                className="-ml-2 shrink-0 px-2"
+                size="icon-sm"
+                className="shell-chrome-ghost shrink-0 rounded-full"
+                aria-label={backLabel}
+                render={backRender}
+              />
+            ) : onBack ? (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="shell-chrome-ghost shrink-0 rounded-full"
+                aria-label={backLabel}
                 onClick={onBack}
               >
                 <ChevronLeftIcon />
-                <span className="sr-only sm:not-sr-only">{backLabel}</span>
               </Button>
             ) : null}
             <h1
               className="truncate font-heading text-xl font-semibold tracking-tight text-(--shell-foreground)"
-              style={{ viewTransitionName: "page-title" }}
+              style={titleStyle ?? { viewTransitionName: "page-title" }}
             >
               {title}
             </h1>

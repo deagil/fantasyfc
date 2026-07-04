@@ -6,7 +6,7 @@ import { NavTabs } from "@/components/nav-tabs"
 import { PageCarousel } from "@/components/page-carousel"
 import { UserMenu } from "@/components/user-menu"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { contentContainerClassName, hubDesktopAlignClassName, hubTileContainerClassName } from "@/lib/layout"
+import { contentContainerClassName, desktopPageChromeClassName, hubMainClassName, hubTileContainerClassName } from "@/lib/layout"
 import { FplBootstrapProvider } from "@/lib/fpl/bootstrap-context"
 import { TeamProvider } from "@/lib/fpl/team-context"
 import { navPages, validateHubSearch } from "@/lib/nav-pages"
@@ -28,16 +28,11 @@ function AppLayout() {
           <AppShell className="flex flex-col overflow-x-hidden lg:h-svh lg:overflow-y-hidden">
               <MobilePageHeader title={activePage.label} />
 
-              <main
-                className={cn(
-                  "flex min-h-0 flex-col",
-                  "pb-28 lg:flex-1 lg:justify-start lg:pt-4 lg:pb-3"
-                )}
-              >
+              <main className={hubMainClassName}>
                 <div className={cn(contentContainerClassName, hubTileContainerClassName)}>
                   <div
                     className={cn(
-                      "hidden items-center gap-4 lg:flex",
+                      "hidden min-h-11 items-center gap-4 lg:flex",
                       hubDesktopAlignClassName
                     )}
                   >
