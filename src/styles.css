@@ -513,6 +513,11 @@
   }
 }
 
+/* Keep the shell visible; only named groups (tiles, titles) animate. */
+::view-transition {
+  background: transparent;
+}
+
 ::view-transition-group(vt-fixtures-title),
 ::view-transition-group(vt-scouts-title),
 ::view-transition-group(vt-league-title),
@@ -556,29 +561,19 @@
 }
 
 ::view-transition-group(root) {
-  animation-duration: 320ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-duration: 0ms;
 }
 
-:root:active-view-transition-type(push) {
-  &::view-transition-old(root) {
-    animation-name: vt-page-fade-out;
-    z-index: 1;
-  }
-  &::view-transition-new(root) {
-    animation-name: vt-page-fade-in;
-    z-index: 2;
-  }
-}
-
+:root:active-view-transition-type(push),
 :root:active-view-transition-type(pop) {
   &::view-transition-old(root) {
-    animation-name: vt-page-fade-out;
-    z-index: 2;
+    animation: none;
+    opacity: 0;
   }
+
   &::view-transition-new(root) {
-    animation-name: vt-page-fade-in;
-    z-index: 1;
+    animation: none;
+    opacity: 1;
   }
 }
 
