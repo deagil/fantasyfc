@@ -194,20 +194,15 @@
       --hub-row-gap-total: 1rem;
       --hub-desktop-chrome: 5.25rem;
       --hub-layout-columns: 4;
-      --hub-inspector-gap: 0rem;
       --hub-cell: min(
-        (
-            100cqw - var(--hub-col-gap-total) -
-            var(--hub-inspector-gap)
-          ) /
-          var(--hub-layout-columns),
+        (100cqw - var(--hub-col-gap-total)) / var(--hub-layout-columns),
         (100svh - var(--hub-desktop-chrome) - var(--hub-row-gap-total)) / 3
       );
     }
 
     :root[data-leagues-inspector-open="true"] .hub-tile-container {
       --hub-layout-columns: 5;
-      --hub-inspector-gap: 0.5rem;
+      --hub-col-gap-total: 2rem;
     }
 
     .hub-desktop-align {
@@ -216,8 +211,7 @@
         round(
           down,
           calc(
-            var(--hub-cell) * var(--hub-layout-columns) +
-              var(--hub-col-gap-total) + var(--hub-inspector-gap)
+            var(--hub-cell) * var(--hub-layout-columns) + var(--hub-col-gap-total)
           ),
           1px
         )
@@ -226,27 +220,14 @@
       transition: width 200ms ease;
     }
 
-    .hub-desktop-layout {
-      display: flex;
-      align-items: flex-start;
-      gap: var(--hub-inspector-gap);
-      width: fit-content;
-      max-width: 100%;
-      margin-inline: auto;
-    }
-
-    .hub-inspector-column {
-      width: round(down, var(--hub-cell), 1px);
-      height: round(
-        down,
-        calc(var(--hub-cell) * 3 + var(--hub-row-gap-total)),
-        1px
-      );
-    }
-
     .hub-tile-grid {
       grid-template-columns: repeat(4, round(down, var(--hub-cell), 1px));
       grid-template-rows: repeat(3, round(down, var(--hub-cell), 1px));
+      transition: grid-template-columns 200ms ease;
+    }
+
+    :root[data-leagues-inspector-open="true"] .hub-tile-grid {
+      grid-template-columns: repeat(5, round(down, var(--hub-cell), 1px));
     }
   }
 

@@ -1,5 +1,5 @@
 import { useMediaQuery } from "@/hooks/use-media-query"
-import { hubTileGridClassName } from "@/lib/layout"
+import { hubDesktopAlignClassName, hubTileGridClassName } from "@/lib/layout"
 import { cn } from "@/lib/utils"
 
 import { LeagueInspectorPanel } from "@/components/league-inspector-panel"
@@ -12,8 +12,8 @@ export function HubDesktopLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="hub-desktop-layout">
-      <div className={cn(hubTileGridClassName, "min-w-0 shrink-0")}>{children}</div>
+    <div className={cn(hubTileGridClassName, hubDesktopAlignClassName)}>
+      {children}
       <LeagueInspectorPanel />
     </div>
   )

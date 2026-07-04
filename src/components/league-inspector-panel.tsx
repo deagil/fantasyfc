@@ -123,7 +123,10 @@ export function LeagueInspectorPanel() {
   return (
     <aside
       data-slot="league-inspector"
-      className="hub-inspector-column hidden h-full shrink-0 flex-col overflow-hidden rounded-[2px] bg-(--tile-bg) text-(--tile-fg) shadow-none lg:flex"
+      className={cn(
+        "hidden min-h-0 flex-col overflow-hidden rounded-[2px] bg-(--tile-bg) text-(--tile-fg) shadow-none",
+        "lg:col-start-5 lg:row-span-3 lg:row-start-1 lg:flex lg:h-full lg:min-h-0"
+      )}
     >
       <SidebarHeader className="shrink-0 border-b border-(--tile-border) px-3 py-3">
         <div className="flex items-start gap-2">
