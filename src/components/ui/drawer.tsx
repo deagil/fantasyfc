@@ -5,11 +5,21 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 export type DrawerSize = "sm" | "md" | "lg"
+export type DrawerAlign = "full" | "dock-right"
 
 const drawerSizeClassNames: Record<DrawerSize, string> = {
   sm: "h-[50dvh]",
   md: "h-[75dvh]",
   lg: "h-[90dvh]",
+}
+
+const drawerAlignClassNames: Record<DrawerAlign, string> = {
+  full: "",
+  "dock-right": cn(
+    "lg:data-[vaul-drawer-direction=bottom]:inset-x-auto lg:data-[vaul-drawer-direction=bottom]:right-4 lg:data-[vaul-drawer-direction=bottom]:left-auto",
+    "lg:data-[vaul-drawer-direction=bottom]:w-[min(33vw,22rem)]",
+    "lg:data-[vaul-drawer-direction=bottom]:rounded-[min(var(--radius-4xl),24px)] lg:data-[vaul-drawer-direction=bottom]:border lg:data-[vaul-drawer-direction=bottom]:border-border"
+  ),
 }
 
 function Drawer({
@@ -56,9 +66,11 @@ function DrawerContent({
   className,
   children,
   size = "md",
+  align = "full",
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Content> & {
   size?: DrawerSize
+  align?: DrawerAlign
 }) {
   return (
     <DrawerPortal data-slot="drawer-portal">
@@ -66,9 +78,11 @@ function DrawerContent({
       <DrawerPrimitive.Content
         data-slot="drawer-content"
         data-drawer-size={size}
+        data-drawer-align={align}
         className={cn(
           "group/drawer-content fixed z-50 flex flex-col overflow-hidden text-sm bg-popover shadow-xl",
           drawerSizeClassNames[size],
+          drawerAlignClassNames[align],
           "data-[vaul-drawer-direction=bottom]:inset-x-0 data-[vaul-drawer-direction=bottom]:bottom-0 data-[vaul-drawer-direction=bottom]:mt-0 data-[vaul-drawer-direction=bottom]:rounded-t-[min(var(--radius-4xl),24px)] data-[vaul-drawer-direction=bottom]:border-t data-[vaul-drawer-direction=bottom]:border-border",
           "data-[vaul-drawer-direction=left]:inset-y-0 data-[vaul-drawer-direction=left]:left-0 data-[vaul-drawer-direction=left]:h-auto data-[vaul-drawer-direction=left]:w-3/4 data-[vaul-drawer-direction=left]:sm:max-w-sm",
           "data-[vaul-drawer-direction=right]:inset-y-0 data-[vaul-drawer-direction=right]:right-0 data-[vaul-drawer-direction=right]:h-auto data-[vaul-drawer-direction=right]:w-3/4 data-[vaul-drawer-direction=right]:sm:max-w-sm",

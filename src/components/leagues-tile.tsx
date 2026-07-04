@@ -266,14 +266,19 @@ export function LeaguesTile({
 
   usePrefetchFplLeagueStandings(isLoggedIn ? leagueIds : [])
 
-  const mobileStandingsQuery = useFplStandingsQuery(mobileSelectedLeague?.id, {
-    enabled: !isDesktop && drawerOpen && mobileSelectedLeague !== null,
+  const drawerLeague = isDesktop ? inspectorLeague : mobileSelectedLeague
+  const isDrawerOpen = isDesktop
+    ? inspectorLeague !== null
+    : drawerOpen && mobileSelectedLeague !== null
+
+  const standingsQuery = useFplStandingsQuery(drawerLeague?.id, {
+    enabled: isDrawerOpen && drawerLeague !== null,
   })
 
-  const standings = mobileStandingsQuery.data?.standings.results ?? []
+  const standings = standingsQuery.data?.standings.results ?? []
   const standingsLoading =
-    mobileStandingsQuery.isPending && standings.length === 0
-  const standingsError = mobileStandingsQuery.error
+    standingsQuery.isPending && standings.length === 0
+  const standingsError = standingsQuery.error
     ? "Could not load standings."
     : null
 
@@ -319,6 +324,7 @@ export function LeaguesTile({
         }
 
         selectLeague(league)
+        setLeagueIdCopied(false)
         return
       }
 
@@ -329,27 +335,36 @@ export function LeaguesTile({
     [closeInspector, inspectorLeague?.id, isDesktop, selectLeague]
   )
 
-  const handleDrawerOpenChange = useCallback((open: boolean) => {
-    setDrawerOpen(open)
-    if (!open) {
-      setMobileSelectedLeague(null)
-    }
-  }, [])
+  const handleDrawerOpenChange = useCallback(
+    (open: boolean) => {
+      if (isDesktop) {
+        if (!open) {
+          closeInspector()
+        }
+        return
+      }
+
+      setDrawerOpen(open)
+      if (!open) {
+        setMobileSelectedLeague(null)
+      }
+    },
+    [closeInspector, isDesktop]
+  )
 
   const copyLeagueId = useCallback(async () => {
-    const league = mobileSelectedLeague
-    if (!league) {
+    if (!drawerLeague) {
       return
     }
 
     try {
-      await navigator.clipboard.writeText(String(league.id))
+      await navigator.clipboard.writeText(String(drawerLeague.id))
       setLeagueIdCopied(true)
       window.setTimeout(() => setLeagueIdCopied(false), 2000)
     } catch {
       // Clipboard unavailable — ignore silently
     }
-  }, [mobileSelectedLeague])
+  }, [drawerLeague])
 
   return (
     <>
@@ -391,56 +406,54 @@ export function LeaguesTile({
         </Tabs>
       </DataTile>
 
-      {!isDesktop ? (
-        <Drawer open={drawerOpen} onOpenChange={handleDrawerOpenChange}>
-          <DrawerContent size="md">
-            <DrawerPanel
-              title={mobileSelectedLeague?.name ?? "League"}
-              leading={
-                mobileSelectedLeague ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="shell-chrome-btn"
-                    onClick={() => void copyLeagueId()}
-                  >
-                    {leagueIdCopied ? "Copied" : "Copy ID"}
-                  </Button>
-                ) : undefined
-              }
-              bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
+      <Drawer open={isDrawerOpen} onOpenChange={handleDrawerOpenChange}>
+        <DrawerContent size="md" align={isDesktop ? "dock-right" : "full"}>
+          <DrawerPanel
+            title={drawerLeague?.name ?? "League"}
+            leading={
+              drawerLeague ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="shell-chrome-btn"
+                  onClick={() => void copyLeagueId()}
+                >
+                  {leagueIdCopied ? "Copied" : "Copy ID"}
+                </Button>
+              ) : undefined
+            }
+            bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
+          >
+            <ScrollFade
+              className="flex min-h-0 w-full flex-1"
+              fadeFrom="--popover"
+              contentClassName={cn(
+                drawerChromeOffsetClassName,
+                "flex w-full flex-col pb-4"
+              )}
             >
-              <ScrollFade
-                className="flex min-h-0 w-full flex-1"
-                fadeFrom="--popover"
-                contentClassName={cn(
-                  drawerChromeOffsetClassName,
-                  "flex w-full flex-col pb-4"
-                )}
-              >
-                {standingsLoading ? (
-                  <div className="flex w-full flex-col gap-2 px-4">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                  </div>
-                ) : standingsError ? (
-                  <p className="px-4 text-sm text-destructive">{standingsError}</p>
-                ) : (
-                  standings.map((standing) => (
-                    <StandingRow
-                      key={standing.id}
-                      standing={standing}
-                      isCurrentTeam={standing.entry === teamId}
-                    />
-                  ))
-                )}
-              </ScrollFade>
-            </DrawerPanel>
-          </DrawerContent>
-        </Drawer>
-      ) : null}
+              {standingsLoading ? (
+                <div className="flex w-full flex-col gap-2 px-4">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ) : standingsError ? (
+                <p className="px-4 text-sm text-destructive">{standingsError}</p>
+              ) : (
+                standings.map((standing) => (
+                  <StandingRow
+                    key={standing.id}
+                    standing={standing}
+                    isCurrentTeam={standing.entry === teamId}
+                  />
+                ))
+              )}
+            </ScrollFade>
+          </DrawerPanel>
+        </DrawerContent>
+      </Drawer>
     </>
   )
 }

@@ -7,7 +7,6 @@ import {
   useState,
 } from "react"
 
-import { LeagueInspectorPanel } from "@/components/league-inspector-panel"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import type { FplClassicLeague } from "@/lib/fpl/types"
 
@@ -59,7 +58,6 @@ export function LeaguesInspectorProvider({
   return (
     <LeaguesInspectorContext.Provider value={value}>
       {children}
-      <LeagueInspectorPanel />
     </LeaguesInspectorContext.Provider>
   )
 }
