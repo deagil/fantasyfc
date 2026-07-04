@@ -197,6 +197,7 @@
       --hub-cell-divisor: 4;
       --hub-cell-gap-for-size: 1.5rem;
       --hub-content-padding-x: 0.75rem;
+      --hub-inspector-bleed: 0px;
       --hub-cell: min(
         (100cqw - var(--hub-cell-gap-for-size)) / var(--hub-cell-divisor),
         (100svh - var(--hub-desktop-chrome) - var(--hub-row-gap-total)) / 3
@@ -243,7 +244,9 @@
     .hub-tile-grid {
       grid-template-columns: repeat(4, round(down, var(--hub-cell), 1px));
       grid-template-rows: repeat(3, round(down, var(--hub-cell), 1px));
-      transition: grid-template-columns 200ms ease;
+      transition:
+        grid-template-columns 200ms ease,
+        transform 200ms ease;
     }
 
     :root[data-leagues-inspector-open="true"] .hub-tile-grid {
