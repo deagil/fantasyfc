@@ -538,9 +538,9 @@
 /* Keep the shell visible; only named groups (tiles, titles) animate. */
 :root {
   --vt-page-fade-duration: 320ms;
-  --vt-league-fade-out-duration: 280ms;
+  --vt-league-fade-out-duration: 200ms;
   --vt-league-hold-duration: 220ms;
-  --vt-league-fade-in-duration: 320ms;
+  --vt-league-fade-in-duration: 240ms;
   --vt-league-fade-in-delay: calc(
     var(--vt-league-fade-out-duration) + var(--vt-league-hold-duration)
   );
