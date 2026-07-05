@@ -30,12 +30,7 @@ function AppLayout() {
 
               <main className={hubMainClassName}>
                 <div className={cn(contentContainerClassName, hubTileContainerClassName)}>
-                  <div
-                    className={cn(
-                      "hidden min-h-11 items-center gap-4 lg:flex",
-                      hubDesktopAlignClassName
-                    )}
-                  >
+                  <div className={desktopPageChromeClassName}>
                     <NavTabs className="min-w-0 flex-1" />
                     <UserMenu />
                   </div>
