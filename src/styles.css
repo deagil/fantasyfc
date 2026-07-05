@@ -260,6 +260,11 @@
 
   /* Late kickoff — plum night, white tiles, pink hover */
   .app-shell[data-kickoff-theme="late-kickoff"] {
+    --shell-backdrop-color: var(--pl-plum);
+    --shell-backdrop-image:
+      radial-gradient(ellipse 90% 70% at 12% -8%, color-mix(in oklab, var(--pl-violet) 50%, transparent), transparent 58%),
+      radial-gradient(ellipse 70% 55% at 100% 100%, color-mix(in oklab, var(--pl-pink) 15%, transparent), transparent 52%),
+      linear-gradient(155deg, #6b4888 0%, var(--pl-plum) 42%, var(--pl-purple) 100%);
     --shell-foreground: white;
     --shell-muted: rgb(255 255 255 / 0.62);
     --tile-bg: rgb(255 255 255 / 0.95);
@@ -280,15 +285,18 @@
   }
 
   .app-shell[data-kickoff-theme="late-kickoff"]::before {
-    background-color: var(--pl-plum);
-    background-image:
-      radial-gradient(ellipse 90% 70% at 12% -8%, color-mix(in oklab, var(--pl-violet) 50%, transparent), transparent 58%),
-      radial-gradient(ellipse 70% 55% at 100% 100%, color-mix(in oklab, var(--pl-pink) 15%, transparent), transparent 52%),
-      linear-gradient(155deg, #6b4888 0%, var(--pl-plum) 42%, var(--pl-purple) 100%);
+    background-color: var(--shell-backdrop-color);
+    background-image: var(--shell-backdrop-image);
   }
 
   /* Early kickoff — light sky, white tiles, blue hover */
   .app-shell[data-kickoff-theme="early-kickoff"] {
+    --shell-backdrop-color: var(--pl-sky);
+    --shell-backdrop-image: linear-gradient(
+      to bottom right,
+      color-mix(in oklab, var(--pl-blue) 45%, var(--pl-sky)),
+      color-mix(in oklab, var(--pl-green) 40%, var(--pl-sky-deep))
+    );
     --shell-foreground: var(--pl-purple);
     --shell-muted: rgb(61 25 91 / 0.55);
     --tile-bg: rgb(255 255 255 / 0.95);
@@ -309,12 +317,8 @@
   }
 
   .app-shell[data-kickoff-theme="early-kickoff"]::before {
-    background-color: var(--pl-sky);
-    background-image: linear-gradient(
-      to bottom right,
-      color-mix(in oklab, var(--pl-blue) 45%, var(--pl-sky)),
-      color-mix(in oklab, var(--pl-green) 40%, var(--pl-sky-deep))
-    );
+    background-color: var(--shell-backdrop-color);
+    background-image: var(--shell-backdrop-image);
   }
 
   .shell-chrome-btn {
@@ -534,11 +538,28 @@
 /* Keep the shell visible; only named groups (tiles, titles) animate. */
 :root {
   --vt-page-fade-duration: 320ms;
-  --vt-league-fade-out-duration: 450ms;
-  --vt-league-hold-duration: 500ms;
-  --vt-league-fade-in-duration: 600ms;
+  --vt-league-fade-out-duration: 280ms;
+  --vt-league-hold-duration: 220ms;
+  --vt-league-fade-in-duration: 320ms;
   --vt-league-fade-in-delay: calc(
     var(--vt-league-fade-out-duration) + var(--vt-league-hold-duration)
+  );
+}
+
+:root:has(.app-shell[data-kickoff-theme="late-kickoff"]) {
+  --shell-backdrop-color: var(--pl-plum);
+  --shell-backdrop-image:
+    radial-gradient(ellipse 90% 70% at 12% -8%, color-mix(in oklab, var(--pl-violet) 50%, transparent), transparent 58%),
+    radial-gradient(ellipse 70% 55% at 100% 100%, color-mix(in oklab, var(--pl-pink) 15%, transparent), transparent 52%),
+    linear-gradient(155deg, #6b4888 0%, var(--pl-plum) 42%, var(--pl-purple) 100%);
+}
+
+:root:has(.app-shell[data-kickoff-theme="early-kickoff"]) {
+  --shell-backdrop-color: var(--pl-sky);
+  --shell-backdrop-image: linear-gradient(
+    to bottom right,
+    color-mix(in oklab, var(--pl-blue) 45%, var(--pl-sky)),
+    color-mix(in oklab, var(--pl-green) 40%, var(--pl-sky-deep))
   );
 }
 
@@ -595,11 +616,12 @@
   }
 }
 
-/* League navigation: fade out → solid purple hold → fade in (masks loading). */
+/* League navigation: fade out → shell backdrop hold → fade in (masks loading). */
 :root:active-view-transition-type(league-push),
 :root:active-view-transition-type(league-pop) {
   &::view-transition {
-    background-color: var(--pl-purple);
+    background-color: var(--shell-backdrop-color, var(--pl-plum));
+    background-image: var(--shell-backdrop-image, none);
   }
 
   &::view-transition-old(root) {
