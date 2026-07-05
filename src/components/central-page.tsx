@@ -12,10 +12,7 @@ import { LeaguesInspectorProvider } from "@/lib/fpl/leagues-inspector-context"
 export function CentralPage() {
   return (
     <LeaguesInspectorProvider>
-      <div
-        className={hubTileGridClassName}
-        style={{ viewTransitionName: "vt-page-content" }}
-      >
+      <div className={hubTileGridClassName}>
         <GameweekTile className="col-span-2 row-span-1 lg:col-start-1 lg:row-start-1" />
         <LeaguesTile className="col-span-2 row-span-2 lg:col-start-3 lg:row-start-1" />
         <OverallTile className="col-span-1 row-span-1 lg:col-start-1 lg:row-start-2" />

@@ -513,10 +513,33 @@
   }
 }
 
+@keyframes vt-league-screen-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-league-screen-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Keep the shell visible; only named groups (tiles, titles) animate. */
 :root {
   --vt-page-fade-duration: 320ms;
-  --vt-league-fade-duration: 520ms;
+  --vt-league-fade-out-duration: 450ms;
+  --vt-league-hold-duration: 500ms;
+  --vt-league-fade-in-duration: 600ms;
+  --vt-league-fade-in-delay: calc(
+    var(--vt-league-fade-out-duration) + var(--vt-league-hold-duration)
+  );
 }
 
 ::view-transition {
@@ -524,28 +547,20 @@
 }
 
 ::view-transition-group(vt-fixtures-title),
-::view-transition-group(vt-scouts-title),
-::view-transition-group(vt-league-title),
-::view-transition-group(vt-page-content) {
+::view-transition-group(vt-scouts-title) {
   animation-duration: 0ms;
   overflow: visible;
 }
 
 ::view-transition-image-pair(vt-fixtures-title),
-::view-transition-image-pair(vt-scouts-title),
-::view-transition-image-pair(vt-league-title),
-::view-transition-image-pair(vt-page-content) {
+::view-transition-image-pair(vt-scouts-title) {
   overflow: visible;
 }
 
 ::view-transition-old(vt-fixtures-title),
 ::view-transition-new(vt-fixtures-title),
 ::view-transition-old(vt-scouts-title),
-::view-transition-new(vt-scouts-title),
-::view-transition-old(vt-league-title),
-::view-transition-new(vt-league-title),
-::view-transition-old(vt-page-content),
-::view-transition-new(vt-page-content) {
+::view-transition-new(vt-scouts-title) {
   height: 100%;
   width: 100%;
   mix-blend-mode: normal;
@@ -563,18 +578,6 @@
     cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-::view-transition-old(vt-league-title),
-::view-transition-old(vt-page-content) {
-  animation: vt-page-fade-out var(--vt-league-fade-duration)
-    cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-::view-transition-new(vt-league-title),
-::view-transition-new(vt-page-content) {
-  animation: vt-page-fade-in var(--vt-league-fade-duration)
-    cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 ::view-transition-group(root) {
   animation-duration: 0ms;
 }
@@ -589,6 +592,40 @@
   &::view-transition-new(root) {
     animation: none;
     opacity: 1;
+  }
+}
+
+/* League navigation: fade out → solid purple hold → fade in (masks loading). */
+:root:active-view-transition-type(league-push),
+:root:active-view-transition-type(league-pop) {
+  &::view-transition {
+    background-color: var(--pl-purple);
+  }
+
+  &::view-transition-old(root) {
+    animation: vt-league-screen-fade-out var(--vt-league-fade-out-duration)
+      cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  &::view-transition-new(root) {
+    opacity: 0;
+    animation: vt-league-screen-fade-in var(--vt-league-fade-in-duration)
+      cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--vt-league-fade-in-delay);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:active-view-transition-type(league-push),
+  :root:active-view-transition-type(league-pop) {
+    &::view-transition-old(root),
+    &::view-transition-new(root) {
+      animation: none;
+    }
+
+    &::view-transition-new(root) {
+      opacity: 1;
+    }
   }
 }
 

@@ -48,7 +48,6 @@ function LeagueDetailPage() {
     <AppShell className="flex flex-col overflow-x-hidden lg:h-svh lg:overflow-y-hidden">
       <DetailPageChrome
         title={leagueName}
-        titleStyle={{ viewTransitionName: "vt-league-title" }}
         backRender={
           <Link to="/" search={tabSearch("hub")} aria-label="Back" />
         }
@@ -57,10 +56,7 @@ function LeagueDetailPage() {
       <main className={hubMainClassName}>
         <div className={hubContentSectionClassName}>
           <div className={mobileContentTopSpacerClassName} aria-hidden />
-          <div
-            className={hubTileGridClassName}
-            style={{ viewTransitionName: "vt-page-content" }}
-          >
+          <div className={hubTileGridClassName}>
             <DataTile
               className="col-span-2 row-span-3 lg:col-start-1 lg:row-start-1"
             >
