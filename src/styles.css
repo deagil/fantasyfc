@@ -514,6 +514,11 @@
 }
 
 /* Keep the shell visible; only named groups (tiles, titles) animate. */
+:root {
+  --vt-page-fade-duration: 320ms;
+  --vt-league-fade-duration: 520ms;
+}
+
 ::view-transition {
   background: transparent;
 }
@@ -547,17 +552,27 @@
 }
 
 ::view-transition-old(vt-fixtures-title),
-::view-transition-old(vt-scouts-title),
-::view-transition-old(vt-league-title),
-::view-transition-old(vt-page-content) {
-  animation: vt-page-fade-out 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+::view-transition-old(vt-scouts-title) {
+  animation: vt-page-fade-out var(--vt-page-fade-duration)
+    cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 ::view-transition-new(vt-fixtures-title),
-::view-transition-new(vt-scouts-title),
+::view-transition-new(vt-scouts-title) {
+  animation: vt-page-fade-in var(--vt-page-fade-duration)
+    cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+::view-transition-old(vt-league-title),
+::view-transition-old(vt-page-content) {
+  animation: vt-page-fade-out var(--vt-league-fade-duration)
+    cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 ::view-transition-new(vt-league-title),
 ::view-transition-new(vt-page-content) {
-  animation: vt-page-fade-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: vt-page-fade-in var(--vt-league-fade-duration)
+    cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 ::view-transition-group(root) {
