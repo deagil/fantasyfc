@@ -568,33 +568,43 @@
 }
 
 ::view-transition-group(vt-fixtures-title),
-::view-transition-group(vt-scouts-title) {
+::view-transition-group(vt-scouts-title),
+::view-transition-group(page-title),
+::view-transition-group(page-header-actions) {
   animation-duration: 0ms;
   overflow: visible;
 }
 
 ::view-transition-image-pair(vt-fixtures-title),
-::view-transition-image-pair(vt-scouts-title) {
+::view-transition-image-pair(vt-scouts-title),
+::view-transition-image-pair(page-title),
+::view-transition-image-pair(page-header-actions) {
   overflow: visible;
 }
 
 ::view-transition-old(vt-fixtures-title),
 ::view-transition-new(vt-fixtures-title),
 ::view-transition-old(vt-scouts-title),
-::view-transition-new(vt-scouts-title) {
+::view-transition-new(vt-scouts-title),
+::view-transition-old(page-title),
+::view-transition-new(page-title),
+::view-transition-old(page-header-actions),
+::view-transition-new(page-header-actions) {
   height: 100%;
   width: 100%;
   mix-blend-mode: normal;
 }
 
 ::view-transition-old(vt-fixtures-title),
-::view-transition-old(vt-scouts-title) {
+::view-transition-old(vt-scouts-title),
+::view-transition-old(page-title) {
   animation: vt-page-fade-out var(--vt-page-fade-duration)
     cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 ::view-transition-new(vt-fixtures-title),
-::view-transition-new(vt-scouts-title) {
+::view-transition-new(vt-scouts-title),
+::view-transition-new(page-title) {
   animation: vt-page-fade-in var(--vt-page-fade-duration)
     cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -627,6 +637,24 @@
   &::view-transition-old(root) {
     animation: vt-league-screen-fade-out var(--vt-league-fade-out-duration)
       cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  &::view-transition-old(page-title) {
+    animation: vt-page-fade-out var(--vt-league-fade-out-duration)
+      cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  &::view-transition-new(page-title) {
+    opacity: 0;
+    animation: vt-page-fade-in var(--vt-league-fade-in-duration)
+      cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--vt-league-fade-in-delay);
+  }
+
+  &::view-transition-old(page-header-actions),
+  &::view-transition-new(page-header-actions) {
+    animation: none;
+    opacity: 0;
   }
 
   &::view-transition-new(root) {

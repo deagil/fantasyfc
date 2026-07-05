@@ -36,26 +36,28 @@ export function MobilePageHeader({
         )}
       >
         <div className={cn(pageChromeRowClassName, "pointer-events-auto gap-3")}>
-          <div className="flex min-w-0 flex-1 items-center gap-1">
-            {backRender ? (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="shell-chrome-ghost shrink-0 rounded-full"
-                aria-label={backLabel}
-                render={backRender}
-              />
-            ) : onBack ? (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="shell-chrome-ghost shrink-0 rounded-full"
-                aria-label={backLabel}
-                onClick={onBack}
-              >
-                <ChevronLeftIcon />
-              </Button>
-            ) : null}
+          <div className="grid min-w-0 flex-1 grid-cols-[1.75rem_1fr] items-center gap-1">
+            <div className="flex size-7 items-center justify-center">
+              {backRender ? (
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="shell-chrome-ghost shrink-0 rounded-full"
+                  aria-label={backLabel}
+                  render={backRender}
+                />
+              ) : onBack ? (
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="shell-chrome-ghost shrink-0 rounded-full"
+                  aria-label={backLabel}
+                  onClick={onBack}
+                >
+                  <ChevronLeftIcon />
+                </Button>
+              ) : null}
+            </div>
             <h1
               className="truncate font-heading text-xl font-semibold tracking-tight text-(--shell-foreground)"
               style={titleStyle ?? { viewTransitionName: "page-title" }}
