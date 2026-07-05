@@ -260,6 +260,11 @@
 
   /* Late kickoff — plum night, white tiles, pink hover */
   .app-shell[data-kickoff-theme="late-kickoff"] {
+    --shell-backdrop-color: var(--pl-plum);
+    --shell-backdrop-image:
+      radial-gradient(ellipse 90% 70% at 12% -8%, color-mix(in oklab, var(--pl-violet) 50%, transparent), transparent 58%),
+      radial-gradient(ellipse 70% 55% at 100% 100%, color-mix(in oklab, var(--pl-pink) 15%, transparent), transparent 52%),
+      linear-gradient(155deg, #6b4888 0%, var(--pl-plum) 42%, var(--pl-purple) 100%);
     --shell-foreground: white;
     --shell-muted: rgb(255 255 255 / 0.62);
     --tile-bg: rgb(255 255 255 / 0.95);
@@ -280,15 +285,18 @@
   }
 
   .app-shell[data-kickoff-theme="late-kickoff"]::before {
-    background-color: var(--pl-plum);
-    background-image:
-      radial-gradient(ellipse 90% 70% at 12% -8%, color-mix(in oklab, var(--pl-violet) 50%, transparent), transparent 58%),
-      radial-gradient(ellipse 70% 55% at 100% 100%, color-mix(in oklab, var(--pl-pink) 15%, transparent), transparent 52%),
-      linear-gradient(155deg, #6b4888 0%, var(--pl-plum) 42%, var(--pl-purple) 100%);
+    background-color: var(--shell-backdrop-color);
+    background-image: var(--shell-backdrop-image);
   }
 
   /* Early kickoff — light sky, white tiles, blue hover */
   .app-shell[data-kickoff-theme="early-kickoff"] {
+    --shell-backdrop-color: var(--pl-sky);
+    --shell-backdrop-image: linear-gradient(
+      to bottom right,
+      color-mix(in oklab, var(--pl-blue) 45%, var(--pl-sky)),
+      color-mix(in oklab, var(--pl-green) 40%, var(--pl-sky-deep))
+    );
     --shell-foreground: var(--pl-purple);
     --shell-muted: rgb(61 25 91 / 0.55);
     --tile-bg: rgb(255 255 255 / 0.95);
@@ -309,12 +317,8 @@
   }
 
   .app-shell[data-kickoff-theme="early-kickoff"]::before {
-    background-color: var(--pl-sky);
-    background-image: linear-gradient(
-      to bottom right,
-      color-mix(in oklab, var(--pl-blue) 45%, var(--pl-sky)),
-      color-mix(in oklab, var(--pl-green) 40%, var(--pl-sky-deep))
-    );
+    background-color: var(--shell-backdrop-color);
+    background-image: var(--shell-backdrop-image);
   }
 
   .shell-chrome-btn {
@@ -491,27 +495,10 @@
   }
 }
 
-@keyframes vt-slide-in-from-right {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
-}
-@keyframes vt-slide-out-to-left {
-  from { transform: translateX(0); }
-  to { transform: translateX(-25%); }
-}
-@keyframes vt-slide-in-from-left {
-  from { transform: translateX(-25%); }
-  to { transform: translateX(0); }
-}
-@keyframes vt-slide-out-to-right {
-  from { transform: translateX(0); }
-  to { transform: translateX(100%); }
-}
-
-@keyframes vt-title-fade-in {
+@keyframes vt-page-fade-in {
   from {
     opacity: 0;
-    filter: blur(6px);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
@@ -519,73 +506,176 @@
   }
 }
 
-@keyframes vt-title-fade-out {
+@keyframes vt-page-fade-out {
   from {
     opacity: 1;
     filter: blur(0);
   }
   to {
     opacity: 0;
-    filter: blur(6px);
+    filter: blur(4px);
   }
+}
+
+@keyframes vt-league-screen-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-league-screen-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Keep the shell visible; only named groups (tiles, titles) animate. */
+:root {
+  --vt-page-fade-duration: 320ms;
+  --vt-league-fade-out-duration: 200ms;
+  --vt-league-hold-duration: 220ms;
+  --vt-league-fade-in-duration: 240ms;
+  --vt-league-fade-in-delay: calc(
+    var(--vt-league-fade-out-duration) + var(--vt-league-hold-duration)
+  );
+}
+
+:root:has(.app-shell[data-kickoff-theme="late-kickoff"]) {
+  --shell-backdrop-color: var(--pl-plum);
+  --shell-backdrop-image:
+    radial-gradient(ellipse 90% 70% at 12% -8%, color-mix(in oklab, var(--pl-violet) 50%, transparent), transparent 58%),
+    radial-gradient(ellipse 70% 55% at 100% 100%, color-mix(in oklab, var(--pl-pink) 15%, transparent), transparent 52%),
+    linear-gradient(155deg, #6b4888 0%, var(--pl-plum) 42%, var(--pl-purple) 100%);
+}
+
+:root:has(.app-shell[data-kickoff-theme="early-kickoff"]) {
+  --shell-backdrop-color: var(--pl-sky);
+  --shell-backdrop-image: linear-gradient(
+    to bottom right,
+    color-mix(in oklab, var(--pl-blue) 45%, var(--pl-sky)),
+    color-mix(in oklab, var(--pl-green) 40%, var(--pl-sky-deep))
+  );
+}
+
+::view-transition {
+  background: transparent;
 }
 
 ::view-transition-group(vt-fixtures-title),
-::view-transition-group(vt-scouts-title) {
+::view-transition-group(vt-scouts-title),
+::view-transition-group(page-title),
+::view-transition-group(page-header-actions) {
   animation-duration: 0ms;
   overflow: visible;
 }
 
 ::view-transition-image-pair(vt-fixtures-title),
-::view-transition-image-pair(vt-scouts-title) {
+::view-transition-image-pair(vt-scouts-title),
+::view-transition-image-pair(page-title),
+::view-transition-image-pair(page-header-actions) {
   overflow: visible;
 }
 
 ::view-transition-old(vt-fixtures-title),
 ::view-transition-new(vt-fixtures-title),
 ::view-transition-old(vt-scouts-title),
-::view-transition-new(vt-scouts-title) {
+::view-transition-new(vt-scouts-title),
+::view-transition-old(page-title),
+::view-transition-new(page-title),
+::view-transition-old(page-header-actions),
+::view-transition-new(page-header-actions) {
   height: 100%;
   width: 100%;
   mix-blend-mode: normal;
 }
 
 ::view-transition-old(vt-fixtures-title),
-::view-transition-old(vt-scouts-title) {
-  animation: vt-title-fade-out 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+::view-transition-old(vt-scouts-title),
+::view-transition-old(page-title) {
+  animation: vt-page-fade-out var(--vt-page-fade-duration)
+    cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 ::view-transition-new(vt-fixtures-title),
-::view-transition-new(vt-scouts-title) {
-  animation: vt-title-fade-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+::view-transition-new(vt-scouts-title),
+::view-transition-new(page-title) {
+  animation: vt-page-fade-in var(--vt-page-fade-duration)
+    cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 ::view-transition-group(root) {
-  animation-duration: 320ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-duration: 0ms;
 }
 
-:root:active-view-transition-type(push) {
-  &::view-transition-old(root) {
-    animation-name: vt-slide-out-to-left;
-    z-index: 1;
-  }
-  &::view-transition-new(root) {
-    animation-name: vt-slide-in-from-right;
-    z-index: 2;
-    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
-  }
-}
-
+:root:active-view-transition-type(push),
 :root:active-view-transition-type(pop) {
   &::view-transition-old(root) {
-    animation-name: vt-slide-out-to-right;
-    z-index: 2;
-    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
+    animation: none;
+    opacity: 0;
   }
+
   &::view-transition-new(root) {
-    animation-name: vt-slide-in-from-left;
-    z-index: 1;
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* League navigation: fade out → shell backdrop hold → fade in (masks loading). */
+:root:active-view-transition-type(league-push),
+:root:active-view-transition-type(league-pop) {
+  &::view-transition {
+    background-color: var(--shell-backdrop-color, var(--pl-plum));
+    background-image: var(--shell-backdrop-image, none);
+  }
+
+  &::view-transition-old(root) {
+    animation: vt-league-screen-fade-out var(--vt-league-fade-out-duration)
+      cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  &::view-transition-old(page-title) {
+    animation: vt-page-fade-out var(--vt-league-fade-out-duration)
+      cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  &::view-transition-new(page-title) {
+    opacity: 0;
+    animation: vt-page-fade-in var(--vt-league-fade-in-duration)
+      cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--vt-league-fade-in-delay);
+  }
+
+  &::view-transition-old(page-header-actions),
+  &::view-transition-new(page-header-actions) {
+    animation: none;
+    opacity: 0;
+  }
+
+  &::view-transition-new(root) {
+    opacity: 0;
+    animation: vt-league-screen-fade-in var(--vt-league-fade-in-duration)
+      cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--vt-league-fade-in-delay);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:active-view-transition-type(league-push),
+  :root:active-view-transition-type(league-pop) {
+    &::view-transition-old(root),
+    &::view-transition-new(root) {
+      animation: none;
+    }
+
+    &::view-transition-new(root) {
+      opacity: 1;
+    }
   }
 }
 

@@ -5,6 +5,10 @@ function pathDepth(pathname: string): number {
   return pathname.split("/").filter(Boolean).length
 }
 
+function isLeaguePath(pathname: string): boolean {
+  return pathname.startsWith("/league/")
+}
+
 export function getRouter() {
   const router = createTanStackRouter({
     routeTree,
@@ -15,8 +19,17 @@ export function getRouter() {
     defaultViewTransition: {
       types: ({ fromLocation, toLocation }) => {
         if (!fromLocation) return false
-        const fromDepth = pathDepth(fromLocation.pathname)
-        const toDepth = pathDepth(toLocation.pathname)
+        const from = fromLocation.pathname
+        const to = toLocation.pathname
+        const fromDepth = pathDepth(from)
+        const toDepth = pathDepth(to)
+
+        if (isLeaguePath(from) || isLeaguePath(to)) {
+          if (toDepth > fromDepth) return ["league-push"]
+          if (toDepth < fromDepth) return ["league-pop"]
+          return false
+        }
+
         if (toDepth > fromDepth) return ["push"]
         if (toDepth < fromDepth) return ["pop"]
         return false
