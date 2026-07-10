@@ -3,8 +3,13 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router"
 import { AppShell } from "@/components/app-shell"
 import { DetailPageChrome } from "@/components/detail-page-chrome"
 import { DataTile } from "@/components/data-tile"
+import { LeaguePositionChart } from "@/components/league-position-chart"
 import { LeagueStandingsList } from "@/components/league-standings-list"
-import { useFplStandingsQuery } from "@/lib/fpl/hooks"
+import {
+  useFplLeagueRankHistoryQuery,
+  useFplStandingsQuery,
+} from "@/lib/fpl/hooks"
+import { LEAGUE_RANK_HISTORY_WEEKS } from "@/lib/fpl/league-rank-history"
 import { TeamProvider, useTeam } from "@/lib/fpl/team-context"
 import {
   hubContentSectionClassName,
@@ -43,6 +48,17 @@ function LeagueDetailPage() {
   const leagueName = standingsQuery.data?.league.name ?? "League"
   const standingsLoading = standingsQuery.isPending && standings.length === 0
   const standingsError = standingsQuery.error ? "Could not load standings." : null
+
+  const rankHistoryQuery = useFplLeagueRankHistoryQuery(leagueId, {
+    currentTeamId: teamId,
+    weeks: LEAGUE_RANK_HISTORY_WEEKS,
+  })
+  const rankHistory = rankHistoryQuery.data
+  const rankHistoryLoading =
+    rankHistoryQuery.isPending && rankHistory === undefined
+  const rankHistoryError = rankHistoryQuery.error
+    ? "Could not load position history."
+    : null
 
   return (
     <AppShell className="flex flex-col overflow-x-hidden lg:h-svh lg:overflow-y-hidden">
@@ -87,7 +103,24 @@ function LeagueDetailPage() {
             <DataTile
               size="2x2"
               className="col-span-2 row-span-2 lg:col-start-3 lg:row-start-2"
-            />
+            >
+              <DataTile.Header className="pb-0 pt-3">
+                <DataTile.Heading>
+                  <DataTile.Label>Position race</DataTile.Label>
+                </DataTile.Heading>
+              </DataTile.Header>
+              <DataTile.Content
+                align="between"
+                className="flex min-h-0 flex-1 flex-col overflow-hidden px-0 pt-0"
+              >
+                <LeaguePositionChart
+                  history={rankHistory}
+                  weeks={LEAGUE_RANK_HISTORY_WEEKS}
+                  isLoading={rankHistoryLoading}
+                  error={rankHistoryError}
+                />
+              </DataTile.Content>
+            </DataTile>
           </div>
         </div>
       </main>

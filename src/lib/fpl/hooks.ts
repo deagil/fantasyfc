@@ -22,9 +22,11 @@ import {
   getFplEntryPicks,
   getFplEventLive,
   getFplFixtures,
+  getFplLeagueRankHistory,
   getFplLeagueStandings,
 } from "@/lib/fpl/server"
 import type { FplBootstrap, FplElement, FplLeagueStandings } from "@/lib/fpl/types"
+import { LEAGUE_RANK_HISTORY_WEEKS } from "@/lib/fpl/league-rank-history"
 
 type FetchStandingsFn = (args: {
   data: { leagueId: number; page?: number }
@@ -137,6 +139,30 @@ export function useFplStandingsQuery(
     queryFn: () => fetchStandings({ data: { leagueId: leagueId!, page } }),
     enabled,
     staleTime: FPL_STALE_TIME.standings,
+  })
+}
+
+export function useFplLeagueRankHistoryQuery(
+  leagueId: number | null | undefined,
+  options?: {
+    enabled?: boolean
+    weeks?: number
+    currentTeamId?: number | null
+  }
+) {
+  const fetchLeagueRankHistory = useServerFn(getFplLeagueRankHistory)
+  const weeks = options?.weeks ?? LEAGUE_RANK_HISTORY_WEEKS
+  const currentTeamId = options?.currentTeamId ?? null
+  const enabled = (options?.enabled ?? true) && leagueId != null
+
+  return useQuery({
+    queryKey: fplKeys.leagueRankHistory(leagueId ?? 0, weeks, currentTeamId),
+    queryFn: () =>
+      fetchLeagueRankHistory({
+        data: { leagueId: leagueId!, weeks, currentTeamId },
+      }),
+    enabled,
+    staleTime: FPL_STALE_TIME.leagueRankHistory,
   })
 }
 

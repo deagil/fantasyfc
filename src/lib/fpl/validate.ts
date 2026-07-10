@@ -37,3 +37,17 @@ export function parseStandingsPage(value: unknown): number {
 
   return parsePositiveInt(value, "page")
 }
+
+export function parseWeeksCount(value: unknown): number {
+  if (value === undefined || value === null) {
+    return 8
+  }
+
+  const parsed = typeof value === "number" ? value : Number(value)
+
+  if (!Number.isInteger(parsed) || parsed < 2 || parsed > 20) {
+    throw new Error("Invalid weeks")
+  }
+
+  return parsed
+}

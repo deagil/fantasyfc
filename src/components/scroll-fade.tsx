@@ -56,7 +56,7 @@ export function ScrollFade({
     setEdges(getScrollFadeEdges(element))
   }, [])
 
-  useEffect(() => {
+    useEffect(() => {
     const element = scrollRef.current
     if (!element) {
       return
@@ -66,18 +66,21 @@ export function ScrollFade({
 
     const resizeObserver = new ResizeObserver(updateEdges)
     resizeObserver.observe(element)
+    for (const child of element.children) {
+      resizeObserver.observe(child)
+    }
 
     return () => {
       resizeObserver.disconnect()
     }
-  }, [updateEdges])
+  }, [updateEdges, children])
 
   const showVertical = orientation === "vertical" || orientation === "both"
   const showHorizontal = orientation === "horizontal" || orientation === "both"
   const fadeFromClass = `from-(${fadeFrom})`
 
   return (
-    <div className={cn("relative min-h-0 min-w-0", className)}>
+    <div className={cn("relative flex min-h-0 min-w-0 flex-col", className)}>
       {showVertical && edges.top ? (
         <div
           aria-hidden
@@ -120,8 +123,8 @@ export function ScrollFade({
         className={cn(
           "min-h-0 min-w-0",
           orientation === "horizontal" && "overflow-x-auto overflow-y-hidden",
-          orientation === "vertical" && "overflow-y-auto overflow-x-hidden",
-          orientation === "both" && "overflow-auto",
+          orientation === "vertical" && "flex-1 overflow-y-auto overflow-x-hidden",
+          orientation === "both" && "flex-1 overflow-auto",
           contentClassName
         )}
       >

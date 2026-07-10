@@ -30,6 +30,7 @@ export type FplLeagueStanding = {
   player_name: string
   rank: number
   last_rank: number
+  rank_sort: number
   total: number
   entry: number
   entry_name: string
@@ -40,6 +41,7 @@ export type FplLeagueStandings = {
   league: {
     id: number
     name: string
+    start_event: number
   }
   standings: {
     has_next: boolean
@@ -130,6 +132,28 @@ export type FplBootstrap = {
   events: FplEvent[]
   teams: FplTeam[]
   elements: FplElement[]
+}
+
+export type LeagueRankHistoryPoint = {
+  event: number
+  rank: number
+}
+
+export type LeagueRankHistorySeries = {
+  entry: number
+  name: string
+  isCurrentTeam: boolean
+  points: LeagueRankHistoryPoint[]
+}
+
+export type LeagueRankHistory = {
+  gameweeks: number[]
+  teams: Array<{
+    entry: number
+    name: string
+    isCurrentTeam: boolean
+  }>
+  series: LeagueRankHistorySeries[]
 }
 
 export type FplFixture = {

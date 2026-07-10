@@ -6,6 +6,7 @@ export const FPL_STALE_TIME = {
   bootstrap: 60 * 60 * 1000,
   fixtures: 60 * 60 * 1000,
   standings: 60 * 60 * 1000,
+  leagueRankHistory: 60 * 60 * 1000,
   entry: 30 * 1000,
   history: 60 * 60 * 1000,
   picks: 0,
@@ -23,6 +24,18 @@ export const fplKeys = {
   history: (teamId: number) => [...fplKeys.all, "history", teamId] as const,
   standings: (leagueId: number, page = 1) =>
     [...fplKeys.all, "standings", leagueId, page] as const,
+  leagueRankHistory: (
+    leagueId: number,
+    weeks: number,
+    currentTeamId: number | null
+  ) =>
+    [
+      ...fplKeys.all,
+      "league-rank-history",
+      leagueId,
+      weeks,
+      currentTeamId,
+    ] as const,
   picks: (teamId: number, eventId: number) =>
     [...fplKeys.all, "picks", teamId, eventId] as const,
   live: (eventId: number) => [...fplKeys.all, "live", eventId] as const,
