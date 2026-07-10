@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SettingsRow } from "@/components/settings-row"
 import { SpotifyConnectControl } from "@/components/spotify-connect-control"
+import { TrophyClaimSection } from "@/components/trophy-claim-section"
 import { useAuth } from "@/lib/auth/auth-context"
 
 export function AccountSection() {
@@ -57,6 +58,7 @@ export function AccountSection() {
               </Button>
             }
           />
+          <TrophyClaimSection />
           <SpotifyConnectControl />
         </>
       ) : (

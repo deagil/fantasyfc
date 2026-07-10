@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -19,6 +20,7 @@ import { toQueryErrorMessage } from "@/lib/fpl/query-error"
 import { getFplEntry, getFplEntryHistory } from "@/lib/fpl/server"
 import { getStoredTeamId, setStoredTeamId } from "@/lib/fpl/storage"
 import type { FplEntry, FplEntryHistory } from "@/lib/fpl/types"
+import { bankLeagueTrophies } from "@/lib/trophies/server"
 
 type TeamContextValue = {
   teamId: number | null
@@ -38,6 +40,8 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient()
   const fetchEntry = useServerFn(getFplEntry)
   const fetchHistory = useServerFn(getFplEntryHistory)
+  const bankTrophies = useServerFn(bankLeagueTrophies)
+  const bankedTeamIdsRef = useRef(new Set<number>())
   const [teamId, setTeamIdState] = useState<number | null>(null)
   const [isSettingTeam, setIsSettingTeam] = useState(false)
   const [setTeamError, setSetTeamError] = useState<string | null>(null)
@@ -54,6 +58,23 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
 
   const entry = entryQuery.data ?? null
   const history = historyQuery.data ?? null
+
+  // Fire-and-forget end-of-season podium banking once per team ID per session.
+  useEffect(() => {
+    if (teamId === null || !entry || entryQuery.isPending) {
+      return
+    }
+
+    if (bankedTeamIdsRef.current.has(teamId)) {
+      return
+    }
+
+    bankedTeamIdsRef.current.add(teamId)
+    void bankTrophies({ data: { teamId } }).catch(() => {
+      // Allow a later session retry if the server call failed.
+      bankedTeamIdsRef.current.delete(teamId)
+    })
+  }, [bankTrophies, entry, entryQuery.isPending, teamId])
 
   const isLoading =
     isSettingTeam ||
