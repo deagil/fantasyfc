@@ -5,11 +5,11 @@ import { DataTile } from "@/components/data-tile"
 import { hubTileGridClassName } from "@/lib/layout"
 import {
   getFeaturedScoutPreset,
-  getSecondaryScoutPresets,
+  getHubScoutPresets,
 } from "@/lib/scouts/presets"
 import { cn } from "@/lib/utils"
 
-const secondaryScoutPresets = getSecondaryScoutPresets()
+const hubScoutPresets = getHubScoutPresets()
 const featuredScoutPreset = getFeaturedScoutPreset()
 
 export function TransfersHubPage() {
@@ -18,7 +18,6 @@ export function TransfersHubPage() {
       <ScoutTile
         scout={featuredScoutPreset}
         className="col-span-2 row-span-2 lg:col-start-1 lg:row-start-1"
-        titleStyle={{ viewTransitionName: "vt-scouts-title" }}
       />
 
       <TransfersTile className="col-span-1 row-span-1 lg:col-start-3 lg:row-start-1" />
@@ -36,7 +35,7 @@ export function TransfersHubPage() {
         </DataTile>
       </ComingSoonTile>
 
-      {secondaryScoutPresets.slice(0, 2).map((scout, index) => (
+      {hubScoutPresets.slice(0, 2).map((scout, index) => (
         <ScoutTile
           key={scout.slug}
           scout={scout}
@@ -60,7 +59,7 @@ export function TransfersHubPage() {
         </DataTile>
       </ComingSoonTile>
 
-      {secondaryScoutPresets.slice(2).map((scout, index) => (
+      {hubScoutPresets.slice(2, 4).map((scout, index) => (
         <ScoutTile
           key={scout.slug}
           scout={scout}

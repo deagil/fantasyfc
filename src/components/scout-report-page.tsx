@@ -20,7 +20,11 @@ import { hubTileGridClassName } from "@/lib/layout"
 import type { PlayerRatingSummary } from "@/lib/ratings/model"
 import { usePlayerRatings } from "@/lib/ratings/hooks"
 import { SCOUT_PRESETS, type ScoutPreset } from "@/lib/scouts/presets"
-import { sortPlayersForScout } from "@/lib/scouts/sort"
+import {
+  getScoutCardScore,
+  scoutNeedsRatings,
+  sortPlayersForScout,
+} from "@/lib/scouts/sort"
 import { cn } from "@/lib/utils"
 
 function PlayerGridSkeleton() {
@@ -63,7 +67,7 @@ export function ScoutReportPage({ scout, titleStyle }: ScoutReportPageProps) {
     return sortPlayersForScout(
       players,
       scout,
-      scout.sort === "overall" ? ratingsById : undefined
+      scoutNeedsRatings(scout.sort) ? ratingsById : undefined
     )
   }, [bootstrap?.elements, ratingsById, scout])
 
@@ -76,7 +80,7 @@ export function ScoutReportPage({ scout, titleStyle }: ScoutReportPageProps) {
   }, [filteredPlayers, selectedPlayerId])
 
   const isLoading =
-    bootstrapLoading || (scout.sort === "overall" && ratingsLoading)
+    bootstrapLoading || (scoutNeedsRatings(scout.sort) && ratingsLoading)
 
   useEffect(() => {
     setSelectedPlayerId(null)
@@ -179,13 +183,7 @@ export function ScoutReportPage({ scout, titleStyle }: ScoutReportPageProps) {
                 contentClassName="grid grid-cols-1 gap-2.5 content-start px-3 pb-4 sm:grid-cols-2"
               >
                 {filteredPlayers.map((player) => {
-                  const rating = ratingsById.get(player.id)
-                  const score =
-                    scout.sort === "overall"
-                      ? (rating?.overall ?? null)
-                      : scout.sort === "bonus"
-                        ? player.bonus
-                        : player.total_points
+                  const score = getScoutCardScore(player, scout, ratingsById)
 
                   return (
                     <PlayerScoutCard
@@ -193,7 +191,7 @@ export function ScoutReportPage({ scout, titleStyle }: ScoutReportPageProps) {
                       player={player}
                       teamsById={teamsById}
                       score={score}
-                      colorizeScore={scout.sort === "overall"}
+                      colorizeScore
                       isSelected={
                         isDesktop
                           ? selectedPlayerId === player.id

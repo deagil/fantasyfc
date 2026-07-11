@@ -111,7 +111,9 @@ Stat derivation: [`stats.ts`](./stats.ts).
    minutes. For each leaf stat, build a sorted distribution. Drop the stat if
    fewer than 8 samples or zero variance (sibling weights renormalise).
 3. **Percentile** — each player's value → fraction of cohort ≤ that value
-   (open interval). Stats marked `lowerIsBetter` invert (`1 - p`).
+   (open interval). Stats marked `lowerIsBetter` use the share of the cohort
+   with equal-or-worse (higher) values — not `1 - p`, which tanks zero-inflated
+   optima (0 yellows, 0 own goals, …).
 4. **Curve** — percentile → 10–100 via `RATING_CURVE_ANCHORS` (compressed
    bottom, steep elite tail).
 5. **Roll-up** — weighted average of available leaf ratings → sub-category →
@@ -242,7 +244,11 @@ Availability / minutes — the only place season minutes are rewarded heavily
 | Stat | W | Tracks | Current | Historical |
 |---|---|---|---|---|
 | `minutes` | 0.60 | Season minutes played | `minutes` | same |
-| `starts_per_90` | 0.40 | Start rate | `starts_per_90` (API) | `per90(starts)` |
+| `starts` | 0.40 | League starts (selection volume) | `starts` | same |
+
+> Note: we previously used `starts_per_90` (`starts × 90 / minutes`). Full-90
+> starters cluster near 1.0 while early-subbed players score higher, so nailed
+> starters were mid-ranked. Season starts avoid that.
 
 ### FPL — FPL Value
 

@@ -10,6 +10,7 @@ import {
   computeRatings,
   mapPercentileToRating,
   percentileFromSorted,
+  shareAtLeastFromSorted,
 } from "@/lib/ratings/engine"
 import { computeExpectedBaselines } from "@/lib/ratings/history"
 import type {
@@ -67,6 +68,7 @@ function makeMidfieldCohort(): EnginePlayer[] {
       yellow_per_90: 0.3 - i * 0.02,
       red_per_90: 0,
       own_goals: 0,
+      starts: 10 + i,
       starts_per_90: 0.5 + i * 0.04,
       points_per_million: 5 + i,
       value_season: 5 + i,
@@ -92,6 +94,81 @@ describe("percentileFromSorted", () => {
   it("returns null for empty or invalid input", () => {
     expect(percentileFromSorted([], 3)).toBeNull()
     expect(percentileFromSorted([1, 2], null)).toBeNull()
+  })
+})
+
+describe("shareAtLeastFromSorted", () => {
+  it("ranks the zero-mass optimum at the top for lowerIsBetter stats", () => {
+    // Most of the cohort has 0 yellows; a few have cards.
+    const sorted = [0, 0, 0, 0, 0, 0, 0, 0, 1, 2]
+    const clean = shareAtLeastFromSorted(sorted, 0)!
+    const oneCard = shareAtLeastFromSorted(sorted, 1)!
+    const twoCards = shareAtLeastFromSorted(sorted, 2)!
+
+    expect(clean).toBeGreaterThan(oneCard)
+    expect(oneCard).toBeGreaterThan(twoCards)
+    // `1 - percentile` would put zeros near the bottom; share-at-least must not.
+    const naiveInvert = 1 - percentileFromSorted(sorted, 0)!
+    expect(clean).toBeGreaterThan(naiveInvert)
+  })
+
+  it("returns null for empty or invalid input", () => {
+    expect(shareAtLeastFromSorted([], 0)).toBeNull()
+    expect(shareAtLeastFromSorted([0, 1], null)).toBeNull()
+  })
+})
+
+describe("lowerIsBetter discipline ratings", () => {
+  it("gives clean players elite discipline leaf ratings", () => {
+    const cohort = Array.from({ length: 12 }, (_, i) =>
+      makePlayer(i + 1, 2, 2000, {
+        // Outfield DEF leaf stats — only discipline varies for this check.
+        defcon_per_90: 5,
+        cbi_per_90: 3,
+        tackles_per_90: 2,
+        recoveries_per_90: 4,
+        clean_sheets_per_90: 0.3,
+        xgc_per_90: 1.2,
+        yellow_per_90: i < 10 ? 0 : 0.2,
+        red_per_90: i < 11 ? 0 : 0.05,
+        own_goals: i < 11 ? 0 : 1,
+        minutes: 2000,
+        starts: 22,
+        xg_per_90: 0.05,
+        goals_per_90: 0.04,
+        goals_scored: 1,
+        penalties_missed: 0,
+        threat_per_90: 10,
+        xgi_per_90: 0.1,
+        xa_per_90: 0.05,
+        assists_per_90: 0.04,
+        assists: 1,
+        creativity_per_90: 10,
+        ict_per_90: 5,
+        bps_per_90: 20,
+        bonus_per_90: 0.2,
+        points_per_game: 4,
+        points_per_90: 4,
+        total_points: 100,
+        points_per_million: 15,
+        value_season: 10,
+        value_form: 1,
+      })
+    )
+
+    const ratings = computeRatings(cohort, { event: 25 })
+    const clean = ratings[0]!
+    const dirty = ratings[11]!
+
+    const cleanYellow = clean.categories.DEF?.sub.Discipline.stats.yellow_per_90
+    const dirtyYellow = dirty.categories.DEF?.sub.Discipline.stats.yellow_per_90
+    const cleanOg = clean.categories.DEF?.sub.Discipline.stats.own_goals
+    const dirtyOg = dirty.categories.DEF?.sub.Discipline.stats.own_goals
+
+    expect(cleanYellow?.rating).toBeGreaterThan(70)
+    expect(cleanYellow!.rating!).toBeGreaterThan(dirtyYellow!.rating!)
+    expect(cleanOg?.rating).toBeGreaterThan(70)
+    expect(cleanOg!.rating!).toBeGreaterThan(dirtyOg!.rating!)
   })
 })
 

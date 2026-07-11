@@ -106,7 +106,10 @@ export const RATING_HIERARCHY: RatingHierarchy = {
         weight: 1,
         stats: [
           { key: "minutes", weight: 0.6 },
-          { key: "starts_per_90", weight: 0.4 },
+          // Season starts (not starts/90): full-90 starters cluster at ~1.0
+          // starts_per_90 while early subs score higher, so per-90 mis-ranks
+          // nailed starters. Raw starts rewards selection volume instead.
+          { key: "starts", weight: 0.4 },
         ],
       },
     },
@@ -244,5 +247,7 @@ export const MIN_CALIBRATION_COHORT = 12
  * v2: per-position overall calibration pass (calibrate.ts).
  * v3: departed-status baseline exclusion, absence decay, 900-minute full
  *     assessment.
+ * v4: lowerIsBetter uses share-at-least (fixes zero-inflated discipline);
+ *     REL uses season starts instead of starts_per_90.
  */
-export const RATINGS_ALGO_VERSION = 3
+export const RATINGS_ALGO_VERSION = 4

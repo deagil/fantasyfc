@@ -31,6 +31,7 @@ export function deriveBootstrapStats(
 
   return {
     minutes,
+    starts: toNum(el.starts),
     starts_per_90: toNum(el.starts_per_90),
 
     // Attack
@@ -98,6 +99,7 @@ export function deriveHistoryStats(
 
   return {
     minutes,
+    starts: toNum(row.starts),
     starts_per_90: per90(toNum(row.starts), minutes),
 
     xg_per_90: per90(toNum(row.expected_goals), minutes),

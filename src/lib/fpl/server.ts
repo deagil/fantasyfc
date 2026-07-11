@@ -113,7 +113,7 @@ export const getFplEntryHistory = createServerFn({ method: "POST" })
 
 export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
   async () =>
-    cached("bootstrap", 3 * HOUR, async () => {
+    cached("bootstrap:v2", 3 * HOUR, async () => {
       const response = await fetch(`${FPL_API_BASE}/bootstrap-static/`)
 
       if (!response.ok) {
@@ -132,6 +132,11 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
           form: string
           total_points: number
           bonus: number
+          defensive_contribution: number
+          goals_scored: number
+          assists: number
+          minutes: number
+          starts: number
           selected_by_percent: string
           status: string
         }>
@@ -149,6 +154,11 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
           form: element.form,
           total_points: element.total_points,
           bonus: element.bonus,
+          defensive_contribution: element.defensive_contribution ?? 0,
+          goals_scored: element.goals_scored ?? 0,
+          assists: element.assists ?? 0,
+          minutes: element.minutes ?? 0,
+          starts: element.starts ?? 0,
           selected_by_percent: element.selected_by_percent,
           status: element.status as FplBootstrap["elements"][number]["status"],
         })),

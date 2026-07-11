@@ -6,7 +6,6 @@ import { ScrollFade } from "@/components/scroll-fade"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
 import {
-  filterPlayersByPosition,
   getElementTypeLabel,
   getPlayerClubShortName,
   getPlayerInitials,
@@ -16,9 +15,11 @@ import type { PlayerRatingSummary } from "@/lib/ratings/model"
 import { usePlayerRatings } from "@/lib/ratings/hooks"
 import { ratingTextClassName } from "@/lib/ratings/tone"
 import type { ScoutPreset } from "@/lib/scouts/presets"
+import { sortPlayersForScout } from "@/lib/scouts/sort"
 import { cn } from "@/lib/utils"
 
 const FEATURED_PREVIEW_COUNT = 20
+const HUB_PREVIEW_COUNT = 3
 
 function ScoutPreviewCard({
   name,
@@ -53,6 +54,75 @@ function ScoutPreviewCard({
       >
         {overall}
       </span>
+    </div>
+  )
+}
+
+/** Compact preview for 1×1 hub scout tiles — top players in that scout's ranking. */
+function TopPlayersPreview({
+  players,
+  ratingsById,
+  teamsById,
+  isLoading,
+}: {
+  players: FplElement[]
+  ratingsById: Map<number, PlayerRatingSummary>
+  teamsById: Map<number, FplTeam>
+  isLoading: boolean
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col gap-1.5">
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-12 w-full rounded-xl" />
+      </div>
+    )
+  }
+
+  if (players.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col justify-center gap-1.5">
+      {players.map((player) => {
+        const overall = ratingsById.get(player.id)?.overall ?? null
+        const clubShortName = getPlayerClubShortName(player, teamsById)
+        const positionLabel = getElementTypeLabel(player.element_type)
+
+        return (
+          <div
+            key={player.id}
+            className="flex min-w-0 items-center gap-2 rounded-lg bg-foreground/4 px-2 py-1.5"
+          >
+            <span
+              aria-hidden="true"
+              className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-[10px] font-semibold text-muted-foreground"
+            >
+              {getPlayerInitials(player.web_name)}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold leading-tight">
+                {player.web_name}
+              </p>
+              <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                {clubShortName} · {positionLabel}
+              </p>
+            </div>
+            {overall != null ? (
+              <span
+                className={cn(
+                  "shrink-0 text-base font-semibold tabular-nums leading-none",
+                  ratingTextClassName(overall)
+                )}
+              >
+                {overall}
+              </span>
+            ) : null}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -125,31 +195,37 @@ export function ScoutTile({
 
   const isFeatured = scout.featured === true
 
+  const ratingsById = useMemo(() => {
+    const map = new Map<number, PlayerRatingSummary>()
+    for (const rating of ratingsPayload?.ratings ?? []) {
+      map.set(rating.id, rating)
+    }
+    return map
+  }, [ratingsPayload?.ratings])
+
+  const rankedPlayers = useMemo(() => {
+    const players = bootstrap?.elements ?? []
+    return sortPlayersForScout(players, scout, ratingsById)
+  }, [bootstrap?.elements, ratingsById, scout])
+
   const topRatedPlayers = useMemo(() => {
     if (!isFeatured) {
       return []
     }
 
-    const ratings = ratingsPayload?.ratings ?? []
-    const filtered =
-      scout.positionFilter === "all"
-        ? ratings
-        : ratings.filter((rating) => {
-            const label = getElementTypeLabel(rating.elementType)
-            return label === scout.positionFilter
-          })
-
-    return [...filtered]
-      .sort((a, b) => b.overall - a.overall || a.webName.localeCompare(b.webName))
+    return rankedPlayers
       .slice(0, FEATURED_PREVIEW_COUNT)
-  }, [isFeatured, ratingsPayload?.ratings, scout.positionFilter])
+      .flatMap((player) => {
+        const rating = ratingsById.get(player.id)
+        return rating ? [rating] : []
+      })
+  }, [isFeatured, rankedPlayers, ratingsById])
 
-  const playerCount = useMemo(() => {
-    const players = bootstrap?.elements ?? []
-    return filterPlayersByPosition(players, scout.positionFilter).length
-  }, [bootstrap?.elements, scout.positionFilter])
+  const hubPreviewPlayers = isFeatured
+    ? []
+    : rankedPlayers.slice(0, HUB_PREVIEW_COUNT)
 
-  const isLoading = bootstrapLoading || (isFeatured && ratingsLoading)
+  const isLoading = bootstrapLoading || ratingsLoading
 
   return (
     <Link
@@ -169,17 +245,14 @@ export function ScoutTile({
         <DataTile.Header className={cn(isFeatured ? "pb-2" : "pb-0")}>
           <DataTile.Heading>
             <DataTile.Label style={titleStyle}>{scout.name}</DataTile.Label>
-            <DataTile.Subtitle className="text-sm font-medium">
-              {scout.subtitle}
-            </DataTile.Subtitle>
           </DataTile.Heading>
         </DataTile.Header>
 
         <DataTile.Content
-          align={isFeatured ? "between" : "center"}
+          align="between"
           className={cn(
             "min-h-0 flex-1",
-            isFeatured ? "justify-between gap-2 pt-1" : "justify-end pt-0"
+            isFeatured ? "justify-between gap-2 pt-1" : "justify-center gap-2 pt-2"
           )}
         >
           {isFeatured ? (
@@ -189,15 +262,14 @@ export function ScoutTile({
               teamsById={teamsById}
               isLoading={isLoading}
             />
-          ) : null}
-
-          <p className="shrink-0 text-xs text-muted-foreground tabular-nums">
-            {isLoading
-              ? "Loading…"
-              : isFeatured
-                ? `Top ${topRatedPlayers.length} · ${playerCount.toLocaleString()} players`
-                : `${playerCount.toLocaleString()} players`}
-          </p>
+          ) : (
+            <TopPlayersPreview
+              players={hubPreviewPlayers}
+              ratingsById={ratingsById}
+              teamsById={teamsById}
+              isLoading={isLoading}
+            />
+          )}
         </DataTile.Content>
       </DataTile>
     </Link>

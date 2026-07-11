@@ -28,9 +28,7 @@ export function CentralPage() {
           <DataTile interactive className="relative h-full">
             <DataTile.Header className="relative z-10">
               <DataTile.Heading>
-                <DataTile.Label style={{ viewTransitionName: "vt-scouts-title" }}>
-                  Scouts
-                </DataTile.Label>
+                <DataTile.Label>Scouts</DataTile.Label>
               </DataTile.Heading>
             </DataTile.Header>
             <img

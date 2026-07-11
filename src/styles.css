@@ -19,6 +19,7 @@
     --color-pl-sky: var(--pl-sky);
     --color-rating-elite: var(--rating-elite);
     --color-rating-good: var(--rating-good);
+    --color-rating-cool: var(--rating-cool);
     --color-rating-fair: var(--rating-fair);
     --color-rating-poor: var(--rating-poor);
     --color-rating-bad: var(--rating-bad);
@@ -76,8 +77,9 @@
     --pl-sky-deep: #dceef8;
 
     /* FIFA-style rating bands — readable on white tiles */
-    --rating-elite: #0b7a3a;
+    --rating-elite: #9333ea;
     --rating-good: #1f9d4b;
+    --rating-cool: #3b82f6;
     --rating-fair: #b8860b;
     --rating-poor: #d97706;
     --rating-bad: #dc2626;
@@ -581,6 +583,7 @@
 
 ::view-transition-group(vt-fixtures-title),
 ::view-transition-group(vt-scouts-title),
+::view-transition-group(vt-trophy-title),
 ::view-transition-group(page-title),
 ::view-transition-group(page-header-actions) {
   animation-duration: 0ms;
@@ -589,6 +592,7 @@
 
 ::view-transition-image-pair(vt-fixtures-title),
 ::view-transition-image-pair(vt-scouts-title),
+::view-transition-image-pair(vt-trophy-title),
 ::view-transition-image-pair(page-title),
 ::view-transition-image-pair(page-header-actions) {
   overflow: visible;
@@ -598,6 +602,8 @@
 ::view-transition-new(vt-fixtures-title),
 ::view-transition-old(vt-scouts-title),
 ::view-transition-new(vt-scouts-title),
+::view-transition-old(vt-trophy-title),
+::view-transition-new(vt-trophy-title),
 ::view-transition-old(page-title),
 ::view-transition-new(page-title),
 ::view-transition-old(page-header-actions),
@@ -609,6 +615,7 @@
 
 ::view-transition-old(vt-fixtures-title),
 ::view-transition-old(vt-scouts-title),
+::view-transition-old(vt-trophy-title),
 ::view-transition-old(page-title) {
   animation: vt-page-fade-out var(--vt-page-fade-duration)
     cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -616,6 +623,7 @@
 
 ::view-transition-new(vt-fixtures-title),
 ::view-transition-new(vt-scouts-title),
+::view-transition-new(vt-trophy-title),
 ::view-transition-new(page-title) {
   animation: vt-page-fade-in var(--vt-page-fade-duration)
     cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -638,7 +646,7 @@
   }
 }
 
-/* League navigation: fade out → shell backdrop hold → fade in (masks loading). */
+/* Path navigations: fade out → shell backdrop hold → fade in (masks loading). */
 :root:active-view-transition-type(league-push),
 :root:active-view-transition-type(league-pop) {
   &::view-transition {
@@ -651,12 +659,18 @@
       cubic-bezier(0.4, 0, 1, 1) both;
   }
 
-  &::view-transition-old(page-title) {
+  &::view-transition-old(page-title),
+  &::view-transition-old(vt-scouts-title),
+  &::view-transition-old(vt-fixtures-title),
+  &::view-transition-old(vt-trophy-title) {
     animation: vt-page-fade-out var(--vt-league-fade-out-duration)
       cubic-bezier(0.4, 0, 1, 1) both;
   }
 
-  &::view-transition-new(page-title) {
+  &::view-transition-new(page-title),
+  &::view-transition-new(vt-scouts-title),
+  &::view-transition-new(vt-fixtures-title),
+  &::view-transition-new(vt-trophy-title) {
     opacity: 0;
     animation: vt-page-fade-in var(--vt-league-fade-in-duration)
       cubic-bezier(0.22, 1, 0.36, 1) both;

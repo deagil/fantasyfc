@@ -1,6 +1,4 @@
 import {
-  formatPlayerForm,
-  formatPlayerPrice,
   getElementTypeLabel,
   getPlayerClubShortName,
   getPlayerInitials,
@@ -53,10 +51,6 @@ export function PlayerScoutCard({
         </p>
         <p className="mt-0.5 truncate text-xs" data-tile-row-muted>
           {clubShortName} · {positionLabel}
-        </p>
-        <p className="mt-1 truncate text-xs tabular-nums" data-tile-row-muted>
-          {formatPlayerPrice(player.now_cost)} · Form{" "}
-          {formatPlayerForm(player.form)}
         </p>
       </div>
       {score != null ? (

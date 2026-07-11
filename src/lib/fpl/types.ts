@@ -112,6 +112,11 @@ export type FplElement = {
   form: string
   total_points: number
   bonus: number
+  defensive_contribution: number
+  goals_scored: number
+  assists: number
+  minutes: number
+  starts: number
   selected_by_percent: string
   status: FplElementStatus
 }

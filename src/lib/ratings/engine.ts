@@ -53,6 +53,31 @@ export function percentileFromSorted(
   return lo / (sorted.length + 1)
 }
 
+/**
+ * Fraction of sorted values >= v, on a (0, 1) open interval.
+ * Used for lowerIsBetter stats so a zero-inflated optimum (0 yellows,
+ * 0 own goals, …) ranks at the top instead of being punished by `1 - p`.
+ */
+export function shareAtLeastFromSorted(
+  sorted: readonly number[],
+  value: number | null
+): number | null {
+  if (sorted.length === 0 || value === null || !Number.isFinite(value)) {
+    return null
+  }
+  let lo = 0
+  let hi = sorted.length
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1
+    if (sorted[mid] < value) {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  return (sorted.length - lo) / (sorted.length + 1)
+}
+
 export function mapPercentileToRating(p: number): number {
   const anchors = RATING_CURVE_ANCHORS
   if (p <= anchors[0].p) {
@@ -184,26 +209,26 @@ function ratePlayer(
       for (const stat of subSpec.stats) {
         const value = player.stats[stat.key] ?? null
         const distribution = distributions[stat.key]
+        const lowerIsBetter = stat.lowerIsBetter ?? false
+        // lowerIsBetter: share of cohort with equal-or-worse (higher) values.
+        // Do not use `1 - percentile` — with a mass of zeros that tanks the
+        // clean players who sit in the zero pile.
         const percentile = distribution
-          ? percentileFromSorted(distribution, value)
+          ? lowerIsBetter
+            ? shareAtLeastFromSorted(distribution, value)
+            : percentileFromSorted(distribution, value)
           : null
-        const adjusted =
+        const rating =
           percentile === null
             ? null
-            : stat.lowerIsBetter
-              ? 1 - percentile
-              : percentile
-        const rating =
-          adjusted === null
-            ? null
-            : Math.round(clampRating(mapPercentileToRating(adjusted)))
+            : Math.round(clampRating(mapPercentileToRating(percentile)))
 
         statScores[stat.key] = {
           value,
           percentile,
           rating,
           weight: stat.weight,
-          lowerIsBetter: stat.lowerIsBetter ?? false,
+          lowerIsBetter,
         }
 
         if (rating !== null) {

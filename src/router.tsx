@@ -5,14 +5,16 @@ function pathDepth(pathname: string): number {
   return pathname.split("/").filter(Boolean).length
 }
 
-function isDetailPushPath(pathname: string): boolean {
-  return (
-    pathname.startsWith("/league/") ||
-    pathname.startsWith("/trophy/") ||
-    pathname.startsWith("/scouts/")
-  )
+function isScoutReportPath(pathname: string): boolean {
+  return pathname.startsWith("/scouts/")
 }
 
+/**
+ * Full-screen fade for pathname changes (league, scout, trophy, …).
+ * Uses the proven `league-push` / `league-pop` view-transition types.
+ * Search-only changes (e.g. `?tab=`) stay instant — the hub carousel owns those.
+ * Scout ↔ scout preset switches stay instant (same report shell, just a filter).
+ */
 export function getRouter() {
   const router = createTanStackRouter({
     routeTree,
@@ -23,20 +25,20 @@ export function getRouter() {
     defaultViewTransition: {
       types: ({ fromLocation, toLocation }) => {
         if (!fromLocation) return false
+
         const from = fromLocation.pathname
         const to = toLocation.pathname
+        // Same path → search/hash only (hub tabs). Skip VT.
+        if (from === to) return false
+
+        // Scout preset tabs share one report shell — don't full-fade between them.
+        if (isScoutReportPath(from) && isScoutReportPath(to)) return false
+
         const fromDepth = pathDepth(from)
         const toDepth = pathDepth(to)
 
-        if (isDetailPushPath(from) || isDetailPushPath(to)) {
-          if (toDepth > fromDepth) return ["league-push"]
-          if (toDepth < fromDepth) return ["league-pop"]
-          return false
-        }
-
-        if (toDepth > fromDepth) return ["push"]
-        if (toDepth < fromDepth) return ["pop"]
-        return false
+        if (toDepth < fromDepth) return ["league-pop"]
+        return ["league-push"]
       },
     },
   })

@@ -68,10 +68,7 @@ function ScoutDetailPage() {
 
           <div className={mobileContentTopSpacerClassName} aria-hidden />
 
-          <ScoutReportPage
-            scout={scout}
-            titleStyle={{ viewTransitionName: "vt-scouts-title" }}
-          />
+          <ScoutReportPage scout={scout} />
         </div>
       </main>
     </AppShell>
