@@ -10,6 +10,7 @@ import {
 
 import { TileGridPage } from "@/components/tile-grid-page"
 import { CentralPage } from "@/components/central-page"
+import { ScoutsPage } from "@/components/scouts-page"
 
 export const defaultNavTabId = "hub" as const
 
@@ -42,8 +43,8 @@ export const navPages: NavPageConfig[] = [
     id: "scouts",
     label: "Scouts",
     icon: BinocularsIcon,
-    View: TileGridPage,
-    enabled: false,
+    View: ScoutsPage,
+    enabled: true,
   },
   {
     id: "fixtures",

@@ -123,7 +123,17 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
       const data = (await response.json()) as {
         events: FplBootstrap["events"]
         teams: FplBootstrap["teams"]
-        elements: Array<{ id: number; web_name: string }>
+        elements: Array<{
+          id: number
+          web_name: string
+          team: number
+          element_type: number
+          now_cost: number
+          form: string
+          total_points: number
+          selected_by_percent: string
+          status: string
+        }>
       }
 
       return {
@@ -132,6 +142,13 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
         elements: data.elements.map((element) => ({
           id: element.id,
           web_name: element.web_name,
+          team: element.team,
+          element_type: element.element_type as FplBootstrap["elements"][number]["element_type"],
+          now_cost: element.now_cost,
+          form: element.form,
+          total_points: element.total_points,
+          selected_by_percent: element.selected_by_percent,
+          status: element.status as FplBootstrap["elements"][number]["status"],
         })),
       } satisfies FplBootstrap
     })

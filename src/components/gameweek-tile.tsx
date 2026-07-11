@@ -207,7 +207,7 @@ function OffSeasonContent() {
         <SeasonStat label="Low" value={season.lowestPoints} />
         <SeasonStat label="Avg" value={season.averagePoints} />
         <SeasonStat label="High" value={season.highestPoints} />
-        <SeasonStat label="Xfers" value={season.totalTransfers} />
+        <SeasonStat label="Transfers" value={season.totalTransfers} />
         <SeasonStat label="Profit" value={formatTeamProfit(season.teamValue)} />
       </div>
     </div>

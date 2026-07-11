@@ -1,4 +1,7 @@
+import { Link } from "@tanstack/react-router"
+
 import { DataTile } from "@/components/data-tile"
+import { TrophyMark } from "@/components/trophy-mark"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTeam } from "@/lib/fpl/team-context"
 import {
@@ -6,41 +9,8 @@ import {
   medalOrdinal,
 } from "@/lib/trophies/silverware"
 import type { SilverwareTitle } from "@/lib/trophies/silverware"
-import type { TrophyMedal } from "@/lib/trophies/types"
-import { cn } from "@/lib/utils"
 
 const PLACEHOLDER_SLOTS = 3
-
-const medalSurfaceClassName: Record<TrophyMedal, string> = {
-  gold: "bg-[color-mix(in_oklab,var(--pl-yellow)_88%,white)] text-[var(--pl-purple)] ring-[color-mix(in_oklab,var(--pl-yellow)_55%,transparent)]",
-  silver:
-    "bg-[color-mix(in_oklab,white_70%,var(--pl-purple))] text-[var(--pl-purple)] ring-[color-mix(in_oklab,var(--pl-purple)_18%,transparent)]",
-  bronze:
-    "bg-[color-mix(in_oklab,var(--pl-orange)_82%,white)] text-[var(--pl-purple)] ring-[color-mix(in_oklab,var(--pl-orange)_45%,transparent)]",
-}
-
-function TrophyMedalMark({
-  medal,
-  className,
-}: {
-  medal: TrophyMedal
-  className?: string
-}) {
-  return (
-    <div
-      aria-hidden="true"
-      className={cn(
-        "flex aspect-square w-full max-w-16 items-center justify-center rounded-full ring-2",
-        medalSurfaceClassName[medal],
-        className
-      )}
-    >
-      <span className="text-sm font-bold tabular-nums tracking-tight lg:text-base">
-        {medalOrdinal(medal)}
-      </span>
-    </div>
-  )
-}
 
 function EmptyTrophySlot() {
   return (
@@ -59,15 +29,19 @@ function EmptyTrophySlot() {
 
 function TitleCard({ title }: { title: SilverwareTitle }) {
   return (
-    <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-      <TrophyMedalMark medal={title.medal} />
+    <Link
+      to="/trophy/$leagueId"
+      params={{ leagueId: String(title.leagueId) }}
+      className="flex min-w-0 flex-1 flex-col items-center gap-2 rounded-lg outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-(--shell-foreground)/30"
+    >
+      <TrophyMark leagueId={title.leagueId} medal={title.medal} />
       <p className="w-full truncate text-center text-sm font-medium">
         {title.leagueName}
       </p>
       <p className="text-xs text-muted-foreground tabular-nums">
         {title.leagueSize > 0 ? `${title.leagueSize} managers` : medalOrdinal(title.medal)}
       </p>
-    </div>
+    </Link>
   )
 }
 

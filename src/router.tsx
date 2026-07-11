@@ -5,8 +5,8 @@ function pathDepth(pathname: string): number {
   return pathname.split("/").filter(Boolean).length
 }
 
-function isLeaguePath(pathname: string): boolean {
-  return pathname.startsWith("/league/")
+function isDetailPushPath(pathname: string): boolean {
+  return pathname.startsWith("/league/") || pathname.startsWith("/trophy/")
 }
 
 export function getRouter() {
@@ -24,7 +24,7 @@ export function getRouter() {
         const fromDepth = pathDepth(from)
         const toDepth = pathDepth(to)
 
-        if (isLeaguePath(from) || isLeaguePath(to)) {
+        if (isDetailPushPath(from) || isDetailPushPath(to)) {
           if (toDepth > fromDepth) return ["league-push"]
           if (toDepth < fromDepth) return ["league-pop"]
           return false

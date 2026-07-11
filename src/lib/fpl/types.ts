@@ -99,9 +99,20 @@ export type FplTeam = {
   short_name: string
 }
 
+export type FplElementTypeId = 1 | 2 | 3 | 4
+
+export type FplElementStatus = "a" | "d" | "i" | "n" | "s" | "u"
+
 export type FplElement = {
   id: number
   web_name: string
+  team: number
+  element_type: FplElementTypeId
+  now_cost: number
+  form: string
+  total_points: number
+  selected_by_percent: string
+  status: FplElementStatus
 }
 
 export type FplPick = {

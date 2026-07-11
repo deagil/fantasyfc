@@ -21,6 +21,10 @@ import { Label } from "@/components/ui/label"
 import { KickoffThemePicker } from "@/components/kickoff-theme-picker"
 import { AccountSection } from "@/components/account-section"
 import { SettingsRow } from "@/components/settings-row"
+import {
+  TrophyClaimButton,
+  TrophyClaimProvider,
+} from "@/components/trophy-claim-section"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useTeam } from "@/lib/fpl/team-context"
 import { cn } from "@/lib/utils"
@@ -66,15 +70,18 @@ export function UserMenu() {
   const settingsBody = (
     <div className="flex flex-col gap-4 text-sm">
       <KickoffThemePicker />
-      <SettingsRow
-        label="Team"
-        value={entry?.name ?? "Loading team..."}
-        action={
-          <Button variant="outline" size="sm" onClick={clearTeam}>
-            Switch Team
-          </Button>
-        }
-      />
+      <div className="flex flex-col gap-2">
+        <SettingsRow
+          label="Team"
+          value={entry?.name ?? "Loading team..."}
+          action={
+            <Button variant="outline" size="sm" onClick={clearTeam}>
+              Switch Team
+            </Button>
+          }
+        />
+        <TrophyClaimButton />
+      </div>
       {error ? <p className="text-destructive">{error}</p> : null}
       <AccountSection />
     </div>
@@ -113,6 +120,12 @@ export function UserMenu() {
     </div>
   )
 
+  const body = (
+    <TrophyClaimProvider>
+      {isLoggedIn ? settingsBody : loginBody}
+    </TrophyClaimProvider>
+  )
+
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -133,7 +146,7 @@ export function UserMenu() {
               <DialogHeader>
                 <DialogTitle>Team settings</DialogTitle>
               </DialogHeader>
-              {settingsBody}
+              {body}
             </>
           ) : (
             <>
@@ -144,7 +157,7 @@ export function UserMenu() {
                   browser.
                 </DialogDescription>
               </DialogHeader>
-              {loginBody}
+              {body}
             </>
           )}
         </DialogContent>
@@ -169,7 +182,7 @@ export function UserMenu() {
               "overflow-y-auto overscroll-contain px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
             )}
           >
-            {settingsBody}
+            {body}
           </DrawerPanel>
         ) : (
           <DrawerPanel
@@ -180,7 +193,7 @@ export function UserMenu() {
               "overflow-y-auto overscroll-contain px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
             )}
           >
-            {loginBody}
+            {body}
           </DrawerPanel>
         )}
       </DrawerContent>

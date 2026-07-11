@@ -1,7 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router"
 
 import { AppShell } from "@/components/app-shell"
-import { DetailPageChrome } from "@/components/detail-page-chrome"
+import {
+  DetailPageDesktopChrome,
+} from "@/components/detail-page-chrome"
+import { MobilePageHeader } from "@/components/mobile-page-header"
 import { DataTile } from "@/components/data-tile"
 import { LeaguePositionChart } from "@/components/league-position-chart"
 import { LeagueStandingsList } from "@/components/league-standings-list"
@@ -12,12 +15,14 @@ import {
 import { LEAGUE_RANK_HISTORY_WEEKS } from "@/lib/fpl/league-rank-history"
 import { TeamProvider, useTeam } from "@/lib/fpl/team-context"
 import {
-  hubContentSectionClassName,
+  contentContainerClassName,
   hubMainClassName,
+  hubTileContainerClassName,
   hubTileGridClassName,
   mobileContentTopSpacerClassName,
 } from "@/lib/layout"
 import { tabSearch } from "@/lib/nav-pages"
+import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/league/$leagueId")({
   beforeLoad: ({ params }) => {
@@ -60,19 +65,29 @@ function LeagueDetailPage() {
     ? "Could not load position history."
     : null
 
+  const backLink = (
+    <Link to="/" search={tabSearch("hub")} aria-label="Back" />
+  )
+
   return (
     <AppShell className="flex flex-col overflow-x-hidden lg:h-svh lg:overflow-y-hidden">
-      <DetailPageChrome
+      <MobilePageHeader
+        className="lg:hidden"
         title={leagueName}
-        backRender={
-          <Link to="/" search={tabSearch("hub")} aria-label="Back" />
-        }
+        backRender={backLink}
       />
 
       <main className={hubMainClassName}>
-        <div className={hubContentSectionClassName}>
+        {/* Same chrome → content stack as hub `_app` nav + tiles */}
+        <div className={cn(contentContainerClassName, hubTileContainerClassName)}>
+          <DetailPageDesktopChrome
+            title={leagueName}
+            backRender={backLink}
+          />
+
           <div className={mobileContentTopSpacerClassName} aria-hidden />
-          <div className={hubTileGridClassName}>
+
+          <div className={cn(hubTileGridClassName, "lg:mt-2")}>
             <DataTile
               className="col-span-2 row-span-3 lg:col-start-1 lg:row-start-1"
             >

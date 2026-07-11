@@ -45,7 +45,9 @@ export function MobilePageHeader({
                   className="shell-chrome-ghost shrink-0 rounded-full"
                   aria-label={backLabel}
                   render={backRender}
-                />
+                >
+                  <ChevronLeftIcon />
+                </Button>
               ) : onBack ? (
                 <Button
                   variant="ghost"
