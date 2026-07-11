@@ -193,6 +193,7 @@ export function ScoutReportPage({ scout, titleStyle }: ScoutReportPageProps) {
                       player={player}
                       teamsById={teamsById}
                       score={score}
+                      colorizeScore={scout.sort === "overall"}
                       isSelected={
                         isDesktop
                           ? selectedPlayerId === player.id

@@ -12,6 +12,10 @@ import {
 import type { FplElement, FplTeam } from "@/lib/fpl/types"
 import type { CategoryId } from "@/lib/ratings/model"
 import { usePlayerRatingsById } from "@/lib/ratings/hooks"
+import {
+  ratingSurfaceClassName,
+  ratingTextClassName,
+} from "@/lib/ratings/tone"
 import { cn } from "@/lib/utils"
 
 type PlayerDetailPaneProps = {
@@ -44,17 +48,21 @@ function DetailStat({
   label,
   value,
   className,
+  valueClassName,
 }: {
   label: string
   value: React.ReactNode
   className?: string
+  valueClassName?: string
 }) {
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </span>
-      <span className="text-lg font-semibold tabular-nums">{value}</span>
+      <span className={cn("text-lg font-semibold tabular-nums", valueClassName)}>
+        {value}
+      </span>
     </div>
   )
 }
@@ -89,16 +97,31 @@ function RatingCategories({
       <DetailStat
         label="OVR"
         value={overall ?? "—"}
-        className="rounded-lg bg-foreground/4 px-2.5 py-2"
+        className={cn(
+          "rounded-lg px-2.5 py-2",
+          overall != null ? ratingSurfaceClassName(overall) : "bg-foreground/4"
+        )}
+        valueClassName={
+          overall != null ? ratingTextClassName(overall) : undefined
+        }
       />
-      {scores.map((id) => (
-        <DetailStat
-          key={id}
-          label={CATEGORY_LABELS[id]}
-          value={categories[id]}
-          className="rounded-lg bg-foreground/4 px-2.5 py-2"
-        />
-      ))}
+      {scores.map((id) => {
+        const score = categories[id]
+        return (
+          <DetailStat
+            key={id}
+            label={CATEGORY_LABELS[id]}
+            value={score}
+            className={cn(
+              "rounded-lg px-2.5 py-2",
+              score != null ? ratingSurfaceClassName(score) : "bg-foreground/4"
+            )}
+            valueClassName={
+              score != null ? ratingTextClassName(score) : undefined
+            }
+          />
+        )
+      })}
     </div>
   )
 }

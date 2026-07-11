@@ -14,6 +14,7 @@ import {
 import type { FplElement, FplTeam } from "@/lib/fpl/types"
 import type { PlayerRatingSummary } from "@/lib/ratings/model"
 import { usePlayerRatings } from "@/lib/ratings/hooks"
+import { ratingTextClassName } from "@/lib/ratings/tone"
 import type { ScoutPreset } from "@/lib/scouts/presets"
 import { cn } from "@/lib/utils"
 
@@ -44,7 +45,12 @@ function ScoutPreviewCard({
           {clubShortName} · {positionLabel}
         </p>
       </div>
-      <span className="shrink-0 text-xl font-semibold tabular-nums leading-none">
+      <span
+        className={cn(
+          "shrink-0 text-xl font-semibold tabular-nums leading-none",
+          ratingTextClassName(overall)
+        )}
+      >
         {overall}
       </span>
     </div>
