@@ -64,6 +64,84 @@ function BackStat({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
+function cleanEnrichmentText(value: string | null | undefined): string | null {
+  if (value == null) {
+    return null
+  }
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function formatPreferredFoot(side: string | null | undefined): string | null {
+  const value = cleanEnrichmentText(side)
+  if (value == null) {
+    return null
+  }
+  const lower = value.toLowerCase()
+  if (lower === "left" || lower === "l") {
+    return "Left"
+  }
+  if (lower === "right" || lower === "r") {
+    return "Right"
+  }
+  if (lower === "both") {
+    return "Both"
+  }
+  return value
+}
+
+function formatBirthYear(birthDate: string | null | undefined): string | null {
+  const value = cleanEnrichmentText(birthDate)
+  if (value == null) {
+    return null
+  }
+  const match = /^(\d{4})/.exec(value)
+  return match?.[1] ?? value
+}
+
+function formatShirtNumber(number: string | null | undefined): string | null {
+  const value = cleanEnrichmentText(number)
+  if (value == null) {
+    return null
+  }
+  return value.startsWith("#") ? value : `#${value}`
+}
+
+type BackTriviaItem = { label: string; value: string }
+
+function buildBackTrivia(bio: {
+  height: string | null
+  weight: string | null
+  side: string | null
+  birthDate: string | null
+  nationality: string | null
+  number: string | null
+  birthLocation: string | null
+} | null | undefined): BackTriviaItem[] {
+  if (bio == null) {
+    return []
+  }
+
+  const candidates: Array<{ label: string; value: string | null }> = [
+    { label: "Height", value: cleanEnrichmentText(bio.height) },
+    { label: "Weight", value: cleanEnrichmentText(bio.weight) },
+    { label: "Born", value: formatBirthYear(bio.birthDate) },
+    { label: "Foot", value: formatPreferredFoot(bio.side) },
+    { label: "Nation", value: cleanEnrichmentText(bio.nationality) },
+    { label: "Number", value: formatShirtNumber(bio.number) },
+  ]
+
+  const filled = candidates.filter(
+    (item): item is BackTriviaItem => item.value != null
+  )
+  if (filled.length > 0) {
+    return filled
+  }
+
+  const birthPlace = cleanEnrichmentText(bio.birthLocation)
+  return birthPlace == null ? [] : [{ label: "From", value: birthPlace }]
+}
+
 function CardFace({
   children,
   holoActive,
@@ -171,6 +249,12 @@ export function PlayerTradingCard({
     )
 
   const showPhoto = artUrl != null && !photoFailed
+  const bio = enrichment?.bio
+  const fullName = cleanEnrichmentText(bio?.fullName)
+  const backTrivia = buildBackTrivia(bio)
+  const backSubtitle = [team?.short_name, formatPlayerStatus(player.status)]
+    .filter(Boolean)
+    .join(" · ")
 
   const cardInner = (
     <div
@@ -236,13 +320,25 @@ export function PlayerTradingCard({
         >
           <div className="trading-card-back-content">
             <div>
-              <div className="trading-card-back-title">{player.web_name}</div>
-              <div className="trading-card-back-sub">
-                {team?.short_name ?? "—"} · {formatPlayerStatus(player.status)}
+              <div className="trading-card-back-title">
+                {fullName ?? player.web_name}
               </div>
+              <div className="trading-card-back-sub">{backSubtitle || "—"}</div>
             </div>
 
-            <div className="trading-card-back-stats">
+            {backTrivia.length > 0 ? (
+              <div className="trading-card-back-stats trading-card-back-stats--trivia">
+                {backTrivia.map((item) => (
+                  <BackStat
+                    key={item.label}
+                    label={item.label}
+                    value={item.value}
+                  />
+                ))}
+              </div>
+            ) : null}
+
+            <div className="trading-card-back-stats trading-card-back-stats--fpl">
               <BackStat
                 label="Price"
                 value={formatPlayerPrice(player.now_cost)}
