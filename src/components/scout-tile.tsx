@@ -64,7 +64,7 @@ function FeaturedRatingsPreview({
 }) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {Array.from({ length: 8 }, (_, index) => (
           <Skeleton key={index} className="h-19 rounded-xl" />
         ))}
@@ -81,7 +81,7 @@ function FeaturedRatingsPreview({
   return (
     <ScrollFade
       className="min-h-0 w-full min-w-0 flex-1"
-      contentClassName="grid grid-cols-2 gap-2.5 content-start"
+      contentClassName="grid grid-cols-1 gap-2.5 content-start sm:grid-cols-2"
       fadeFrom="--tile-bg"
     >
       {ratings.map((rating) => {

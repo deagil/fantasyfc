@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils"
 
 function PlayerGridSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-2.5 px-3 pb-4">
+    <div className="grid grid-cols-1 gap-2.5 px-3 pb-4 sm:grid-cols-2">
       {Array.from({ length: 8 }, (_, index) => (
         <Skeleton key={index} className="h-19 rounded-xl" />
       ))}
@@ -176,7 +176,7 @@ export function ScoutReportPage({ scout, titleStyle }: ScoutReportPageProps) {
             ) : (
               <ScrollFade
                 className="flex min-h-0 w-full min-w-0 flex-1"
-                contentClassName="grid grid-cols-2 gap-2.5 content-start px-3 pb-4"
+                contentClassName="grid grid-cols-1 gap-2.5 content-start px-3 pb-4 sm:grid-cols-2"
               >
                 {filteredPlayers.map((player) => {
                   const rating = ratingsById.get(player.id)
