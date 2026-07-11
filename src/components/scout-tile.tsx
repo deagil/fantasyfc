@@ -14,6 +14,7 @@ import {
 import type { FplElement, FplTeam } from "@/lib/fpl/types"
 import type { PlayerRatingSummary } from "@/lib/ratings/model"
 import { usePlayerRatings } from "@/lib/ratings/hooks"
+import { ratingTextClassName } from "@/lib/ratings/tone"
 import type { ScoutPreset } from "@/lib/scouts/presets"
 import { cn } from "@/lib/utils"
 
@@ -44,7 +45,12 @@ function ScoutPreviewCard({
           {clubShortName} · {positionLabel}
         </p>
       </div>
-      <span className="shrink-0 text-xl font-semibold tabular-nums leading-none">
+      <span
+        className={cn(
+          "shrink-0 text-xl font-semibold tabular-nums leading-none",
+          ratingTextClassName(overall)
+        )}
+      >
         {overall}
       </span>
     </div>
@@ -64,7 +70,7 @@ function FeaturedRatingsPreview({
 }) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {Array.from({ length: 8 }, (_, index) => (
           <Skeleton key={index} className="h-19 rounded-xl" />
         ))}
@@ -81,7 +87,7 @@ function FeaturedRatingsPreview({
   return (
     <ScrollFade
       className="min-h-0 w-full min-w-0 flex-1"
-      contentClassName="grid grid-cols-2 gap-2.5 content-start"
+      contentClassName="grid grid-cols-1 gap-2.5 content-start sm:grid-cols-2"
       fadeFrom="--tile-bg"
     >
       {ratings.map((rating) => {

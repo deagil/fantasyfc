@@ -6,6 +6,7 @@ import {
   getPlayerInitials,
 } from "@/lib/fpl/players"
 import type { FplElement, FplTeam } from "@/lib/fpl/types"
+import { ratingTextClassName } from "@/lib/ratings/tone"
 import { cn } from "@/lib/utils"
 
 type PlayerScoutCardProps = {
@@ -15,6 +16,8 @@ type PlayerScoutCardProps = {
   onSelect: (player: FplElement) => void
   /** Optional headline score shown on the right (e.g. overall rating). */
   score?: number | null
+  /** When true, apply FIFA-style rating colour bands to `score`. */
+  colorizeScore?: boolean
 }
 
 export function PlayerScoutCard({
@@ -23,6 +26,7 @@ export function PlayerScoutCard({
   isSelected,
   onSelect,
   score = null,
+  colorizeScore = false,
 }: PlayerScoutCardProps) {
   const clubShortName = getPlayerClubShortName(player, teamsById)
   const positionLabel = getElementTypeLabel(player.element_type)
@@ -56,7 +60,12 @@ export function PlayerScoutCard({
         </p>
       </div>
       {score != null ? (
-        <span className="shrink-0 text-xl font-semibold tabular-nums leading-none">
+        <span
+          className={cn(
+            "shrink-0 text-xl font-semibold tabular-nums leading-none",
+            colorizeScore && ratingTextClassName(score)
+          )}
+        >
           {score}
         </span>
       ) : null}
