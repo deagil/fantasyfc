@@ -13,6 +13,7 @@ function makeElement(
     Pick<FplElement, "id" | "element_type" | "web_name">
 ): FplElement {
   return {
+    code: overrides.id * 1000,
     team: 1,
     now_cost: 100,
     form: "5.0",

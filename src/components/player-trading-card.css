@@ -1,0 +1,401 @@
+/* Player trading card — holo effects adapted from GAIA holo-card */
+
+@keyframes trading-card-holo-gradient {
+  0%,
+  100% {
+    opacity: 0.45;
+    background-position: 50% 50%;
+    filter: brightness(0.85) contrast(1);
+  }
+  5%,
+  9% {
+    background-position: 100% 100%;
+    opacity: 0.85;
+    filter: brightness(1) contrast(1.15);
+  }
+  13%,
+  17% {
+    background-position: 0% 0%;
+    opacity: 0.7;
+  }
+  35%,
+  39% {
+    background-position: 100% 100%;
+    opacity: 0.85;
+  }
+  55% {
+    background-position: 0% 0%;
+    opacity: 0.75;
+    filter: brightness(1) contrast(1.1);
+  }
+}
+
+@keyframes trading-card-sparkle {
+  0%,
+  100% {
+    filter: brightness(0.45) contrast(1.15);
+  }
+  5%,
+  8% {
+    filter: brightness(0.55) contrast(1.2);
+  }
+  35%,
+  38% {
+    filter: brightness(0.6) contrast(1);
+  }
+  55% {
+    filter: brightness(0.5) contrast(1.2);
+  }
+}
+
+.trading-card-scene {
+  perspective: 1000px;
+  width: 100%;
+  max-width: 300px;
+  margin-inline: auto;
+}
+
+.trading-card-scene--static {
+  perspective: none;
+}
+
+.trading-card-inner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 320 / 446;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.trading-card-inner--flipped {
+  transform: rotateY(180deg);
+}
+
+.trading-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.trading-card-face--back {
+  transform: rotateY(180deg);
+}
+
+.trading-card-shield {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--card-bg);
+  color: var(--card-text);
+}
+
+.trading-card-frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 6;
+  box-shadow:
+    inset 0 0 0 2px var(--card-frame),
+    inset 0 0 24px rgba(255, 255, 255, 0.06);
+}
+
+.trading-card-holo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: color-dodge;
+  opacity: var(--card-holo-opacity, 0.35);
+  background-image: linear-gradient(
+    115deg,
+    transparent 0%,
+    color-mix(in srgb, var(--card-holo-tint) 70%, white) 25%,
+    transparent 47%,
+    transparent 53%,
+    color-mix(in srgb, var(--card-holo-tint) 50%, gold) 75%,
+    transparent 100%
+  );
+  background-size: 300% 300%;
+  transition: opacity 0.3s ease;
+}
+
+.trading-card-holo--animated {
+  animation: trading-card-holo-gradient 12s ease infinite;
+}
+
+.trading-card-holo--active {
+  opacity: calc(var(--card-holo-opacity) + 0.15);
+  animation: none;
+  background-image: linear-gradient(
+    110deg,
+    transparent 25%,
+    color-mix(in srgb, var(--card-holo-tint) 80%, white) 48%,
+    color-mix(in srgb, var(--card-holo-tint) 40%, gold) 52%,
+    transparent 75%
+  );
+}
+
+/* Separate sparkle layer so it can sit under the player (94+). */
+.trading-card-sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image:
+    url("https://assets.codepen.io/13471/sparkles.gif"),
+    linear-gradient(
+      125deg,
+      rgba(255, 0, 132, 0.31) 15%,
+      rgba(252, 164, 0, 0.25) 30%,
+      rgba(255, 255, 0, 0.19) 40%,
+      rgba(0, 255, 138, 0.13) 60%,
+      rgba(0, 207, 255, 0.25) 70%,
+      rgba(204, 76, 250, 0.31) 85%
+    );
+  background-position: center;
+  background-size: 180%;
+  mix-blend-mode: color-dodge;
+  /* opacity is a weak lever with color-dodge; brightness dims the source before blend */
+  filter: brightness(0.6);
+}
+
+.trading-card-sparkles--animated {
+  animation: trading-card-sparkle 12s ease infinite;
+}
+
+.trading-card-photo-wrap {
+  position: absolute;
+  left: 50%;
+  top: 12%;
+  width: 72%;
+  height: 40%;
+  transform: translateX(-50%);
+  /* Above card holo by default so the player stays clean */
+  z-index: 4;
+}
+
+.trading-card-photo-wrap--render {
+  top: 10%;
+  height: 58%;
+  width: 82%;
+}
+
+.trading-card-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+}
+
+/*
+ * 85+: player above sparkles, below holo.
+ * Stack: sparkles (1) → player (2) → holo (3)
+ */
+.trading-card-photo-wrap--player-holo {
+  z-index: 2;
+}
+
+.trading-card-shield:has(.trading-card-photo-wrap--player-holo) .trading-card-holo {
+  z-index: 3;
+  opacity: 0.7;
+}
+
+.trading-card-shield:has(.trading-card-photo-wrap--player-holo) .trading-card-holo--active {
+  opacity: 0.85;
+}
+
+.trading-card-shield:has(.trading-card-photo-wrap--player-holo) .trading-card-name {
+  z-index: 1;
+}
+
+.trading-card-photo-fallback {
+  position: absolute;
+  left: 50%;
+  top: 18%;
+  width: 40%;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 1.75rem;
+  font-weight: 700;
+  z-index: 4;
+}
+
+.trading-card-crest {
+  position: absolute;
+  left: 10%;
+  top: 22%;
+  width: 14%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  z-index: 5;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
+}
+
+.trading-card-ovr {
+  position: absolute;
+  left: 8%;
+  top: 8%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.trading-card-ovr-value {
+  font-size: clamp(1.75rem, 8vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.trading-card-ovr-pos {
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--card-muted);
+}
+
+.trading-card-name {
+  position: absolute;
+  top: 8%;
+  right: 8%;
+  left: auto;
+  z-index: 3;
+  max-width: 48%;
+  text-align: right;
+  font-size: clamp(0.8rem, 3.8vw, 1rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  text-wrap: balance;
+  pointer-events: none;
+}
+
+.trading-card-stats {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 6%;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 3rem;
+  row-gap: 0.45rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.trading-card-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  line-height: 1;
+  min-width: 0;
+}
+
+/* Mirror columns around the center so the block reads balanced */
+.trading-card-stat:nth-child(odd) {
+  justify-content: flex-end;
+}
+
+.trading-card-stat:nth-child(even) {
+  justify-content: flex-start;
+}
+
+.trading-card-stat-value {
+  font-size: clamp(1.05rem, 5vw, 1.35rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.trading-card-stat-label {
+  font-size: clamp(0.7rem, 3vw, 0.8rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--card-muted);
+  min-width: 2rem;
+}
+
+.trading-card-back-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 12% 10% 10%;
+}
+
+.trading-card-back-title {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.trading-card-back-sub {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--card-muted);
+}
+
+.trading-card-back-stats {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.trading-card-back-stat-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--card-muted);
+}
+
+.trading-card-back-stat-value {
+  margin-top: 0.15rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.trading-card-flip-hint {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+}
+
+@media (pointer: coarse) {
+  .trading-card-scene {
+    max-width: min(280px, 85vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trading-card-holo--animated,
+  .trading-card-sparkles--animated {
+    animation: none;
+  }
+
+  .trading-card-inner {
+    transition-duration: 0.01ms;
+  }
+}

@@ -95,6 +95,7 @@ export type FplEvent = {
 
 export type FplTeam = {
   id: number
+  code: number
   name: string
   short_name: string
 }
@@ -105,6 +106,7 @@ export type FplElementStatus = "a" | "d" | "i" | "n" | "s" | "u"
 
 export type FplElement = {
   id: number
+  code: number
   web_name: string
   team: number
   element_type: FplElementTypeId

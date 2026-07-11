@@ -70,6 +70,6 @@ describe("fplKeys", () => {
   it("versions the bootstrap query key when element fields expand", async () => {
     const { fplKeys } = await import("@/lib/fpl/queries")
 
-    expect(fplKeys.bootstrap()).toEqual(["fpl", "bootstrap", "v2"])
+    expect(fplKeys.bootstrap()).toEqual(["fpl", "bootstrap", "v3"])
   })
 })

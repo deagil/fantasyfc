@@ -113,7 +113,7 @@ export const getFplEntryHistory = createServerFn({ method: "POST" })
 
 export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
   async () =>
-    cached("bootstrap:v2", 3 * HOUR, async () => {
+    cached("bootstrap:v3", 3 * HOUR, async () => {
       const response = await fetch(`${FPL_API_BASE}/bootstrap-static/`)
 
       if (!response.ok) {
@@ -122,9 +122,15 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
 
       const data = (await response.json()) as {
         events: FplBootstrap["events"]
-        teams: FplBootstrap["teams"]
+        teams: Array<{
+          id: number
+          code: number
+          name: string
+          short_name: string
+        }>
         elements: Array<{
           id: number
+          code: number
           web_name: string
           team: number
           element_type: number
@@ -144,9 +150,15 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
 
       return {
         events: data.events,
-        teams: data.teams,
+        teams: data.teams.map((team) => ({
+          id: team.id,
+          code: team.code,
+          name: team.name,
+          short_name: team.short_name,
+        })),
         elements: data.elements.map((element) => ({
           id: element.id,
+          code: element.code,
           web_name: element.web_name,
           team: element.team,
           element_type: element.element_type as FplBootstrap["elements"][number]["element_type"],
