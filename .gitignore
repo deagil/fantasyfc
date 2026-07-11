@@ -17,6 +17,8 @@ todos.json
 
 # local / agent / reference (not shipped)
 .cursor/
+.cursor-artifacts/
+artifacts/
 AGENTS.md
 data/
 docs/

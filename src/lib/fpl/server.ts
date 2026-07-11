@@ -131,6 +131,7 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
           now_cost: number
           form: string
           total_points: number
+          bonus: number
           selected_by_percent: string
           status: string
         }>
@@ -147,6 +148,7 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
           now_cost: element.now_cost,
           form: element.form,
           total_points: element.total_points,
+          bonus: element.bonus,
           selected_by_percent: element.selected_by_percent,
           status: element.status as FplBootstrap["elements"][number]["status"],
         })),

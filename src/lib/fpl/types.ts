@@ -111,6 +111,7 @@ export type FplElement = {
   now_cost: number
   form: string
   total_points: number
+  bonus: number
   selected_by_percent: string
   status: FplElementStatus
 }

@@ -6,7 +6,11 @@ function pathDepth(pathname: string): number {
 }
 
 function isDetailPushPath(pathname: string): boolean {
-  return pathname.startsWith("/league/") || pathname.startsWith("/trophy/")
+  return (
+    pathname.startsWith("/league/") ||
+    pathname.startsWith("/trophy/") ||
+    pathname.startsWith("/scouts/")
+  )
 }
 
 export function getRouter() {

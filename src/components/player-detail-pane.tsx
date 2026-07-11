@@ -1,4 +1,5 @@
 import { DataTile } from "@/components/data-tile"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   formatPlayerForm,
   formatPlayerOwnership,
@@ -9,12 +10,34 @@ import {
   getPlayerInitials,
 } from "@/lib/fpl/players"
 import type { FplElement, FplTeam } from "@/lib/fpl/types"
+import type { CategoryId } from "@/lib/ratings/model"
+import { usePlayerRatingsById } from "@/lib/ratings/hooks"
 import { cn } from "@/lib/utils"
 
 type PlayerDetailPaneProps = {
   player: FplElement | null
   teamsById: Map<number, FplTeam>
   className?: string
+}
+
+const CATEGORY_ORDER: CategoryId[] = [
+  "ATK",
+  "GKP",
+  "PLY",
+  "IMP",
+  "DEF",
+  "REL",
+  "FPL",
+]
+
+const CATEGORY_LABELS: Record<CategoryId, string> = {
+  ATK: "ATK",
+  PLY: "PLY",
+  IMP: "IMP",
+  DEF: "DEF",
+  REL: "REL",
+  FPL: "FPL",
+  GKP: "GKP",
 }
 
 function DetailStat({
@@ -36,11 +59,57 @@ function DetailStat({
   )
 }
 
+function RatingCategories({
+  categories,
+  overall,
+  isLoading,
+}: {
+  categories: Partial<Record<CategoryId, number>> | undefined
+  overall: number | undefined
+  isLoading: boolean
+}) {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-3 gap-3 sm:grid-cols-7">
+        {Array.from({ length: 7 }, (_, index) => (
+          <Skeleton key={index} className="h-14 rounded-lg" />
+        ))}
+      </div>
+    )
+  }
+
+  if (!categories) {
+    return null
+  }
+
+  const scores = CATEGORY_ORDER.filter((id) => categories[id] != null)
+
+  return (
+    <div className="grid grid-cols-3 gap-3 sm:grid-cols-7">
+      <DetailStat
+        label="OVR"
+        value={overall ?? "—"}
+        className="rounded-lg bg-foreground/4 px-2.5 py-2"
+      />
+      {scores.map((id) => (
+        <DetailStat
+          key={id}
+          label={CATEGORY_LABELS[id]}
+          value={categories[id]}
+          className="rounded-lg bg-foreground/4 px-2.5 py-2"
+        />
+      ))}
+    </div>
+  )
+}
+
 export function PlayerDetailPane({
   player,
   teamsById,
   className,
 }: PlayerDetailPaneProps) {
+  const { ratingsById, isLoading: ratingsLoading } = usePlayerRatingsById()
+
   if (!player) {
     return (
       <div
@@ -59,6 +128,7 @@ export function PlayerDetailPane({
 
   const clubShortName = getPlayerClubShortName(player, teamsById)
   const positionLabel = getElementTypeLabel(player.element_type)
+  const rating = ratingsById.get(player.id)
 
   return (
     <div className={cn("flex min-h-0 flex-1 flex-col gap-6 px-4 pb-6 pt-2", className)}>
@@ -81,6 +151,12 @@ export function PlayerDetailPane({
           </p>
         </div>
       </div>
+
+      <RatingCategories
+        categories={rating?.categories}
+        overall={rating?.overall}
+        isLoading={ratingsLoading}
+      />
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <DetailStat label="Price" value={formatPlayerPrice(player.now_cost)} />

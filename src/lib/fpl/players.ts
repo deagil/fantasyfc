@@ -101,6 +101,19 @@ export function sortPlayersByPoints(players: FplElement[]): FplElement[] {
   })
 }
 
+export function sortPlayersByBonus(players: FplElement[]): FplElement[] {
+  return [...players].sort((left, right) => {
+    if (right.bonus !== left.bonus) {
+      return right.bonus - left.bonus
+    }
+    if (right.total_points !== left.total_points) {
+      return right.total_points - left.total_points
+    }
+
+    return left.web_name.localeCompare(right.web_name)
+  })
+}
+
 export function getPlayerInitials(name: string): string {
   const parts = name.trim().split(/\s+/)
   if (parts.length === 0) {

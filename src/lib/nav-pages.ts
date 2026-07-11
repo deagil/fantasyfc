@@ -1,7 +1,6 @@
 import type { ComponentType } from "react"
 import {
   ArrowLeftRightIcon,
-  BinocularsIcon,
   CalendarDaysIcon,
   HomeIcon,
   UsersIcon,
@@ -10,15 +9,14 @@ import {
 
 import { TileGridPage } from "@/components/tile-grid-page"
 import { CentralPage } from "@/components/central-page"
-import { ScoutsPage } from "@/components/scouts-page"
+import { TransfersHubPage } from "@/components/transfers-hub-page"
 
 export const defaultNavTabId = "hub" as const
 
 export type NavTabId =
   | "hub"
   | "team"
-  | "transfer-hub"
-  | "scouts"
+  | "transfers"
   | "fixtures"
 
 export type NavPageConfig = {
@@ -33,17 +31,10 @@ export const navPages: NavPageConfig[] = [
   { id: "hub", label: "Hub", icon: HomeIcon, View: CentralPage, enabled: true },
   { id: "team", label: "Team", icon: UsersIcon, View: TileGridPage, enabled: false },
   {
-    id: "transfer-hub",
-    label: "Transfer Hub",
+    id: "transfers",
+    label: "Transfers",
     icon: ArrowLeftRightIcon,
-    View: TileGridPage,
-    enabled: false,
-  },
-  {
-    id: "scouts",
-    label: "Scouts",
-    icon: BinocularsIcon,
-    View: ScoutsPage,
+    View: TransfersHubPage,
     enabled: true,
   },
   {
@@ -58,8 +49,10 @@ export const navPages: NavPageConfig[] = [
 const legacyNavTabIds: Record<string, NavTabId> = {
   central: "hub",
   squad: "team",
-  transfers: "transfer-hub",
-  office: "scouts",
+  transfers: "transfers",
+  "transfer-hub": "transfers",
+  office: "transfers",
+  scouts: "transfers",
   season: "fixtures",
 }
 

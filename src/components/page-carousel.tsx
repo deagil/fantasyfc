@@ -147,6 +147,14 @@ export function PageCarousel({ className }: { className?: string }) {
       return
     }
 
+    const target = event.target
+    if (
+      target instanceof Element &&
+      target.closest("a, button, [data-tile-link]")
+    ) {
+      return
+    }
+
     // Pointer capture is deferred to onPointerMove, once horizontal drag
     // intent is confirmed. Capturing eagerly here would intercept clicks on
     // nested interactive elements (e.g. tile links) before they can fire.
