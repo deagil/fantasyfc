@@ -38,7 +38,7 @@ function AppLayout() {
                 <PageCarousel className="lg:mt-2" />
               </main>
 
-              <nav className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-2 lg:hidden">
+              <nav className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden">
                 <div className="w-full max-w-lg">
                   <NavTabs variant="default" />
                 </div>

@@ -2,11 +2,13 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useSyncExternalStore,
 } from "react"
 
 import {
+  getKickoffThemeColor,
   getStoredKickoffTheme,
   subscribeKickoffTheme,
   type KickoffThemeId,
@@ -22,6 +24,17 @@ const KickoffThemeContext = createContext<KickoffThemeContextValue | null>(null)
 
 const defaultKickoffTheme: KickoffThemeId = "late-kickoff"
 
+function syncThemeColor(theme: KickoffThemeId) {
+  const color = getKickoffThemeColor(theme)
+  let meta = document.querySelector('meta[name="theme-color"]')
+  if (!meta) {
+    meta = document.createElement("meta")
+    meta.setAttribute("name", "theme-color")
+    document.head.appendChild(meta)
+  }
+  meta.setAttribute("content", color)
+}
+
 export function KickoffThemeProvider({
   children,
 }: {
@@ -32,6 +45,10 @@ export function KickoffThemeProvider({
     getStoredKickoffTheme,
     () => defaultKickoffTheme
   )
+
+  useEffect(() => {
+    syncThemeColor(theme)
+  }, [theme])
 
   const setTheme = useCallback((nextTheme: KickoffThemeId) => {
     setStoredKickoffTheme(nextTheme)

@@ -157,7 +157,8 @@
     @apply border-border outline-ring/50;
     }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background-color: var(--shell-backdrop-color, var(--pl-plum));
     -webkit-font-smoothing: antialiased;
     }
   button:not(:disabled), [role="button"]:not(:disabled) {
@@ -165,6 +166,7 @@
     }
   html {
     @apply font-sans;
+    background-color: var(--shell-backdrop-color, var(--pl-plum));
     }
 }
 
@@ -558,6 +560,8 @@
   --vt-league-fade-in-delay: calc(
     var(--vt-league-fade-out-duration) + var(--vt-league-hold-duration)
   );
+  /* Default matches late-kickoff so html/body/theme-color aren't white before mount */
+  --shell-backdrop-color: var(--pl-plum);
 }
 
 :root:has(.app-shell[data-kickoff-theme="late-kickoff"]) {

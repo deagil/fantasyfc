@@ -29,7 +29,7 @@ export const desktopPageChromeClassName = cn(
 /** Main layout wrapper shared by hub and detail pages. */
 export const hubMainClassName = cn(
   "flex min-h-0 flex-col",
-  "pb-28 lg:flex-1 lg:justify-start lg:pt-4 lg:pb-3"
+  "pb-[calc(7rem+env(safe-area-inset-bottom))] lg:flex-1 lg:justify-start lg:pt-4 lg:pb-3"
 )
 
 /** Tile content section below top chrome (nav tabs or detail header). */
