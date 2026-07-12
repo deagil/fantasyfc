@@ -9,18 +9,28 @@ export const kickoffThemes: {
   id: KickoffThemeId
   label: string
   description: string
+  /** Browser chrome / status bar tint (`theme-color`). */
+  themeColor: string
 }[] = [
   {
     id: "early-kickoff",
     label: "Early Kickoff",
     description: "Light sky background, white tiles, blue hover.",
+    themeColor: "#e8f2fa",
   },
   {
     id: "late-kickoff",
     label: "Late Kickoff",
     description: "Plum background, white tiles, pink hover.",
+    themeColor: "#5c3d7a",
   },
 ]
+
+export function getKickoffThemeColor(theme: KickoffThemeId): string {
+  return (
+    kickoffThemes.find((entry) => entry.id === theme)?.themeColor ?? "#5c3d7a"
+  )
+}
 
 export function isKickoffThemeId(value: string): value is KickoffThemeId {
   return (kickoffThemeIds as readonly string[]).includes(value)
