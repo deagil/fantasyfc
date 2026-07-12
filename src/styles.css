@@ -318,7 +318,7 @@
 
   /* Early kickoff — light sky, white tiles, blue hover */
   .app-shell[data-kickoff-theme="early-kickoff"] {
-    --shell-backdrop-color: var(--pl-sky);
+    --shell-backdrop-color: #8ec8e0;
     --shell-backdrop-image: linear-gradient(
       to bottom right,
       color-mix(in oklab, var(--pl-blue) 45%, var(--pl-sky)),
@@ -592,7 +592,8 @@ html[data-kickoff-theme="late-kickoff"],
 
 html[data-kickoff-theme="early-kickoff"],
 :root:has(.app-shell[data-kickoff-theme="early-kickoff"]) {
-  --shell-backdrop-color: var(--pl-sky);
+  /* Mid teal — Safari overscroll only paints background-color, not the gradient */
+  --shell-backdrop-color: #8ec8e0;
   --shell-backdrop-image: linear-gradient(
     to bottom right,
     color-mix(in oklab, var(--pl-blue) 45%, var(--pl-sky)),
