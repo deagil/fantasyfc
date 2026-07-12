@@ -15,7 +15,8 @@ export const hubDesktopAlignClassName = "hub-desktop-align"
 export const hubTileGridClassName =
   "hub-tile-grid hub-desktop-align content-start min-w-0"
 
-export const appShellClassName = "app-shell relative min-h-svh text-(--shell-foreground)"
+export const appShellClassName =
+  "app-shell relative min-h-dvh text-(--shell-foreground)"
 
 /** Shared top chrome row height (mobile header + detail back rows). */
 export const pageChromeRowClassName = "flex h-11 min-h-11 items-center gap-1"

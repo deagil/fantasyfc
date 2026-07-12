@@ -156,17 +156,28 @@
   * {
     @apply border-border outline-ring/50;
     }
+  html {
+    @apply font-sans;
+    min-height: 100%;
+    min-height: 100dvh;
+    background-color: var(--shell-backdrop-color, var(--pl-plum));
+    background-image: var(--shell-backdrop-image, none);
+    background-repeat: no-repeat;
+    background-size: cover;
+    }
   body {
     @apply text-foreground;
+    min-height: 100%;
+    min-height: 100dvh;
+    margin: 0;
     background-color: var(--shell-backdrop-color, var(--pl-plum));
+    background-image: var(--shell-backdrop-image, none);
+    background-repeat: no-repeat;
+    background-size: cover;
     -webkit-font-smoothing: antialiased;
     }
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
-    }
-  html {
-    @apply font-sans;
-    background-color: var(--shell-backdrop-color, var(--pl-plum));
     }
 }
 
@@ -562,8 +573,15 @@
   );
   /* Default matches late-kickoff so html/body/theme-color aren't white before mount */
   --shell-backdrop-color: var(--pl-plum);
+  --shell-backdrop-image:
+    radial-gradient(ellipse 90% 70% at 12% -8%, color-mix(in oklab, var(--pl-violet) 50%, transparent), transparent 58%),
+    radial-gradient(ellipse 70% 55% at 100% 100%, color-mix(in oklab, var(--pl-pink) 15%, transparent), transparent 52%),
+    linear-gradient(155deg, #6b4888 0%, var(--pl-plum) 42%, var(--pl-purple) 100%);
 }
 
+/* Prefer html[data-kickoff-theme] (set by boot script + provider) so Safari
+   letterboxing under the status bar / home indicator matches the gradient. */
+html[data-kickoff-theme="late-kickoff"],
 :root:has(.app-shell[data-kickoff-theme="late-kickoff"]) {
   --shell-backdrop-color: var(--pl-plum);
   --shell-backdrop-image:
@@ -572,6 +590,7 @@
     linear-gradient(155deg, #6b4888 0%, var(--pl-plum) 42%, var(--pl-purple) 100%);
 }
 
+html[data-kickoff-theme="early-kickoff"],
 :root:has(.app-shell[data-kickoff-theme="early-kickoff"]) {
   --shell-backdrop-color: var(--pl-sky);
   --shell-backdrop-image: linear-gradient(
