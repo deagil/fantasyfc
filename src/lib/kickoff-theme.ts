@@ -16,7 +16,8 @@ export const kickoffThemes: {
     id: "early-kickoff",
     label: "Early Kickoff",
     description: "Light sky background, white tiles, blue hover.",
-    themeColor: "#e8f2fa",
+    // Mid sky-teal so Safari chrome isn't near-white against the gradient
+    themeColor: "#8ec8e0",
   },
   {
     id: "late-kickoff",

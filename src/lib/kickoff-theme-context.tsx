@@ -24,7 +24,9 @@ const KickoffThemeContext = createContext<KickoffThemeContextValue | null>(null)
 
 const defaultKickoffTheme: KickoffThemeId = "late-kickoff"
 
-function syncThemeColor(theme: KickoffThemeId) {
+function syncDocumentTheme(theme: KickoffThemeId) {
+  document.documentElement.dataset.kickoffTheme = theme
+
   const color = getKickoffThemeColor(theme)
   let meta = document.querySelector('meta[name="theme-color"]')
   if (!meta) {
@@ -34,6 +36,12 @@ function syncThemeColor(theme: KickoffThemeId) {
   }
   meta.setAttribute("content", color)
 }
+
+/**
+ * Runs before paint when inlined in <head>. Mirrors syncDocumentTheme for the
+ * stored preference so Safari safe-area letterboxing isn't white on first frame.
+ */
+export const kickoffThemeBootScript = `(function(){try{var k="deadline-kickoff-theme";var t=localStorage.getItem(k);if(t!=="early-kickoff"&&t!=="late-kickoff")t="late-kickoff";document.documentElement.dataset.kickoffTheme=t;var c=t==="early-kickoff"?"#8ec8e0":"#5c3d7a";var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",c);}catch(e){}})();`
 
 export function KickoffThemeProvider({
   children,
@@ -47,7 +55,7 @@ export function KickoffThemeProvider({
   )
 
   useEffect(() => {
-    syncThemeColor(theme)
+    syncDocumentTheme(theme)
   }, [theme])
 
   const setTheme = useCallback((nextTheme: KickoffThemeId) => {

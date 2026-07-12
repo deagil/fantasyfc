@@ -3,7 +3,10 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 
 import { AuthProvider } from "@/lib/auth/auth-context"
-import { KickoffThemeProvider } from "@/lib/kickoff-theme-context"
+import {
+  KickoffThemeProvider,
+  kickoffThemeBootScript,
+} from "@/lib/kickoff-theme-context"
 import { SpotifyPlayerProvider } from "@/lib/integrations/spotify/player-context"
 import { QueryProvider } from "@/lib/query-provider"
 import appCss from "../styles.css?url"
@@ -48,9 +51,12 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{ __html: kickoffThemeBootScript }}
+        />
       </head>
       <body>
         <QueryProvider>
