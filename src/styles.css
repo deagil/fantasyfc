@@ -185,14 +185,13 @@
   .app-shell {
     position: relative;
     color: var(--shell-foreground);
-  }
-
-  .app-shell::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
+    /* Scroll with the page so the backdrop is part of the document canvas,
+       not a fixed letterbox behind rubber-band overscroll. */
+    background-color: var(--shell-backdrop-color, var(--pl-plum));
+    background-image: var(--shell-backdrop-image, none);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center top;
   }
 
   .app-shell > * {
@@ -311,11 +310,6 @@
     --shell-tab-active-fg: var(--pl-purple);
   }
 
-  .app-shell[data-kickoff-theme="late-kickoff"]::before {
-    background-color: var(--shell-backdrop-color);
-    background-image: var(--shell-backdrop-image);
-  }
-
   /* Early kickoff — light sky, white tiles, blue hover */
   .app-shell[data-kickoff-theme="early-kickoff"] {
     --shell-backdrop-color: #8ec8e0;
@@ -341,11 +335,6 @@
     --tile-action-hover-fg: var(--pl-purple);
     --shell-tab-active-bg: var(--pl-green);
     --shell-tab-active-fg: var(--pl-purple);
-  }
-
-  .app-shell[data-kickoff-theme="early-kickoff"]::before {
-    background-color: var(--shell-backdrop-color);
-    background-image: var(--shell-backdrop-image);
   }
 
   .shell-chrome-btn {

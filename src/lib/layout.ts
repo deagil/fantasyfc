@@ -30,7 +30,9 @@ export const desktopPageChromeClassName = cn(
 /** Main layout wrapper shared by hub and detail pages. */
 export const hubMainClassName = cn(
   "flex min-h-0 flex-col",
-  "pb-[calc(7rem+env(safe-area-inset-bottom))] lg:flex-1 lg:justify-start lg:pt-4 lg:pb-3"
+  // Tab bar clearance + bottom safe area so tiles can scroll under the home
+  // indicator / tab chrome instead of stopping at an artificial crop.
+  "pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] lg:flex-1 lg:justify-start lg:pt-4 lg:pb-3"
 )
 
 /** Tile content section below top chrome (nav tabs or detail header). */
@@ -41,8 +43,9 @@ export const hubContentSectionClassName = cn(
 )
 
 /**
- * Scrollable spacer before page content on mobile. Clears floating title/actions
- * at rest; scrolls away so content can reach the screen edge underneath.
+ * Clears the floating header row at rest. Safe-area is NOT an empty letterbox —
+ * page content starts under the status bar / island and keeps scrolling
+ * offscreen; header controls stay readable via MobilePageHeader padding.
  */
 export const mobileContentTopSpacerClassName =
-  "h-[calc(env(safe-area-inset-top)+3.5rem+1rem)] shrink-0 lg:hidden"
+  "h-[calc(2.75rem+1.25rem)] shrink-0 lg:hidden"
