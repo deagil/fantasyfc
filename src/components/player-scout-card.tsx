@@ -1,7 +1,7 @@
+import { PlayerAvatar } from "@/components/player-avatar"
 import {
   getElementTypeLabel,
   getPlayerClubShortName,
-  getPlayerInitials,
 } from "@/lib/fpl/players"
 import type { FplElement, FplTeam } from "@/lib/fpl/types"
 import { ratingTextClassName } from "@/lib/ratings/tone"
@@ -39,12 +39,7 @@ export function PlayerScoutCard({
         "flex min-h-19 min-w-0 items-center gap-3 rounded-xl p-3 text-left active:scale-[0.99]"
       )}
     >
-      <span
-        aria-hidden="true"
-        className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-semibold text-muted-foreground"
-      >
-        {getPlayerInitials(player.web_name)}
-      </span>
+      <PlayerAvatar playerCode={player.code} name={player.web_name} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold leading-tight">
           {player.web_name}

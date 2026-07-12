@@ -2,13 +2,13 @@ import { Link } from "@tanstack/react-router"
 import { useMemo } from "react"
 
 import { DataTile } from "@/components/data-tile"
+import { PlayerAvatar } from "@/components/player-avatar"
 import { ScrollFade } from "@/components/scroll-fade"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
 import {
   getElementTypeLabel,
   getPlayerClubShortName,
-  getPlayerInitials,
 } from "@/lib/fpl/players"
 import type { FplElement, FplTeam } from "@/lib/fpl/types"
 import type { PlayerRatingSummary } from "@/lib/ratings/model"
@@ -22,11 +22,13 @@ const FEATURED_PREVIEW_COUNT = 20
 const HUB_PREVIEW_COUNT = 3
 
 function ScoutPreviewCard({
+  playerCode,
   name,
   clubShortName,
   positionLabel,
   overall,
 }: {
+  playerCode: number
   name: string
   clubShortName: string
   positionLabel: string
@@ -34,12 +36,7 @@ function ScoutPreviewCard({
 }) {
   return (
     <div className="flex min-h-19 min-w-0 items-center gap-3 rounded-xl bg-foreground/4 p-3">
-      <span
-        aria-hidden="true"
-        className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-semibold text-muted-foreground"
-      >
-        {getPlayerInitials(name)}
-      </span>
+      <PlayerAvatar playerCode={playerCode} name={name} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold leading-tight">{name}</p>
         <p className="mt-0.5 truncate text-xs text-muted-foreground">
@@ -96,12 +93,11 @@ function TopPlayersPreview({
             key={player.id}
             className="flex min-w-0 items-center gap-2 rounded-lg bg-foreground/4 px-2 py-1.5"
           >
-            <span
-              aria-hidden="true"
-              className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-[10px] font-semibold text-muted-foreground"
-            >
-              {getPlayerInitials(player.web_name)}
-            </span>
+            <PlayerAvatar
+              playerCode={player.code}
+              name={player.web_name}
+              size="sm"
+            />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold leading-tight">
                 {player.web_name}
@@ -169,6 +165,7 @@ function FeaturedRatingsPreview({
         return (
           <ScoutPreviewCard
             key={rating.id}
+            playerCode={rating.code}
             name={rating.webName}
             clubShortName={clubShortName}
             positionLabel={getElementTypeLabel(rating.elementType)}
