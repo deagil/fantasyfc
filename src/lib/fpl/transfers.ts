@@ -79,8 +79,9 @@ export function getPublicTransferSummary(
 ): PublicTransferSummary {
   return {
     bank: getBankBalance(entry, history),
-    freeTransfers: history
-      ? getFreeTransfersFromHistory(history.current, entry.current_event)
-      : 1,
+    freeTransfers:
+      history && entry.current_event != null
+        ? getFreeTransfersFromHistory(history.current, entry.current_event)
+        : 1,
   }
 }

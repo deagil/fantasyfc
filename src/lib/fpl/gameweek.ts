@@ -4,6 +4,8 @@ export type GameweekFixtureStatus = "upcoming" | "live" | "finished"
 
 export type GameweekTodayFixture = {
   id: number
+  homeTeamId: number
+  awayTeamId: number
   homeShort: string
   awayShort: string
   homeScore: number | null
@@ -127,6 +129,8 @@ export function getTodayFixtures(
 
       return {
         id: fixture.id,
+        homeTeamId: fixture.team_h,
+        awayTeamId: fixture.team_a,
         homeShort: homeTeam?.short_name ?? "???",
         awayShort: awayTeam?.short_name ?? "???",
         homeScore: fixture.team_h_score,

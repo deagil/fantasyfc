@@ -18,6 +18,7 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as TrophyLeagueIdRouteImport } from './routes/trophy/$leagueId'
 import { Route as ScoutsScoutSlugRouteImport } from './routes/scouts/$scoutSlug'
 import { Route as LeagueLeagueIdRouteImport } from './routes/league/$leagueId'
+import { Route as FixtureFixtureIdRouteImport } from './routes/fixture/$fixtureId'
 import { Route as AppTransfersRouteImport } from './routes/_app/transfers'
 import { Route as AppSquadRouteImport } from './routes/_app/squad'
 import { Route as AppSeasonRouteImport } from './routes/_app/season'
@@ -67,6 +68,11 @@ const LeagueLeagueIdRoute = LeagueLeagueIdRouteImport.update({
   path: '/league/$leagueId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FixtureFixtureIdRoute = FixtureFixtureIdRouteImport.update({
+  id: '/fixture/$fixtureId',
+  path: '/fixture/$fixtureId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppTransfersRoute = AppTransfersRouteImport.update({
   id: '/transfers',
   path: '/transfers',
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/season': typeof AppSeasonRoute
   '/squad': typeof AppSquadRoute
   '/transfers': typeof AppTransfersRoute
+  '/fixture/$fixtureId': typeof FixtureFixtureIdRoute
   '/league/$leagueId': typeof LeagueLeagueIdRoute
   '/scouts/$scoutSlug': typeof ScoutsScoutSlugRoute
   '/trophy/$leagueId': typeof TrophyLeagueIdRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/season': typeof AppSeasonRoute
   '/squad': typeof AppSquadRoute
   '/transfers': typeof AppTransfersRoute
+  '/fixture/$fixtureId': typeof FixtureFixtureIdRoute
   '/league/$leagueId': typeof LeagueLeagueIdRoute
   '/scouts/$scoutSlug': typeof ScoutsScoutSlugRoute
   '/trophy/$leagueId': typeof TrophyLeagueIdRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/_app/season': typeof AppSeasonRoute
   '/_app/squad': typeof AppSquadRoute
   '/_app/transfers': typeof AppTransfersRoute
+  '/fixture/$fixtureId': typeof FixtureFixtureIdRoute
   '/league/$leagueId': typeof LeagueLeagueIdRoute
   '/scouts/$scoutSlug': typeof ScoutsScoutSlugRoute
   '/trophy/$leagueId': typeof TrophyLeagueIdRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/season'
     | '/squad'
     | '/transfers'
+    | '/fixture/$fixtureId'
     | '/league/$leagueId'
     | '/scouts/$scoutSlug'
     | '/trophy/$leagueId'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/season'
     | '/squad'
     | '/transfers'
+    | '/fixture/$fixtureId'
     | '/league/$leagueId'
     | '/scouts/$scoutSlug'
     | '/trophy/$leagueId'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/_app/season'
     | '/_app/squad'
     | '/_app/transfers'
+    | '/fixture/$fixtureId'
     | '/league/$leagueId'
     | '/scouts/$scoutSlug'
     | '/trophy/$leagueId'
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   ScoutsRoute: typeof ScoutsRouteWithChildren
   SpotifyCallbackRoute: typeof SpotifyCallbackRoute
   SpotifyConnectRoute: typeof SpotifyConnectRoute
+  FixtureFixtureIdRoute: typeof FixtureFixtureIdRoute
   LeagueLeagueIdRoute: typeof LeagueLeagueIdRoute
   TrophyLeagueIdRoute: typeof TrophyLeagueIdRoute
 }
@@ -251,6 +264,13 @@ declare module '@tanstack/react-router' {
       path: '/league/$leagueId'
       fullPath: '/league/$leagueId'
       preLoaderRoute: typeof LeagueLeagueIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fixture/$fixtureId': {
+      id: '/fixture/$fixtureId'
+      path: '/fixture/$fixtureId'
+      fullPath: '/fixture/$fixtureId'
+      preLoaderRoute: typeof FixtureFixtureIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/transfers': {
@@ -321,6 +341,7 @@ const rootRouteChildren: RootRouteChildren = {
   ScoutsRoute: ScoutsRouteWithChildren,
   SpotifyCallbackRoute: SpotifyCallbackRoute,
   SpotifyConnectRoute: SpotifyConnectRoute,
+  FixtureFixtureIdRoute: FixtureFixtureIdRoute,
   LeagueLeagueIdRoute: LeagueLeagueIdRoute,
   TrophyLeagueIdRoute: TrophyLeagueIdRoute,
 }

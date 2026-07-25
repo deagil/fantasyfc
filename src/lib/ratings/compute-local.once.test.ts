@@ -98,63 +98,79 @@ describe("local ratings compute", () => {
       const event = deriveCurrentEvent(bootstrap.events)
       console.log(`Season ${season}, event ${event}, players ${bootstrap.elements.length}`)
 
-      // Load or seed history
-      let historyRows: SeasonHistoryInput[] = []
-      {
-        const { data, error } = await supabase
-          .from("player_season_history")
-          .select("player_code, season_name, element_type, web_name, stats")
-        if (error) {
-          throw new Error(
-            `player_season_history read failed (migration applied?): ${error.message}`
-          )
-        }
-        type HistoryDbRow = {
-          player_code: number
-          season_name: string
-          element_type: number
-          web_name: string
-          stats: SeasonHistoryInput["stats"]
-        }
-        historyRows = (data as HistoryDbRow[]).map((row) => ({
-          playerCode: row.player_code,
-          seasonName: row.season_name,
-          elementType: row.element_type as 1 | 2 | 3 | 4,
-          webName: row.web_name,
-          stats: row.stats,
-        }))
+      // Always re-seed the rolling 3-season window (idempotent upserts) so a
+      // season rollover picks up the newly finished year from vaastav.
+      type HistoryDbRow = {
+        player_code: number
+        season_name: string
+        element_type: number
+        web_name: string
+        stats: SeasonHistoryInput["stats"]
       }
 
-      if (historyRows.length === 0) {
-        console.log("No history rows — seeding from vaastav…")
-        const startYear = Number(season.slice(0, 4))
-        for (const past of previousSeasons(startYear, HISTORY_SEASONS)) {
-          const csvUrl = playersRawUrl(past)
-          const res = await fetch(csvUrl)
-          if (!res.ok) {
-            console.log(`  skip ${past.name} (${res.status})`)
-            continue
-          }
-          const inputs = mapPlayersRaw(csvToRecords(await res.text()), past.name)
-          const rows = inputs.map((input) => ({
-            player_code: input.playerCode,
-            season_name: input.seasonName,
-            element_type: input.elementType,
-            web_name: input.webName,
-            stats: input.stats,
-          }))
-          for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
-            const { error } = await supabase
-              .from("player_season_history")
-              .upsert(rows.slice(i, i + UPSERT_CHUNK), {
-                onConflict: "player_code,season_name",
-              })
-            if (error) throw new Error(`seed ${past.name}: ${error.message}`)
-          }
-          console.log(`  seeded ${past.name}: ${rows.length} players`)
-          historyRows.push(...inputs)
+      console.log("Seeding history from vaastav…")
+      const startYear = Number(season.slice(0, 4))
+      const skipped: string[] = []
+      for (const past of previousSeasons(startYear, HISTORY_SEASONS)) {
+        const csvUrl = playersRawUrl(past)
+        const res = await fetch(csvUrl)
+        if (!res.ok) {
+          console.log(`  skip ${past.name} (${res.status})`)
+          skipped.push(past.name)
+          continue
         }
-      } else {
+        const inputs = mapPlayersRaw(csvToRecords(await res.text()), past.name)
+        const rows = inputs.map((input) => ({
+          player_code: input.playerCode,
+          season_name: input.seasonName,
+          element_type: input.elementType,
+          web_name: input.webName,
+          stats: input.stats,
+        }))
+        for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
+          const { error } = await supabase
+            .from("player_season_history")
+            .upsert(rows.slice(i, i + UPSERT_CHUNK), {
+              onConflict: "player_code,season_name",
+            })
+          if (error) throw new Error(`seed ${past.name}: ${error.message}`)
+        }
+        console.log(`  seeded ${past.name}: ${rows.length} players`)
+      }
+      if (skipped.length > 0) {
+        console.log(`  skipped (not in repo yet): ${skipped.join(", ")}`)
+      }
+
+      // Reload full history (paginate past Supabase's 1000-row default).
+      const historyRows: SeasonHistoryInput[] = []
+      {
+        const pageSize = 1000
+        let from = 0
+        for (;;) {
+          const { data, error } = await supabase
+            .from("player_season_history")
+            .select("player_code, season_name, element_type, web_name, stats")
+            .order("player_code", { ascending: true })
+            .order("season_name", { ascending: true })
+            .range(from, from + pageSize - 1)
+          if (error) {
+            throw new Error(
+              `player_season_history read failed (migration applied?): ${error.message}`
+            )
+          }
+          const page = data as HistoryDbRow[]
+          historyRows.push(
+            ...page.map((row) => ({
+              playerCode: row.player_code,
+              seasonName: row.season_name,
+              elementType: row.element_type as 1 | 2 | 3 | 4,
+              webName: row.web_name,
+              stats: row.stats,
+            }))
+          )
+          if (page.length < pageSize) break
+          from += pageSize
+        }
         const seasons = [...new Set(historyRows.map((r) => r.seasonName))].sort()
         console.log(
           `History loaded: ${historyRows.length} rows across ${seasons.join(", ")}`

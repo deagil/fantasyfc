@@ -3,7 +3,7 @@ import type { FplEntry, FplEntryHistory, FplGameweekHistory } from "@/lib/fpl/ty
 const RECENT_GAMEWEEKS = 6
 
 export type SeasonSummary = {
-  rank: number
+  rank: number | null
   totalPoints: number
   teamValue: number
   averagePoints: number
@@ -28,7 +28,11 @@ export function getAveragePoints(gameweeks: FplGameweekHistory[]): number {
   return Math.round(total / gameweeks.length)
 }
 
-export function formatExplicitRank(rank: number): string {
+export function formatExplicitRank(rank: number | null): string {
+  if (rank == null) {
+    return "—"
+  }
+
   return rank.toLocaleString()
 }
 
@@ -46,7 +50,7 @@ export function getSeasonSummary(
 
   return {
     rank: entry.summary_overall_rank,
-    totalPoints: entry.summary_overall_points,
+    totalPoints: entry.summary_overall_points ?? 0,
     teamValue: latestGameweek?.value ?? entry.last_deadline_value,
     averagePoints: getAveragePoints(gameweeks),
     highestPoints: points.length > 0 ? Math.max(...points) : 0,
@@ -55,7 +59,11 @@ export function getSeasonSummary(
   }
 }
 
-export function formatFplRank(rank: number): string {
+export function formatFplRank(rank: number | null): string {
+  if (rank == null) {
+    return "—"
+  }
+
   if (rank >= 1_000_000) {
     return `${(rank / 1_000_000).toFixed(1)}M`
   }
@@ -67,7 +75,11 @@ export function formatFplRank(rank: number): string {
   return rank.toLocaleString()
 }
 
-export function formatOverallRank(rank: number): string {
+export function formatOverallRank(rank: number | null): string {
+  if (rank == null) {
+    return "—"
+  }
+
   if (rank >= 1_000_000) {
     return `${(rank / 1_000_000).toFixed(1)}M`
   }

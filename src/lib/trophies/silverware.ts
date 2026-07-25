@@ -35,7 +35,7 @@ export function getSilverwareTitles(
       leagueName: league.name,
       rank: league.entry_rank,
       medal: medalForRank(league.entry_rank),
-      leagueSize: league.rank_count,
+      leagueSize: league.rank_count ?? 0,
     }))
     .sort((a, b) => a.rank - b.rank || a.leagueName.localeCompare(b.leagueName))
 }

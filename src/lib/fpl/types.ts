@@ -5,7 +5,7 @@ export type FplLeaguePhase = {
   rank_sort: number
   total: number
   league_id: number
-  rank_count: number
+  rank_count: number | null
   entry_percentile_rank: number
 }
 
@@ -14,9 +14,11 @@ export type FplClassicLeague = {
   name: string
   short_name: string | null
   league_type: "s" | "x"
-  rank_count: number
-  entry_rank: number
-  entry_last_rank: number
+  /** Null before the season starts or for some newly created leagues. */
+  rank_count: number | null
+  /** Null before the first ranked gameweek. */
+  entry_rank: number | null
+  entry_last_rank: number | null
   active_phases: FplLeaguePhase[]
 }
 
@@ -55,11 +57,12 @@ export type FplEntry = {
   name: string
   player_first_name: string
   player_last_name: string
-  summary_event_points: number
-  summary_overall_points: number
-  summary_event_rank: number
-  summary_overall_rank: number
-  current_event: number
+  /** Null before the season starts / first gameweek scores. */
+  summary_event_points: number | null
+  summary_overall_points: number | null
+  summary_event_rank: number | null
+  summary_overall_rank: number | null
+  current_event: number | null
   last_deadline_bank: number
   last_deadline_value: number
   leagues: FplEntryLeagues
@@ -136,15 +139,45 @@ export type FplEntryPicks = {
   picks: FplPick[]
 }
 
+export type FplEventLiveExplainStat = {
+  identifier: string
+  points: number
+  value: number
+}
+
+export type FplEventLiveExplain = {
+  fixture: number
+  stats: FplEventLiveExplainStat[]
+}
+
 export type FplEventLiveElement = {
   id: number
   stats: {
+    minutes: number
+    goals_scored: number
+    assists: number
+    bonus: number
+    bps: number
+    defensive_contribution: number
     total_points: number
   }
+  explain: FplEventLiveExplain[]
 }
 
 export type FplEventLive = {
   elements: FplEventLiveElement[]
+}
+
+export type FplEventStatusDay = {
+  bonus_added: boolean
+  date: string
+  event: number
+  points: string
+}
+
+export type FplEventStatus = {
+  status: FplEventStatusDay[]
+  leagues: string
 }
 
 export type FplBootstrap = {
@@ -175,15 +208,45 @@ export type LeagueRankHistory = {
   series: LeagueRankHistorySeries[]
 }
 
+export type FplFixtureStatIdentifier =
+  | "goals_scored"
+  | "assists"
+  | "own_goals"
+  | "penalties_saved"
+  | "penalties_missed"
+  | "yellow_cards"
+  | "red_cards"
+  | "saves"
+  | "bonus"
+  | "bps"
+  | "defensive_contribution"
+
+export type FplFixtureStatValue = {
+  value: number
+  element: number
+}
+
+export type FplFixtureStat = {
+  identifier: FplFixtureStatIdentifier
+  h: FplFixtureStatValue[]
+  a: FplFixtureStatValue[]
+}
+
 export type FplFixture = {
   id: number
+  code: number
   event: number
   team_h: number
   team_a: number
   team_h_score: number | null
   team_a_score: number | null
+  team_h_difficulty: number
+  team_a_difficulty: number
   kickoff_time: string | null
   finished: boolean
+  finished_provisional: boolean
   started: boolean
   minutes: number
+  provisional_start_time: boolean
+  stats: FplFixtureStat[]
 }

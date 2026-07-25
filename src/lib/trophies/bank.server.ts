@@ -101,7 +101,9 @@ export async function bankLeagueTrophiesForTeam(
     const results = standings.standings.results
     const leagueName = standings.league.name || league.name
     const leagueSize =
-      league.rank_count > 0 ? league.rank_count : results.length
+      league.rank_count != null && league.rank_count > 0
+        ? league.rank_count
+        : results.length
 
     const rows = ([1, 2, 3] as const)
       .map((rank) => {

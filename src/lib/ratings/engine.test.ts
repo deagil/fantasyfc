@@ -451,7 +451,10 @@ describe("stat derivation", () => {
 describe("integration: real bootstrap snapshot", () => {
   const snapshotPath = path.resolve(
     __dirname,
-    "../../../data/fpl-api/bootstrap-static.json"
+    // Deliberately the 2025/26 archive, not the live root capture: this test
+    // needs a completed season. A pre-season bootstrap has zeroed form/ranks
+    // and no finished events, so it cannot exercise the rating spread.
+    "../../../data/fpl-api/2025-26/bootstrap-static.json"
   )
   const hasSnapshot = fs.existsSync(snapshotPath)
 

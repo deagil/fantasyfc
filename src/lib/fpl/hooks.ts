@@ -21,6 +21,7 @@ import {
   getFplEntryHistory,
   getFplEntryPicks,
   getFplEventLive,
+  getFplEventStatus,
   getFplFixtures,
   getFplLeagueRankHistory,
   getFplLeagueStandings,
@@ -77,11 +78,12 @@ export function useFplBootstrapQuery() {
 
 export function useFplFixturesQuery(
   bootstrap: FplBootstrap | undefined,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean; isLive?: boolean }
 ) {
   const fetchFixtures = useServerFn(getFplFixtures)
   const eventIds = bootstrap ? getFixtureEventIds(bootstrap) : []
   const enabled = (options?.enabled ?? true) && eventIds.length > 0
+  const isLive = options?.isLive ?? false
 
   return useQuery({
     queryKey: fplKeys.fixtures(eventIds),
@@ -92,7 +94,83 @@ export function useFplFixturesQuery(
       return fixtureGroups.flat()
     },
     enabled,
-    staleTime: FPL_STALE_TIME.fixtures,
+    staleTime: isLive ? FPL_STALE_TIME.fixturesLive : FPL_STALE_TIME.fixtures,
+    refetchInterval: isLive ? LIVE_REFRESH_MS : false,
+    refetchIntervalInBackground: false,
+  })
+}
+
+export function useFplSeasonFixturesQuery(options?: {
+  enabled?: boolean
+  isLive?: boolean
+}) {
+  const fetchFixtures = useServerFn(getFplFixtures)
+  const enabled = options?.enabled ?? true
+  const isLive = options?.isLive ?? false
+
+  return useQuery({
+    queryKey: fplKeys.fixturesSeason(),
+    queryFn: () => fetchFixtures({ data: {} }),
+    enabled,
+    staleTime: isLive ? FPL_STALE_TIME.fixturesLive : FPL_STALE_TIME.fixtures,
+    refetchInterval: isLive ? LIVE_REFRESH_MS : false,
+    refetchIntervalInBackground: false,
+  })
+}
+
+export function useFplEventLiveQuery(
+  eventId: number | null | undefined,
+  options?: { enabled?: boolean; isLive?: boolean }
+) {
+  const fetchLive = useServerFn(getFplEventLive)
+  const enabled = (options?.enabled ?? true) && eventId != null
+  const isLive = options?.isLive ?? false
+
+  return useQuery({
+    queryKey: fplKeys.live(eventId ?? 0),
+    queryFn: () => fetchLive({ data: { event: eventId! } }),
+    enabled,
+    staleTime: FPL_STALE_TIME.live,
+    refetchInterval: isLive ? LIVE_REFRESH_MS : false,
+    refetchIntervalInBackground: false,
+  })
+}
+
+export function useFplEventStatusQuery(options?: {
+  enabled?: boolean
+  isLive?: boolean
+}) {
+  const fetchEventStatus = useServerFn(getFplEventStatus)
+  const enabled = options?.enabled ?? true
+  const isLive = options?.isLive ?? false
+
+  return useQuery({
+    queryKey: fplKeys.eventStatus(),
+    queryFn: () => fetchEventStatus(),
+    enabled,
+    staleTime: FPL_STALE_TIME.eventStatus,
+    refetchInterval: isLive ? LIVE_REFRESH_MS : false,
+    refetchIntervalInBackground: false,
+  })
+}
+
+export function useFplEntryPicksQuery(
+  teamId: number | null,
+  eventId: number | null | undefined,
+  options?: { enabled?: boolean; isLive?: boolean }
+) {
+  const fetchPicks = useServerFn(getFplEntryPicks)
+  const enabled =
+    (options?.enabled ?? true) && teamId !== null && eventId != null
+  const isLive = options?.isLive ?? false
+
+  return useQuery({
+    queryKey: fplKeys.picks(teamId ?? 0, eventId ?? 0),
+    queryFn: () => fetchPicks({ data: { teamId: teamId!, event: eventId! } }),
+    enabled,
+    staleTime: FPL_STALE_TIME.picks,
+    refetchInterval: isLive ? LIVE_REFRESH_MS : false,
+    refetchIntervalInBackground: false,
   })
 }
 

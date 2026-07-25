@@ -59,7 +59,9 @@ function LeagueRow({
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="truncate text-sm font-medium">{league.name}</span>
         <span className="text-xs" data-tile-row-muted>
-          {league.rank_count.toLocaleString()} teams
+          {league.rank_count != null
+            ? `${league.rank_count.toLocaleString()} teams`
+            : "Size pending"}
         </span>
       </div>
       <div className="flex shrink-0 items-center">

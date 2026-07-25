@@ -39,7 +39,7 @@ export function OverallTile({
         ) : entry ? (
           <DataTile.HeroStat
             value={formatOverallRank(entry.summary_overall_rank)}
-            caption={`${entry.summary_overall_points.toLocaleString()} pts`}
+            caption={`${(entry.summary_overall_points ?? 0).toLocaleString()} pts`}
           />
         ) : null}
       </DataTile.Content>

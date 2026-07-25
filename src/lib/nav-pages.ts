@@ -9,6 +9,7 @@ import {
 
 import { TileGridPage } from "@/components/tile-grid-page"
 import { CentralPage } from "@/components/central-page"
+import { FixturesPage } from "@/components/fixtures-page"
 import { TransfersHubPage } from "@/components/transfers-hub-page"
 
 export const defaultNavTabId = "hub" as const
@@ -41,8 +42,8 @@ export const navPages: NavPageConfig[] = [
     id: "fixtures",
     label: "Fixtures",
     icon: CalendarDaysIcon,
-    View: TileGridPage,
-    enabled: false,
+    View: FixturesPage,
+    enabled: true,
   },
 ]
 

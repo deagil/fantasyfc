@@ -36,7 +36,7 @@ export function getPrivateLeagues(
 ): FplClassicLeague[] {
   return leagues
     .filter((league) => league.league_type === "x")
-    .sort((a, b) => a.rank_count - b.rank_count)
+    .sort((a, b) => (a.rank_count ?? Infinity) - (b.rank_count ?? Infinity))
 }
 
 /** @deprecated Use getPrivateLeagues */
@@ -79,10 +79,25 @@ export function getLeaguesForTab(
 }
 
 export function getLeagueRankChange(league: FplClassicLeague): number {
+  if (league.entry_rank == null || league.entry_last_rank == null) {
+    return 0
+  }
+
   return league.entry_last_rank - league.entry_rank
 }
 
-export function formatLeagueRank(rank: number, rankCount: number): string {
+export function formatLeagueRank(
+  rank: number | null,
+  rankCount: number | null
+): string {
+  if (rank == null) {
+    return "—"
+  }
+
+  if (rankCount == null) {
+    return rank.toString()
+  }
+
   if (rankCount >= 1_000_000) {
     return `${(rank / 1_000_000).toFixed(1)}M`
   }

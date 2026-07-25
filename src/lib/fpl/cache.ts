@@ -3,6 +3,11 @@ type CacheEntry<T> = {
   expiresAt: number
 }
 
+export type CachedWithTtlResult<T> = {
+  value: T
+  ttlMs: number
+}
+
 const store = new Map<string, CacheEntry<unknown>>()
 const inflight = new Map<string, Promise<unknown>>()
 
@@ -15,6 +20,19 @@ export async function cached<T>(
   ttlMs: number,
   fetcher: () => Promise<T>
 ): Promise<T> {
+  return cachedWithTtl(key, async () => ({
+    value: await fetcher(),
+    ttlMs,
+  }))
+}
+
+/**
+ * Like `cached`, but the fetcher chooses the TTL (e.g. shorter while live).
+ */
+export async function cachedWithTtl<T>(
+  key: string,
+  fetcher: () => Promise<CachedWithTtlResult<T>>
+): Promise<T> {
   const hit = store.get(key)
   if (hit && hit.expiresAt > Date.now()) {
     return hit.value as T
@@ -26,7 +44,7 @@ export async function cached<T>(
   }
 
   const promise = fetcher()
-    .then((value) => {
+    .then(({ value, ttlMs }) => {
       store.set(key, { value, expiresAt: Date.now() + ttlMs })
       return value
     })

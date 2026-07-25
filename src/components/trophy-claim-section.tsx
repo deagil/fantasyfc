@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react"
 import { useServerFn } from "@tanstack/react-start"
+import { CircleHelpIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -20,6 +21,12 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useTeam } from "@/lib/fpl/team-context"
 import {
   claimEntry,
@@ -28,6 +35,9 @@ import {
   submitClaimHelp,
 } from "@/lib/trophies/server"
 import type { ClaimPreview, EntryClaim } from "@/lib/trophies/types"
+
+const CLAIM_BENEFITS =
+  "Link this FPL team to your Deadline account for the season. Claiming lets you bank league podium finishes in your silverware cabinet — one team ID per season."
 
 type ClaimStep =
   | { type: "idle" }
@@ -42,6 +52,7 @@ type TrophyClaimContextValue = {
   isSubmitting: boolean
   error: string | null
   canClaim: boolean
+  needsAccount: boolean
   handlePreview: () => Promise<void>
   handleConfirmClaim: () => Promise<void>
   handleSubmitHelp: () => Promise<void>
@@ -62,6 +73,8 @@ function useTrophyClaim() {
 
 export function TrophyClaimProvider({ children }: { children: ReactNode }) {
   const { teamId } = useTeam()
+  const { isLoggedIn: isAccountLoggedIn, isInitializing: isAuthInitializing } =
+    useAuth()
   const previewClaim = useServerFn(previewEntryClaim)
   const claim = useServerFn(claimEntry)
   const submitHelp = useServerFn(submitClaimHelp)
@@ -77,6 +90,18 @@ export function TrophyClaimProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const generation = ++loadGenerationRef.current
+
+    if (isAuthInitializing) {
+      setIsLoading(true)
+      return
+    }
+
+    if (!isAccountLoggedIn) {
+      setEntryClaim(null)
+      setIsLoading(false)
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
@@ -99,9 +124,14 @@ export function TrophyClaimProvider({ children }: { children: ReactNode }) {
         }
         setIsLoading(false)
       })
-  }, [fetchTrophies])
+  }, [fetchTrophies, isAccountLoggedIn, isAuthInitializing])
 
   const handlePreview = useCallback(async () => {
+    if (!isAccountLoggedIn) {
+      setError("Log in to your Deadline account to claim a team ID.")
+      return
+    }
+
     if (teamId === null) {
       setError("Connect an FPL team first.")
       return
@@ -117,7 +147,7 @@ export function TrophyClaimProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsSubmitting(false)
     }
-  }, [previewClaim, teamId])
+  }, [isAccountLoggedIn, previewClaim, teamId])
 
   const handleConfirmClaim = useCallback(async () => {
     if (step.type !== "preview") {
@@ -185,8 +215,11 @@ export function TrophyClaimProvider({ children }: { children: ReactNode }) {
     setError(null)
   }, [])
 
+  const needsAccount = !isAuthInitializing && !isAccountLoggedIn
   const canClaim =
     !isLoading &&
+    !isAuthInitializing &&
+    isAccountLoggedIn &&
     entryClaim === null &&
     step.type === "idle" &&
     teamId !== null
@@ -195,10 +228,11 @@ export function TrophyClaimProvider({ children }: { children: ReactNode }) {
     () => ({
       entryClaim,
       step,
-      isLoading,
+      isLoading: isLoading || isAuthInitializing,
       isSubmitting,
       error,
       canClaim,
+      needsAccount,
       handlePreview,
       handleConfirmClaim,
       handleSubmitHelp,
@@ -214,8 +248,10 @@ export function TrophyClaimProvider({ children }: { children: ReactNode }) {
       handlePreview,
       handleSubmitHelp,
       helpMessage,
+      isAuthInitializing,
       isLoading,
       isSubmitting,
+      needsAccount,
       resetStep,
       step,
     ]
@@ -229,10 +265,28 @@ export function TrophyClaimProvider({ children }: { children: ReactNode }) {
   )
 }
 
+function ClaimInfoButton() {
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        type="button"
+        aria-label="Why claim a team ID?"
+        className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
+      >
+        <CircleHelpIcon className="size-3.5" />
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-64 text-pretty">
+        {CLAIM_BENEFITS}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 /** Claim action for the Team settings row — uses the already-connected team ID. */
 export function TrophyClaimButton() {
   const {
     canClaim,
+    needsAccount,
     isSubmitting,
     handlePreview,
     step,
@@ -254,21 +308,44 @@ export function TrophyClaimButton() {
     return null
   }
 
+  const label = isSubmitting
+    ? "Checking..."
+    : needsAccount
+      ? "Log in to claim"
+      : teamId
+        ? "Claim team ID"
+        : "Connect a team to claim"
+
   return (
     <div className="flex flex-col gap-1.5">
-      <Button
-        size="sm"
-        variant="outline"
-        className="w-full lg:w-auto lg:self-start"
-        disabled={!canClaim || isSubmitting}
-        onClick={() => void handlePreview()}
-      >
-        {isSubmitting
-          ? "Checking..."
-          : teamId
-            ? "Claim team ID"
-            : "Connect a team to claim"}
-      </Button>
+      {/*
+        Full-width button (matches Switch Team). Label stays optically
+        centered; info control sits beside the label without nesting buttons.
+      */}
+      <div className="relative w-full lg:w-auto lg:self-end">
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full"
+          disabled={!canClaim || isSubmitting}
+          onClick={() => void handlePreview()}
+        >
+          <span className="inline-flex items-center justify-center gap-1.5">
+            {label}
+            <span className="size-5 shrink-0" aria-hidden="true" />
+          </span>
+        </Button>
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="invisible select-none" aria-hidden="true">
+              {label}
+            </span>
+            <span className="pointer-events-auto">
+              <ClaimInfoButton />
+            </span>
+          </span>
+        </div>
+      </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </div>
   )

@@ -258,8 +258,9 @@ type TeamEnrichmentRow = {
  * Phase 2 — batched player seeding. Works through sportsdb_candidates:
  * looks up each player via the official API, matches to the FPL roster of
  * their team (DOB first, name fallback), and upserts player_enrichment.
- * Call repeatedly until `remaining` is 0 (~25 players / ~15s per call under
- * the free-tier rate limit).
+ * Only matches FPL players missing cutout/render images; skips SportsDB IDs
+ * already stored. Call repeatedly until `remaining` is 0 (~25 players /
+ * ~15s per call under the free-tier rate limit).
  */
 export const seedEnrichment = createServerFn({ method: "POST" })
   .validator((data: { batchSize?: number } | undefined) => {
@@ -315,6 +316,46 @@ export const seedEnrichment = createServerFn({ method: "POST" })
     }
     const candidates = candidatesRaw as CandidateRow[]
 
+    // Skip FPL players who already have a cutout/render — only fill gaps /
+    // new signings. Also skip SportsDB IDs we already stored.
+    const enrichedCodes = new Set<number>()
+    const enrichedSportsDbIds = new Set<number>()
+    {
+      const pageSize = 1000
+      let from = 0
+      for (;;) {
+        const { data, error } = await supabase
+          .from("player_enrichment")
+          .select("player_code, sportsdb_id, cutout_url, render_url")
+          .or("cutout_url.not.is.null,render_url.not.is.null")
+          .range(from, from + pageSize - 1)
+        if (error) {
+          throw new Error(
+            `Failed to load existing enrichment: ${error.message}`
+          )
+        }
+        const page = data as {
+          player_code: number
+          sportsdb_id: number
+          cutout_url: string | null
+          render_url: string | null
+        }[]
+        for (const row of page) {
+          enrichedCodes.add(row.player_code)
+          enrichedSportsDbIds.add(row.sportsdb_id)
+        }
+        if (page.length < pageSize) break
+        from += pageSize
+      }
+    }
+
+    for (const [sdbTeamId, roster] of rosterBySdbTeam) {
+      rosterBySdbTeam.set(
+        sdbTeamId,
+        roster.filter((el) => !enrichedCodes.has(el.code))
+      )
+    }
+
     const result: SeedEnrichmentResult = {
       processed: 0,
       matched: 0,
@@ -323,9 +364,15 @@ export const seedEnrichment = createServerFn({ method: "POST" })
       unmatched: [],
     }
 
-    // Look up each candidate through the API, grouped by team.
+    const matchedBySdbId = new Map<number, number>()
     const playersByTeam = new Map<number, SportsDbPlayer[]>()
+
     for (const candidate of candidates) {
+      // Already stored under this SportsDB id — no API call needed.
+      if (enrichedSportsDbIds.has(candidate.sportsdb_id)) {
+        continue
+      }
+
       await sleep(REQUEST_GAP_MS)
       const lookup = await fetchSportsDbApi<{
         players: SportsDbPlayer[] | null
@@ -337,8 +384,6 @@ export const seedEnrichment = createServerFn({ method: "POST" })
         playersByTeam.set(candidate.sportsdb_team_id, list)
       }
     }
-
-    const matchedBySdbId = new Map<number, number>()
 
     for (const [sdbTeamId, players] of playersByTeam) {
       const roster = rosterBySdbTeam.get(sdbTeamId) ?? []

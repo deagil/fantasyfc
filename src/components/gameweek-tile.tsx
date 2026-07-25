@@ -1,9 +1,12 @@
 import { LockIcon } from "lucide-react"
+import { Link } from "@tanstack/react-router"
 import { useMemo } from "react"
 
 import { DataTile } from "@/components/data-tile"
+import { TeamCrest } from "@/components/team-crest"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useNow } from "@/hooks/use-now"
+import { useEnrichmentMaps } from "@/lib/enrichment/hooks"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
 import {
   formatCountdown,
@@ -66,15 +69,46 @@ function LockedContent({ phase, now }: { phase: GameweekPhase; now: Date }) {
 }
 
 function FixtureRow({ fixture }: { fixture: GameweekTodayFixture }) {
+  const { teamsById } = useFplBootstrap()
+  const { teamsByCode } = useEnrichmentMaps()
+
+  const homeTeam = teamsById.get(fixture.homeTeamId)
+  const awayTeam = teamsById.get(fixture.awayTeamId)
+  const homeBadgeUrl =
+    homeTeam?.code != null
+      ? (teamsByCode.get(homeTeam.code)?.badgeUrl ?? null)
+      : null
+  const awayBadgeUrl =
+    awayTeam?.code != null
+      ? (teamsByCode.get(awayTeam.code)?.badgeUrl ?? null)
+      : null
+
   const score =
     fixture.status === "upcoming"
       ? fixture.kickoffLabel
-      : `${fixture.homeScore ?? 0}-${fixture.awayScore ?? 0}`
+      : `${fixture.homeScore ?? 0}–${fixture.awayScore ?? 0}`
 
   return (
-    <div className="flex items-center justify-between gap-2 text-sm">
-      <span className="min-w-0 truncate font-medium tabular-nums">
-        {fixture.homeShort} v {fixture.awayShort}
+    <Link
+      to="/fixture/$fixtureId"
+      params={{ fixtureId: String(fixture.id) }}
+      data-tile-link=""
+      className="flex items-center justify-between gap-2 rounded-lg px-1 py-0.5 text-sm hover:bg-foreground/4"
+    >
+      <span className="flex min-w-0 items-center gap-1.5 font-medium tabular-nums">
+        <TeamCrest
+          badgeUrl={homeBadgeUrl}
+          shortName={fixture.homeShort}
+          className="size-4"
+        />
+        <span className="truncate">
+          {fixture.homeShort} v {fixture.awayShort}
+        </span>
+        <TeamCrest
+          badgeUrl={awayBadgeUrl}
+          shortName={fixture.awayShort}
+          className="size-4"
+        />
       </span>
       <span
         className={cn(
@@ -87,7 +121,7 @@ function FixtureRow({ fixture }: { fixture: GameweekTodayFixture }) {
           ? `${fixture.minutes}'`
           : score}
       </span>
-    </div>
+    </Link>
   )
 }
 
@@ -149,7 +183,7 @@ function PostGameweekContent({ phase }: { phase: GameweekPhase }) {
 
   return (
     <DataTile.HeroStat
-      value={entry.summary_event_points}
+      value={entry.summary_event_points ?? "—"}
       caption={`GW ${phase.event.id} · ${formatOverallRank(entry.summary_event_rank)} rank`}
       tone="chart2"
       valueClassName="text-4xl"
@@ -197,7 +231,9 @@ function OffSeasonContent() {
     <div className="flex h-full min-h-0 w-full flex-col">
       <div className="flex flex-1 flex-col items-center justify-center text-center">
         <DataTile.Value
-          value={`#${formatExplicitRank(season.rank)}`}
+          value={
+            season.rank == null ? "—" : `#${formatExplicitRank(season.rank)}`
+          }
           className="text-[clamp(2rem,9vw,3.5rem)] font-bold tracking-tight"
         />
       </div>

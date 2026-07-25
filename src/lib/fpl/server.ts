@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start"
 
-import { cached } from "@/lib/fpl/cache"
+import { cached, cachedWithTtl } from "@/lib/fpl/cache"
 import {
   buildLeagueRankHistory,
   getRecentFinishedGameweeks,
@@ -12,6 +12,7 @@ import type {
   FplEntryHistory,
   FplEntryPicks,
   FplEventLive,
+  FplEventStatus,
   FplFixture,
   FplLeagueStandings,
   LeagueRankHistory,
@@ -28,8 +29,54 @@ import {
 const FPL_API_BASE = "https://fantasy.premierleague.com/api"
 
 const HOUR = 60 * 60 * 1000
+const FIVE_MINUTES = 5 * 60 * 1000
+const THIRTY_SECONDS = 30_000
+const KICKOFF_SOON_MS = 15 * 60 * 1000
 const MAX_STANDINGS_PAGES = 10
 const HISTORY_FETCH_CONCURRENCY = 16
+
+function fixturesCacheTtlMs(fixtures: FplFixture[], now = Date.now()): number {
+  const hasLive = fixtures.some(
+    (fixture) => fixture.started && !fixture.finished
+  )
+  if (hasLive) {
+    return THIRTY_SECONDS
+  }
+
+  const kickoffSoon = fixtures.some((fixture) => {
+    if (!fixture.kickoff_time || fixture.finished || fixture.started) {
+      return false
+    }
+    const kickoff = new Date(fixture.kickoff_time).getTime()
+    return kickoff > now && kickoff - now <= KICKOFF_SOON_MS
+  })
+  if (kickoffSoon) {
+    return FIVE_MINUTES
+  }
+
+  return HOUR
+}
+
+function normalizeFixture(raw: FplFixture): FplFixture {
+  return {
+    id: raw.id,
+    code: raw.code,
+    event: raw.event,
+    team_h: raw.team_h,
+    team_a: raw.team_a,
+    team_h_score: raw.team_h_score,
+    team_a_score: raw.team_a_score,
+    team_h_difficulty: raw.team_h_difficulty,
+    team_a_difficulty: raw.team_a_difficulty,
+    kickoff_time: raw.kickoff_time,
+    finished: raw.finished,
+    finished_provisional: raw.finished_provisional,
+    started: raw.started,
+    minutes: raw.minutes,
+    provisional_start_time: raw.provisional_start_time,
+    stats: raw.stats ?? [],
+  }
+}
 
 async function fetchFplEntryHistory(entryId: number): Promise<FplEntryHistory> {
   return cached(`history:${entryId}`, HOUR, async () => {
@@ -185,7 +232,7 @@ export const getFplFixtures = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const event = data.event
 
-    return cached(`fixtures:${event ?? "all"}`, HOUR, async () => {
+    return cachedWithTtl(`fixtures:${event ?? "all"}`, async () => {
       const url = event
         ? `${FPL_API_BASE}/fixtures/?event=${event}`
         : `${FPL_API_BASE}/fixtures/`
@@ -195,9 +242,28 @@ export const getFplFixtures = createServerFn({ method: "POST" })
         throw new Error("Could not load fixtures")
       }
 
-      return (await response.json()) as FplFixture[]
+      const raw = (await response.json()) as FplFixture[]
+      const value = raw.map(normalizeFixture)
+
+      return {
+        value,
+        ttlMs: fixturesCacheTtlMs(value),
+      }
     })
   })
+
+export const getFplEventStatus = createServerFn({ method: "GET" }).handler(
+  async () =>
+    cached("event-status", FIVE_MINUTES, async () => {
+      const response = await fetch(`${FPL_API_BASE}/event-status/`)
+
+      if (!response.ok) {
+        throw new Error("Could not load event status")
+      }
+
+      return (await response.json()) as FplEventStatus
+    })
+)
 
 export const getFplEntryPicks = createServerFn({ method: "POST" })
   .validator((data: unknown) => ({
@@ -225,7 +291,23 @@ export const getFplEventLive = createServerFn({ method: "POST" })
       throw new Error("Live gameweek data not found")
     }
 
-    return (await response.json()) as FplEventLive
+    const raw = (await response.json()) as FplEventLive
+
+    return {
+      elements: raw.elements.map((element) => ({
+        id: element.id,
+        stats: {
+          minutes: element.stats?.minutes ?? 0,
+          goals_scored: element.stats?.goals_scored ?? 0,
+          assists: element.stats?.assists ?? 0,
+          bonus: element.stats?.bonus ?? 0,
+          bps: element.stats?.bps ?? 0,
+          defensive_contribution: element.stats?.defensive_contribution ?? 0,
+          total_points: element.stats?.total_points ?? 0,
+        },
+        explain: element.explain ?? [],
+      })),
+    } satisfies FplEventLive
   })
 
 export const getFplLeagueStandings = createServerFn({ method: "POST" })

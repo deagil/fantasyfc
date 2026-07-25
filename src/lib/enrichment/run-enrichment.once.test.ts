@@ -2,7 +2,14 @@
  * One-shot TheSportsDB enrichment seed. Run with:
  *   RUN_ENRICHMENT=1 pnpm exec vitest run src/lib/enrichment/run-enrichment.once.test.ts
  *
+ * Incremental season-start (skip re-scraping teams; only seed pending):
+ *   RUN_ENRICHMENT=1 ENRICHMENT_SEED_ONLY=1 pnpm exec vitest run src/lib/enrichment/run-enrichment.once.test.ts
+ *
  * Skipped unless RUN_ENRICHMENT=1 so it does not run in normal `pnpm test`.
+ *
+ * Discovery upserts candidates with ignoreDuplicates — only new SportsDB IDs
+ * become pending. Seed matches only FPL players missing cutout/render images
+ * and skips SportsDB IDs already in player_enrichment.
  *
  * Mirrors discoverEnrichment + seedEnrichment from server.ts (auth gated there;
  * this script uses the service role key from .env for local admin runs).
@@ -314,6 +321,42 @@ async function seedBatch(
     sportsdb_team_id: number
   }[]
 
+  const enrichedCodes = new Set<number>()
+  const enrichedSportsDbIds = new Set<number>()
+  {
+    const pageSize = 1000
+    let from = 0
+    for (;;) {
+      const { data, error } = await supabase
+        .from("player_enrichment")
+        .select("player_code, sportsdb_id, cutout_url, render_url")
+        .or("cutout_url.not.is.null,render_url.not.is.null")
+        .range(from, from + pageSize - 1)
+      if (error) {
+        throw new Error(`Failed to load existing enrichment: ${error.message}`)
+      }
+      const page = data as {
+        player_code: number
+        sportsdb_id: number
+        cutout_url: string | null
+        render_url: string | null
+      }[]
+      for (const row of page) {
+        enrichedCodes.add(row.player_code)
+        enrichedSportsDbIds.add(row.sportsdb_id)
+      }
+      if (page.length < pageSize) break
+      from += pageSize
+    }
+  }
+
+  for (const [sdbTeamId, roster] of rosterBySdbTeam) {
+    rosterBySdbTeam.set(
+      sdbTeamId,
+      roster.filter((el) => !enrichedCodes.has(el.code))
+    )
+  }
+
   const result: SeedEnrichmentResult = {
     processed: 0,
     matched: 0,
@@ -322,8 +365,14 @@ async function seedBatch(
     unmatched: [],
   }
 
+  const matchedBySdbId = new Map<number, number>()
   const playersByTeam = new Map<number, SportsDbPlayer[]>()
+
   for (const candidate of candidates) {
+    if (enrichedSportsDbIds.has(candidate.sportsdb_id)) {
+      continue
+    }
+
     await sleep(REQUEST_GAP_MS)
     const lookup = await fetchSportsDbApi<{
       players: SportsDbPlayer[] | null
@@ -335,8 +384,6 @@ async function seedBatch(
       playersByTeam.set(candidate.sportsdb_team_id, list)
     }
   }
-
-  const matchedBySdbId = new Map<number, number>()
 
   for (const [sdbTeamId, players] of playersByTeam) {
     const roster = rosterBySdbTeam.get(sdbTeamId) ?? []

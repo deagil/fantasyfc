@@ -5,6 +5,8 @@ import type { FplBootstrap } from "@/lib/fpl/types"
 export const FPL_STALE_TIME = {
   bootstrap: 60 * 60 * 1000,
   fixtures: 60 * 60 * 1000,
+  fixturesLive: 30 * 1000,
+  eventStatus: 5 * 60 * 1000,
   standings: 60 * 60 * 1000,
   leagueRankHistory: 60 * 60 * 1000,
   entry: 30 * 1000,
@@ -21,6 +23,8 @@ export const fplKeys = {
   bootstrap: () => [...fplKeys.all, "bootstrap", "v3"] as const,
   fixtures: (eventIds: readonly number[]) =>
     [...fplKeys.all, "fixtures", [...eventIds].sort((a, b) => a - b)] as const,
+  fixturesSeason: () => [...fplKeys.all, "fixtures", "season"] as const,
+  eventStatus: () => [...fplKeys.all, "event-status"] as const,
   entry: (teamId: number) => [...fplKeys.all, "entry", teamId] as const,
   history: (teamId: number) => [...fplKeys.all, "history", teamId] as const,
   standings: (leagueId: number, page = 1) =>

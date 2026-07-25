@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { cached, clearFplCache, getFplCacheEntry } from "@/lib/fpl/cache"
+import { cached, cachedWithTtl, clearFplCache, getFplCacheEntry } from "@/lib/fpl/cache"
 
 afterEach(() => {
   clearFplCache()
@@ -60,6 +60,30 @@ describe("cached", () => {
   })
 })
 
+describe("cachedWithTtl", () => {
+  it("stores the TTL returned by the fetcher", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(0))
+
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce({ value: "short", ttlMs: 500 })
+      .mockResolvedValueOnce({ value: "next", ttlMs: 60_000 })
+
+    await cachedWithTtl("ttl-key", fetcher)
+    vi.advanceTimersByTime(499)
+    await cachedWithTtl("ttl-key", fetcher)
+    expect(fetcher).toHaveBeenCalledTimes(1)
+
+    vi.advanceTimersByTime(2)
+    const second = await cachedWithTtl("ttl-key", fetcher)
+    expect(second).toBe("next")
+    expect(fetcher).toHaveBeenCalledTimes(2)
+
+    vi.useRealTimers()
+  })
+})
+
 describe("fplKeys", () => {
   it("sorts fixture event ids in query keys", async () => {
     const { fplKeys } = await import("@/lib/fpl/queries")
@@ -71,5 +95,12 @@ describe("fplKeys", () => {
     const { fplKeys } = await import("@/lib/fpl/queries")
 
     expect(fplKeys.bootstrap()).toEqual(["fpl", "bootstrap", "v3"])
+  })
+
+  it("exposes season fixtures and event-status keys", async () => {
+    const { fplKeys } = await import("@/lib/fpl/queries")
+
+    expect(fplKeys.fixturesSeason()).toEqual(["fpl", "fixtures", "season"])
+    expect(fplKeys.eventStatus()).toEqual(["fpl", "event-status"])
   })
 })
