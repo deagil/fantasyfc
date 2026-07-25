@@ -3,12 +3,11 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 
 import { AuthProvider } from "@/lib/auth/auth-context"
-import {
-  KickoffThemeProvider,
-  kickoffThemeBootScript,
-} from "@/lib/kickoff-theme-context"
+import { ColorSchemeProvider } from "@/lib/color-scheme-context"
+import { KickoffThemeProvider } from "@/lib/kickoff-theme-context"
 import { SpotifyPlayerProvider } from "@/lib/integrations/spotify/player-context"
 import { QueryProvider } from "@/lib/query-provider"
+import { themeBootScript } from "@/lib/theme-boot"
 import appCss from "../styles.css?url"
 
 export const Route = createRootRoute({
@@ -50,16 +49,16 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
-        <script
-          dangerouslySetInnerHTML={{ __html: kickoffThemeBootScript }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body>
         <QueryProvider>
           <AuthProvider>
-            <KickoffThemeProvider>
-              <SpotifyPlayerProvider>{children}</SpotifyPlayerProvider>
-            </KickoffThemeProvider>
+            <ColorSchemeProvider>
+              <KickoffThemeProvider>
+                <SpotifyPlayerProvider>{children}</SpotifyPlayerProvider>
+              </KickoffThemeProvider>
+            </ColorSchemeProvider>
           </AuthProvider>
         </QueryProvider>
         <TanStackDevtools

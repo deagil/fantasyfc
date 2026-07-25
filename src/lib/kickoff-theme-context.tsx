@@ -10,12 +10,10 @@ import {
 import {
   applyKickoffThemeToDocument,
   getStoredKickoffTheme,
-  kickoffBackdropColors,
-  kickoffBackdropImages,
   subscribeKickoffTheme,
-  type KickoffThemeId,
   setStoredKickoffTheme,
 } from "@/lib/kickoff-theme"
+import type { KickoffThemeId } from "@/lib/kickoff-theme"
 
 type KickoffThemeContextValue = {
   theme: KickoffThemeId
@@ -25,13 +23,6 @@ type KickoffThemeContextValue = {
 const KickoffThemeContext = createContext<KickoffThemeContextValue | null>(null)
 
 const defaultKickoffTheme: KickoffThemeId = "late-kickoff"
-
-/**
- * Runs before paint when inlined in <head>. Sets dataset, CSS variables, and
- * theme-color from localStorage so Safari overscroll isn't stuck on the SSR
- * late-kickoff plum while the shell hydrates to early-kickoff.
- */
-export const kickoffThemeBootScript = `(function(){try{var k="deadline-kickoff-theme";var t=localStorage.getItem(k);if(t!=="early-kickoff"&&t!=="late-kickoff")t="late-kickoff";var c=${JSON.stringify(kickoffBackdropColors)};var i=${JSON.stringify(kickoffBackdropImages)};var root=document.documentElement;root.dataset.kickoffTheme=t;root.style.setProperty("--shell-backdrop-color",c[t]);root.style.setProperty("--shell-backdrop-image",i[t]);var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.setAttribute("name","theme-color");document.head.appendChild(m);}m.setAttribute("content",c[t]);}catch(e){}})();`
 
 export function KickoffThemeProvider({
   children,

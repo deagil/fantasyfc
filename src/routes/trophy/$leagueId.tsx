@@ -24,6 +24,12 @@ import { cn } from "@/lib/utils"
 
 const SEASON_LABEL = "25/26"
 
+/** Panels sit straight on the shell backdrop, so they tint with its ink. */
+const awardStatPanelClassName =
+  "rounded-2xl bg-(--shell-foreground)/10 px-3 py-3 lg:rounded-[2px]"
+const awardStatLabelClassName =
+  "text-[0.65rem] font-medium uppercase tracking-wide text-(--shell-muted)"
+
 export const Route = createFileRoute("/trophy/$leagueId")({
   beforeLoad: ({ params }) => {
     const leagueId = Number(params.leagueId)
@@ -133,40 +139,40 @@ function TrophyDetailPage() {
               </p>
 
               <dl className="mt-8 grid w-full max-w-xs grid-cols-2 gap-3 text-center">
-                <div className="rounded-2xl bg-white/70 px-3 py-3 lg:rounded-[2px]">
-                  <dt className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+                <div className={awardStatPanelClassName}>
+                  <dt className={awardStatLabelClassName}>
                     Finish
                   </dt>
                   <dd className="mt-1 text-sm font-semibold tabular-nums text-(--shell-foreground)">
                     {medalOrdinal(title.medal)}
                   </dd>
                 </div>
-                <div className="rounded-2xl bg-white/70 px-3 py-3 lg:rounded-[2px]">
-                  <dt className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+                <div className={awardStatPanelClassName}>
+                  <dt className={awardStatLabelClassName}>
                     Season
                   </dt>
                   <dd className="mt-1 text-sm font-semibold tabular-nums text-(--shell-foreground)">
                     {SEASON_LABEL}
                   </dd>
                 </div>
-                <div className="rounded-2xl bg-white/70 px-3 py-3 lg:rounded-[2px]">
-                  <dt className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+                <div className={awardStatPanelClassName}>
+                  <dt className={awardStatLabelClassName}>
                     Points
                   </dt>
                   <dd className="mt-1 text-sm font-semibold tabular-nums text-(--shell-foreground)">
                     {podiumStats !== undefined ? podiumStats.points : "—"}
                   </dd>
                 </div>
-                <div className="rounded-2xl bg-white/70 px-3 py-3 lg:rounded-[2px]">
-                  <dt className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+                <div className={awardStatPanelClassName}>
+                  <dt className={awardStatLabelClassName}>
                     Gap
                   </dt>
                   <dd className="mt-1 text-sm font-semibold tabular-nums text-(--shell-foreground)">
                     {podiumStats !== undefined ? `+${podiumStats.margin}` : "—"}
                   </dd>
                 </div>
-                <div className="col-span-2 rounded-2xl bg-white/70 px-3 py-3 lg:rounded-[2px]">
-                  <dt className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+                <div className={cn("col-span-2", awardStatPanelClassName)}>
+                  <dt className={awardStatLabelClassName}>
                     League size
                   </dt>
                   <dd className="mt-1 text-sm font-semibold tabular-nums text-(--shell-foreground)">

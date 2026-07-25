@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { KickoffThemePicker } from "@/components/kickoff-theme-picker"
+import { AppearancePicker } from "@/components/appearance-picker"
 import { AccountSection } from "@/components/account-section"
 import { SettingsRow } from "@/components/settings-row"
 import {
@@ -69,7 +69,7 @@ export function UserMenu() {
 
   const settingsBody = (
     <div className="flex flex-col gap-4 text-sm">
-      <KickoffThemePicker />
+      <AppearancePicker />
       <div className="flex flex-col gap-2">
         <SettingsRow
           label="Team"
@@ -89,7 +89,7 @@ export function UserMenu() {
 
   const loginBody = (
     <div className="flex flex-col gap-4">
-      <KickoffThemePicker />
+      <AppearancePicker />
       <div className="flex flex-col gap-2">
         <Label htmlFor="team-id">Team ID</Label>
         <Input
