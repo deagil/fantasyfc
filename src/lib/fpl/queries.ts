@@ -19,8 +19,8 @@ export const LIVE_REFRESH_MS = 60_000
 
 export const fplKeys = {
   all: ["fpl"] as const,
-  /** v3: includes element/team code for player photos and crests. */
-  bootstrap: () => [...fplKeys.all, "bootstrap", "v3"] as const,
+  /** v5: adds points per game, news, and chance of playing to elements. */
+  bootstrap: () => [...fplKeys.all, "bootstrap", "v5"] as const,
   fixtures: (eventIds: readonly number[]) =>
     [...fplKeys.all, "fixtures", [...eventIds].sort((a, b) => a - b)] as const,
   fixturesSeason: () => [...fplKeys.all, "fixtures", "season"] as const,

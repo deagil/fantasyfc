@@ -14,9 +14,12 @@ function makeElement(
 ): FplElement {
   return {
     code: overrides.id * 1000,
+    first_name: overrides.web_name,
+    second_name: "",
     team: 1,
     now_cost: 100,
     form: "5.0",
+    points_per_game: "0.0",
     total_points: 0,
     bonus: 0,
     defensive_contribution: 0,
@@ -26,6 +29,8 @@ function makeElement(
     starts: 20,
     selected_by_percent: "10.0",
     status: "a",
+    news: "",
+    chance_of_playing_next_round: null,
     ...overrides,
   }
 }

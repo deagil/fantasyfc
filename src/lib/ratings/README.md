@@ -210,7 +210,7 @@ All-round match influence and FPL scoring efficiency.
 
 Defensive volume, clean-sheet outcomes, and discipline.
 
-#### Actions (W 0.45)
+#### Actions (W 0.55)
 
 | Stat | W | Tracks | Current | Historical |
 |---|---|---|---|---|
@@ -219,14 +219,14 @@ Defensive volume, clean-sheet outcomes, and discipline.
 | `tackles_per_90` | 0.20 | Tackles / 90 | `per90(tackles)` | same |
 | `recoveries_per_90` | 0.15 | Ball recoveries / 90 | `per90(recoveries)` | same |
 
-#### Outcomes (W 0.35)
+#### Outcomes (W 0.30)
 
 | Stat | W | Tracks | Current | Historical |
 |---|---|---|---|---|
 | `clean_sheets_per_90` | 0.55 | Clean sheet rate | `clean_sheets_per_90` | `per90(clean_sheets)` |
 | `xgc_per_90` ↓ | 0.45 | Expected goals conceded / 90 (lower = better) | `expected_goals_conceded_per_90` | `per90(expected_goals_conceded)` |
 
-#### Discipline (W 0.20)
+#### Discipline (W 0.15)
 
 | Stat | W | Tracks | Current | Historical |
 |---|---|---|---|---|

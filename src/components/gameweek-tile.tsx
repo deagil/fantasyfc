@@ -1,23 +1,34 @@
 import { LockIcon } from "lucide-react"
-import { Link } from "@tanstack/react-router"
-import { useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { DataTile } from "@/components/data-tile"
+import { MatchDetailPane } from "@/components/match-detail-pane"
 import { TeamCrest } from "@/components/team-crest"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerPanel,
+  drawerChromeOffsetClassName,
+} from "@/components/ui/drawer"
+import { useMediaQuery } from "@/hooks/use-media-query"
 import { useNow } from "@/hooks/use-now"
 import { useEnrichmentMaps } from "@/lib/enrichment/hooks"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
 import {
   formatCountdown,
+  getPhaseLabel,
   getPhaseSubtitle,
   resolveGameweekPhase,
-  type GameweekPhase,
-  type GameweekTodayFixture,
+} from "@/lib/fpl/gameweek"
+import type {
+  GameweekPhase,
+  GameweekTodayFixture,
 } from "@/lib/fpl/gameweek"
 import { formatExplicitRank, formatOverallRank, getSeasonSummary } from "@/lib/fpl/history"
 import { formatTeamProfit } from "@/lib/fpl/transfers"
 import { useTeam } from "@/lib/fpl/team-context"
+import type { FplFixture } from "@/lib/fpl/types"
 import { cn } from "@/lib/utils"
 
 function TeamHeroSkeleton() {
@@ -68,7 +79,15 @@ function LockedContent({ phase, now }: { phase: GameweekPhase; now: Date }) {
   )
 }
 
-function FixtureRow({ fixture }: { fixture: GameweekTodayFixture }) {
+function FixtureRow({
+  fixture,
+  isSelected,
+  onSelect,
+}: {
+  fixture: GameweekTodayFixture
+  isSelected: boolean
+  onSelect: (fixtureId: number) => void
+}) {
   const { teamsById } = useFplBootstrap()
   const { teamsByCode } = useEnrichmentMaps()
 
@@ -89,11 +108,12 @@ function FixtureRow({ fixture }: { fixture: GameweekTodayFixture }) {
       : `${fixture.homeScore ?? 0}–${fixture.awayScore ?? 0}`
 
   return (
-    <Link
-      to="/fixture/$fixtureId"
-      params={{ fixtureId: String(fixture.id) }}
-      data-tile-link=""
-      className="flex items-center justify-between gap-2 rounded-lg px-1 py-0.5 text-sm hover:bg-foreground/4"
+    <button
+      type="button"
+      data-tile-row
+      data-selected={isSelected ? "true" : undefined}
+      onClick={() => onSelect(fixture.id)}
+      className="flex w-full items-center justify-between gap-2 rounded-lg px-1 py-0.5 text-left text-sm"
     >
       <span className="flex min-w-0 items-center gap-1.5 font-medium tabular-nums">
         <TeamCrest
@@ -121,11 +141,19 @@ function FixtureRow({ fixture }: { fixture: GameweekTodayFixture }) {
           ? `${fixture.minutes}'`
           : score}
       </span>
-    </Link>
+    </button>
   )
 }
 
-function LiveContent({ phase }: { phase: GameweekPhase }) {
+function LiveContent({
+  phase,
+  selectedFixtureId,
+  onSelectFixture,
+}: {
+  phase: GameweekPhase
+  selectedFixtureId: number | null
+  onSelectFixture: (fixtureId: number) => void
+}) {
   if (phase.type !== "live") {
     return null
   }
@@ -151,7 +179,12 @@ function LiveContent({ phase }: { phase: GameweekPhase }) {
       </p>
       <div className="flex flex-col gap-1.5">
         {phase.todayFixtures.slice(0, 3).map((fixture) => (
-          <FixtureRow key={fixture.id} fixture={fixture} />
+          <FixtureRow
+            key={fixture.id}
+            fixture={fixture}
+            isSelected={selectedFixtureId === fixture.id}
+            onSelect={onSelectFixture}
+          />
         ))}
       </div>
     </div>
@@ -253,9 +286,13 @@ function OffSeasonContent() {
 function GameweekTileContent({
   phase,
   now,
+  selectedFixtureId,
+  onSelectFixture,
 }: {
   phase: GameweekPhase
   now: Date
+  selectedFixtureId: number | null
+  onSelectFixture: (fixtureId: number) => void
 }) {
   switch (phase.type) {
     case "countdown":
@@ -263,7 +300,13 @@ function GameweekTileContent({
     case "locked":
       return <LockedContent phase={phase} now={now} />
     case "live":
-      return <LiveContent phase={phase} />
+      return (
+        <LiveContent
+          phase={phase}
+          selectedFixtureId={selectedFixtureId}
+          onSelectFixture={onSelectFixture}
+        />
+      )
     case "post-gameweek":
       return <PostGameweekContent phase={phase} />
     case "off-season":
@@ -290,9 +333,14 @@ export function GameweekTile({
   className?: string
   comingSoon?: boolean
 }) {
+  const isDesktop = useMediaQuery("(min-width: 1024px)")
   const now = useNow(1_000)
   const { bootstrap, fixtures, teamsById, isLoading, error } = useFplBootstrap()
   const { isLoading: isTeamLoading, error: teamError, history } = useTeam()
+  const [selectedFixture, setSelectedFixture] = useState<FplFixture | null>(
+    null
+  )
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const phase = useMemo(() => {
     if (!bootstrap) {
@@ -308,46 +356,109 @@ export function GameweekTile({
   const isTeamDataLoading =
     isTeamLoading && (needsTeam || (needsHistory && !history))
 
-  return (
-    <DataTile
-      size="2x1"
-      comingSoon={comingSoon}
-      className={cn(isLocked && "opacity-90 saturate-[0.85]", className)}
-    >
-      <div className="flex h-full min-h-0 flex-col">
-        <DataTile.Header className="p-3 pb-0">
-          <DataTile.Heading>
-            <DataTile.Label>Gameweek</DataTile.Label>
-            {phase ? (
-              <DataTile.Subtitle>{getPhaseSubtitle(phase)}</DataTile.Subtitle>
-            ) : null}
-          </DataTile.Heading>
-        </DataTile.Header>
+  const stopCarouselPointer = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      event.stopPropagation()
+    },
+    []
+  )
 
-        <DataTile.Content
-          align={phase?.type === "off-season" ? "between" : "center"}
-          className={cn(
-            "flex-1 p-3 pt-2 pb-3",
-            phase?.type === "off-season" && "min-h-0"
-          )}
+  const handleSelectFixture = useCallback(
+    (fixtureId: number) => {
+      const fixture = fixtures.find((entry) => entry.id === fixtureId) ?? null
+      setSelectedFixture(fixture)
+      setDrawerOpen(fixture != null)
+    },
+    [fixtures]
+  )
+
+  const handleDrawerOpenChange = useCallback((open: boolean) => {
+    setDrawerOpen(open)
+    if (!open) {
+      setSelectedFixture(null)
+    }
+  }, [])
+
+  const drawerTitle = selectedFixture
+    ? `${teamsById.get(selectedFixture.team_h)?.short_name ?? "Home"} v ${teamsById.get(selectedFixture.team_a)?.short_name ?? "Away"}`
+    : "Match centre"
+
+  return (
+    <>
+      <DataTile
+        size="2x1"
+        interactive={phase?.type === "live"}
+        comingSoon={comingSoon}
+        className={cn(isLocked && "opacity-90 saturate-[0.85]", className)}
+      >
+        <div
+          className="flex h-full min-h-0 flex-col"
+          onPointerDown={
+            phase?.type === "live" ? stopCarouselPointer : undefined
+          }
+          onPointerUp={phase?.type === "live" ? stopCarouselPointer : undefined}
         >
-          {isLoading && !bootstrap ? (
-            <TeamHeroSkeleton />
-          ) : error && !bootstrap ? (
-            <DataTile.EmptyState className="text-destructive">
-              {error}
-            </DataTile.EmptyState>
-          ) : isTeamDataLoading ? (
-            <TeamHeroSkeleton />
-          ) : teamError && needsTeam ? (
-            <DataTile.EmptyState className="text-destructive">
-              {teamError}
-            </DataTile.EmptyState>
-          ) : phase ? (
-            <GameweekTileContent phase={phase} now={now} />
-          ) : null}
-        </DataTile.Content>
-      </div>
-    </DataTile>
+          <DataTile.Header className="p-3 pb-0">
+            <DataTile.Heading>
+              <DataTile.Label>
+                {phase ? getPhaseLabel(phase) : "Gameweek"}
+              </DataTile.Label>
+              {phase ? (
+                <DataTile.Subtitle>{getPhaseSubtitle(phase)}</DataTile.Subtitle>
+              ) : null}
+            </DataTile.Heading>
+          </DataTile.Header>
+
+          <DataTile.Content
+            align={phase?.type === "off-season" ? "between" : "center"}
+            className={cn(
+              "flex-1 p-3 pt-2 pb-3",
+              phase?.type === "off-season" && "min-h-0"
+            )}
+          >
+            {isLoading && !bootstrap ? (
+              <TeamHeroSkeleton />
+            ) : error && !bootstrap ? (
+              <DataTile.EmptyState className="text-destructive">
+                {error}
+              </DataTile.EmptyState>
+            ) : isTeamDataLoading ? (
+              <TeamHeroSkeleton />
+            ) : teamError && needsTeam ? (
+              <DataTile.EmptyState className="text-destructive">
+                {teamError}
+              </DataTile.EmptyState>
+            ) : phase ? (
+              <GameweekTileContent
+                phase={phase}
+                now={now}
+                selectedFixtureId={
+                  drawerOpen && selectedFixture ? selectedFixture.id : null
+                }
+                onSelectFixture={handleSelectFixture}
+              />
+            ) : null}
+          </DataTile.Content>
+        </div>
+      </DataTile>
+
+      <Drawer open={drawerOpen} onOpenChange={handleDrawerOpenChange}>
+        <DrawerContent
+          size="lg"
+          align={isDesktop ? "dock-right" : "full"}
+        >
+          <DrawerPanel
+            title={drawerTitle}
+            bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
+          >
+            <MatchDetailPane
+              fixture={selectedFixture}
+              showOpenLink
+              className={cn(drawerChromeOffsetClassName, "overflow-hidden")}
+            />
+          </DrawerPanel>
+        </DrawerContent>
+      </Drawer>
+    </>
   )
 }

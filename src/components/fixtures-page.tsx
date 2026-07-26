@@ -203,7 +203,7 @@ export function FixturesPage() {
               >
                 {dayGroups.map((group) => (
                   <section key={group.dateKey} className="flex flex-col gap-1.5">
-                    <h3 className="px-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    <h3 className="px-1 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
                       {group.label}
                     </h3>
                     <div className="flex flex-col gap-1">

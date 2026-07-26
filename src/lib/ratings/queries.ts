@@ -5,4 +5,6 @@ export const ratingsKeys = {
   list: () => [...ratingsKeys.all, "list"] as const,
   detail: (playerId: number) =>
     [...ratingsKeys.all, "detail", playerId] as const,
+  seasonHistory: (playerCode: number) =>
+    [...ratingsKeys.all, "season-history", playerCode] as const,
 }

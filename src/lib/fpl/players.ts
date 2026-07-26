@@ -133,3 +133,23 @@ export function getPlayerClubShortName(
 ): string {
   return teamsById.get(player.team)?.short_name ?? "—"
 }
+
+/** Case-insensitive match against web name, first name, last name, or full name. */
+export function playerMatchesNameQuery(
+  player: Pick<FplElement, "web_name" | "first_name" | "second_name">,
+  query: string
+): boolean {
+  const needle = query.trim().toLowerCase()
+  if (needle.length === 0) {
+    return true
+  }
+
+  const haystacks = [
+    player.web_name,
+    player.first_name,
+    player.second_name,
+    `${player.first_name} ${player.second_name}`,
+  ]
+
+  return haystacks.some((value) => value.toLowerCase().includes(needle))
+}

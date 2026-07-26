@@ -93,6 +93,10 @@ export function LeagueStandingsList({
         </div>
       ) : error ? (
         <p className="px-4 text-sm text-destructive">{error}</p>
+      ) : standings.length === 0 ? (
+        <p className="flex min-h-40 flex-1 items-center justify-center px-4 text-center text-sm text-muted-foreground">
+          League members are pending
+        </p>
       ) : (
         standings.map((standing) => (
           <StandingRow

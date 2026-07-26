@@ -248,18 +248,36 @@ export function resolveGameweekPhase(
   return { type: "off-season", event: findLastEvent(events) }
 }
 
+/** Primary tile heading — "Gameweek N" (or Season when finished). */
+export function getPhaseLabel(phase: GameweekPhase): string {
+  switch (phase.type) {
+    case "off-season":
+      return "Season"
+    case "countdown":
+    case "locked":
+    case "live":
+    case "post-gameweek":
+      return `Gameweek ${phase.event.id}`
+    default: {
+      const exhaustiveCheck: never = phase
+      return exhaustiveCheck
+    }
+  }
+}
+
+/** Secondary heading — deadline time / status, never repeats "Gameweek". */
 export function getPhaseSubtitle(phase: GameweekPhase): string {
   switch (phase.type) {
     case "off-season":
       return "Postseason"
     case "countdown":
-      return `Gameweek ${phase.event.id} · ${formatDeadlineLabel(phase.deadline)}`
+      return formatDeadlineLabel(phase.deadline)
     case "locked":
-      return `Gameweek ${phase.event.id} · Squad locked`
+      return "Squad locked"
     case "live":
-      return `Gameweek ${phase.event.id} · Live`
+      return "Live"
     case "post-gameweek":
-      return `Gameweek ${phase.event.id} · Final`
+      return "Final"
     default: {
       const exhaustiveCheck: never = phase
       return exhaustiveCheck

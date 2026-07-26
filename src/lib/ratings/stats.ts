@@ -1,7 +1,13 @@
 import type {
+  EnginePlayer,
   FplHistoryPastSeason,
   RatingsBootstrapElement,
+  SeasonHistoryInput,
 } from "@/lib/ratings/model"
+import {
+  COHORT_MIN_MINUTES,
+  MIN_DISTRIBUTION_SAMPLES,
+} from "@/lib/ratings/hierarchy"
 
 export function toNum(value: unknown): number | null {
   if (value === null || value === undefined || value === "") {
@@ -145,4 +151,97 @@ export function deriveHistoryStats(
     value_season: null,
     value_form: null,
   }
+}
+
+/**
+ * DEF Actions leaf stats. FPL often zeroes these on bootstrap at season
+ * rollover (while leaving minutes / yellows / clean sheets populated), which
+ * collapses the cohort to zero variance and blanks the Actions breakdown.
+ */
+export const BOOTSTRAP_HISTORY_FALLBACK_STAT_KEYS = [
+  "defcon_per_90",
+  "cbi_per_90",
+  "tackles_per_90",
+  "recoveries_per_90",
+] as const
+
+function isStatDeadAcrossCohort(
+  players: readonly EnginePlayer[],
+  key: string
+): boolean {
+  const values = players
+    .filter((player) => player.minutes >= COHORT_MIN_MINUTES)
+    .map((player) => player.stats[key])
+    .filter((value): value is number => value !== null && Number.isFinite(value))
+
+  if (values.length < MIN_DISTRIBUTION_SAMPLES) {
+    return true
+  }
+
+  return Math.min(...values) === Math.max(...values)
+}
+
+function latestHistoryStatsByCode(
+  historyRows: readonly SeasonHistoryInput[]
+): Map<number, Record<string, number | null>> {
+  const latestRowByCode = new Map<number, SeasonHistoryInput>()
+
+  for (const row of historyRows) {
+    const existing = latestRowByCode.get(row.playerCode)
+    if (!existing || row.seasonName > existing.seasonName) {
+      latestRowByCode.set(row.playerCode, row)
+    }
+  }
+
+  const latestStats = new Map<number, Record<string, number | null>>()
+  for (const [code, row] of latestRowByCode) {
+    latestStats.set(code, deriveHistoryStats(row.stats))
+  }
+  return latestStats
+}
+
+/**
+ * When current-season bootstrap has no usable variance for DEF Actions stats
+ * (typical pre-GW1 / rollover), substitute each player's latest history-season
+ * rates so Actions percentiles and the detail breakdown stay meaningful until
+ * live defensive contribution data arrives.
+ */
+export function fillDeadBootstrapStatsFromHistory(
+  players: readonly EnginePlayer[],
+  historyRows: readonly SeasonHistoryInput[],
+  keys: readonly string[] = BOOTSTRAP_HISTORY_FALLBACK_STAT_KEYS
+): EnginePlayer[] {
+  if (players.length === 0 || historyRows.length === 0 || keys.length === 0) {
+    return [...players]
+  }
+
+  const keysToFill = keys.filter((key) => isStatDeadAcrossCohort(players, key))
+  if (keysToFill.length === 0) {
+    return [...players]
+  }
+
+  const historyByCode = latestHistoryStatsByCode(historyRows)
+
+  return players.map((player) => {
+    const history = historyByCode.get(player.code)
+    if (!history) {
+      return player
+    }
+
+    let changed = false
+    const stats = { ...player.stats }
+    for (const key of keysToFill) {
+      const historyValue = history[key] ?? null
+      if (historyValue === null) {
+        continue
+      }
+      if (stats[key] === historyValue) {
+        continue
+      }
+      stats[key] = historyValue
+      changed = true
+    }
+
+    return changed ? { ...player, stats } : player
+  })
 }

@@ -160,7 +160,7 @@ export const getFplEntryHistory = createServerFn({ method: "POST" })
 
 export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
   async () =>
-    cached("bootstrap:v3", 3 * HOUR, async () => {
+    cached("bootstrap:v5", 3 * HOUR, async () => {
       const response = await fetch(`${FPL_API_BASE}/bootstrap-static/`)
 
       if (!response.ok) {
@@ -179,10 +179,13 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
           id: number
           code: number
           web_name: string
+          first_name: string
+          second_name: string
           team: number
           element_type: number
           now_cost: number
           form: string
+          points_per_game: string
           total_points: number
           bonus: number
           defensive_contribution: number
@@ -192,6 +195,8 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
           starts: number
           selected_by_percent: string
           status: string
+          news: string | null
+          chance_of_playing_next_round: number | null
         }>
       }
 
@@ -207,10 +212,13 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
           id: element.id,
           code: element.code,
           web_name: element.web_name,
+          first_name: element.first_name,
+          second_name: element.second_name,
           team: element.team,
           element_type: element.element_type as FplBootstrap["elements"][number]["element_type"],
           now_cost: element.now_cost,
           form: element.form,
+          points_per_game: element.points_per_game ?? "0.0",
           total_points: element.total_points,
           bonus: element.bonus,
           defensive_contribution: element.defensive_contribution ?? 0,
@@ -220,6 +228,8 @@ export const getFplBootstrap = createServerFn({ method: "GET" }).handler(
           starts: element.starts ?? 0,
           selected_by_percent: element.selected_by_percent,
           status: element.status as FplBootstrap["elements"][number]["status"],
+          news: element.news ?? "",
+          chance_of_playing_next_round: element.chance_of_playing_next_round,
         })),
       } satisfies FplBootstrap
     })

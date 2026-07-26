@@ -11,6 +11,15 @@ export {
   sortFixturesByKickoff,
 } from "@/lib/fixtures/group"
 export {
+  getNextUnfinishedEvent,
+  getUpcomingTeamFixtures,
+} from "@/lib/fixtures/upcoming"
+export type {
+  FixtureRun,
+  FixtureRunEvent,
+  UpcomingFixture,
+} from "@/lib/fixtures/upcoming"
+export {
   getFixturePointsByElement,
   getYourPlayersInFixture,
   isBonusAddedForEvent,

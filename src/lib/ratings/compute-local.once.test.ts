@@ -20,7 +20,7 @@ import type {
   RatingsBootstrapElement,
   SeasonHistoryInput,
 } from "@/lib/ratings/model"
-import { deriveBootstrapStats } from "@/lib/ratings/stats"
+import { deriveBootstrapStats, fillDeadBootstrapStatsFromHistory } from "@/lib/ratings/stats"
 import {
   csvToRecords,
   mapPlayersRaw,
@@ -180,15 +180,18 @@ describe("local ratings compute", () => {
       const baselines = computeExpectedBaselines(historyRows)
       console.log(`Baselines for ${baselines.size} player codes`)
 
-      const players = bootstrap.elements.map((el) => ({
-        id: el.id,
-        code: el.code,
-        webName: el.web_name,
-        elementType: el.element_type,
-        minutes: Number(el.minutes) || 0,
-        status: el.status,
-        stats: deriveBootstrapStats(el),
-      }))
+      const players = fillDeadBootstrapStatsFromHistory(
+        bootstrap.elements.map((el) => ({
+          id: el.id,
+          code: el.code,
+          webName: el.web_name,
+          elementType: el.element_type,
+          minutes: Number(el.minutes) || 0,
+          status: el.status,
+          stats: deriveBootstrapStats(el),
+        })),
+        historyRows
+      )
 
       console.log("Computing ratings…")
       const current = computeRatings(players, { event })

@@ -529,7 +529,11 @@
     [data-tile]:not([data-tile-interactive]):hover :where([class*="text-destructive"]),
     .group\/tile:hover
       [data-tile]:not([data-tile-interactive])
-      :where([class*="text-destructive"]) {
+      :where([class*="text-destructive"]),
+    [data-tile]:not([data-tile-interactive]):hover :where([class*="text-chart"]),
+    .group\/tile:hover
+      [data-tile]:not([data-tile-interactive])
+      :where([class*="text-chart"]) {
       color: var(--tile-hover-fg) !important;
     }
 

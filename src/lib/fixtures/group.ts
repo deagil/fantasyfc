@@ -38,7 +38,8 @@ export function sortFixturesByKickoff(
 
 export function groupFixturesByDay(
   fixtures: readonly FplFixture[],
-  locale?: string
+  locale?: string,
+  labelStyle: "long" | "short" = "long"
 ): FixtureDayGroup[] {
   const groups = new Map<string, FixtureDayGroup>()
 
@@ -70,11 +71,18 @@ export function groupFixturesByDay(
       groups.set(dateKey, {
         dateKey,
         date: day,
-        label: day.toLocaleDateString(locale, {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-        }),
+        label:
+          labelStyle === "short"
+            ? day.toLocaleDateString(locale, {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+              })
+            : day.toLocaleDateString(locale, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              }),
         fixtures: [fixture],
       })
     }

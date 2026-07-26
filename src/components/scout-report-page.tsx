@@ -11,10 +11,12 @@ import {
   DrawerPanel,
   drawerChromeOffsetClassName,
 } from "@/components/ui/drawer"
+import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
+import { playerMatchesNameQuery } from "@/lib/fpl/players"
 import type { FplElement } from "@/lib/fpl/types"
 import { hubTileGridClassName } from "@/lib/layout"
 import type { PlayerRatingSummary } from "@/lib/ratings/model"
@@ -53,6 +55,7 @@ export function ScoutReportPage({ scout, titleStyle }: ScoutReportPageProps) {
     null
   )
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [nameQuery, setNameQuery] = useState("")
 
   const ratingsById = useMemo(() => {
     const map = new Map<number, PlayerRatingSummary>()
@@ -62,7 +65,7 @@ export function ScoutReportPage({ scout, titleStyle }: ScoutReportPageProps) {
     return map
   }, [ratingsPayload?.ratings])
 
-  const filteredPlayers = useMemo(() => {
+  const rankedPlayers = useMemo(() => {
     const players = bootstrap?.elements ?? []
     return sortPlayersForScout(
       players,
@@ -70,6 +73,12 @@ export function ScoutReportPage({ scout, titleStyle }: ScoutReportPageProps) {
       scoutNeedsRatings(scout.sort) ? ratingsById : undefined
     )
   }, [bootstrap?.elements, ratingsById, scout])
+
+  const filteredPlayers = useMemo(
+    () =>
+      rankedPlayers.filter((player) => playerMatchesNameQuery(player, nameQuery)),
+    [nameQuery, rankedPlayers]
+  )
 
   const selectedPlayer = useMemo(() => {
     if (selectedPlayerId === null) {
@@ -86,6 +95,7 @@ export function ScoutReportPage({ scout, titleStyle }: ScoutReportPageProps) {
     setSelectedPlayerId(null)
     setMobileSelectedPlayer(null)
     setDrawerOpen(false)
+    setNameQuery("")
   }, [scout.slug])
 
   useEffect(() => {
@@ -158,6 +168,14 @@ export function ScoutReportPage({ scout, titleStyle }: ScoutReportPageProps) {
           ))}
         </TabsList>
       </Tabs>
+      <Input
+        type="search"
+        value={nameQuery}
+        onChange={(event) => setNameQuery(event.target.value)}
+        placeholder="Search by name"
+        aria-label="Search players by name"
+        className="rounded-xl"
+      />
     </DataTile.Header>
   )
 
@@ -177,6 +195,12 @@ export function ScoutReportPage({ scout, titleStyle }: ScoutReportPageProps) {
               <PlayerGridSkeleton />
             ) : error ? (
               <p className="px-4 py-6 text-sm text-muted-foreground">{error}</p>
+            ) : filteredPlayers.length === 0 ? (
+              <p className="px-4 py-6 text-sm text-muted-foreground">
+                {nameQuery.trim().length > 0
+                  ? "No players match that name."
+                  : "No players in this scout."}
+              </p>
             ) : (
               <ScrollFade
                 className="flex min-h-0 w-full min-w-0 flex-1"

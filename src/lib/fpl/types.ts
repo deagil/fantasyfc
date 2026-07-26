@@ -111,10 +111,13 @@ export type FplElement = {
   id: number
   code: number
   web_name: string
+  first_name: string
+  second_name: string
   team: number
   element_type: FplElementTypeId
   now_cost: number
   form: string
+  points_per_game: string
   total_points: number
   bonus: number
   defensive_contribution: number
@@ -124,6 +127,10 @@ export type FplElement = {
   starts: number
   selected_by_percent: string
   status: FplElementStatus
+  /** Injury / suspension note; empty string when there is nothing to report. */
+  news: string
+  /** Percentage likelihood of featuring next gameweek; null when unreported. */
+  chance_of_playing_next_round: number | null
 }
 
 export type FplPick = {

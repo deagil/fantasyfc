@@ -2,9 +2,17 @@ import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useServerFn } from "@tanstack/react-start"
 
-import type { PlayerRatingSummary, PlayerRatingsPayload } from "@/lib/ratings/model"
+import type {
+  PlayerRatingSummary,
+  PlayerRatingsPayload,
+  PlayerSeasonHistoryEntry,
+} from "@/lib/ratings/model"
 import { RATINGS_STALE_TIME, ratingsKeys } from "@/lib/ratings/queries"
-import { getPlayerRatingDetail, getPlayerRatings } from "@/lib/ratings/server"
+import {
+  getPlayerRatingDetail,
+  getPlayerRatings,
+  getPlayerSeasonHistory,
+} from "@/lib/ratings/server"
 
 /** All player ratings for the latest gameweek snapshot (compact shape). */
 export function usePlayerRatings() {
@@ -44,6 +52,18 @@ export function usePlayerRatingDetail(playerId: number | null) {
     queryKey: ratingsKeys.detail(playerId ?? -1),
     queryFn: () => fetchDetail({ data: { playerId: playerId as number } }),
     enabled: playerId !== null,
+    staleTime: RATINGS_STALE_TIME,
+  })
+}
+
+/** Past-season aggregates for one player, oldest season first. */
+export function usePlayerSeasonHistory(playerCode: number | null) {
+  const fetchHistory = useServerFn(getPlayerSeasonHistory)
+
+  return useQuery<PlayerSeasonHistoryEntry[]>({
+    queryKey: ratingsKeys.seasonHistory(playerCode ?? -1),
+    queryFn: () => fetchHistory({ data: { playerCode: playerCode as number } }),
+    enabled: playerCode !== null,
     staleTime: RATINGS_STALE_TIME,
   })
 }

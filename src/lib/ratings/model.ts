@@ -218,6 +218,22 @@ export type FplHistoryPastSeason = {
   expected_goals_conceded: string
 }
 
+/** Client-safe per-season summary for one player, newest season last. */
+export type PlayerSeasonHistoryEntry = {
+  seasonName: string
+  totalPoints: number
+  minutes: number
+  starts: number
+  goalsScored: number
+  assists: number
+  cleanSheets: number
+  bonus: number
+  /** End-of-season price in tenths of a million. */
+  endCost: number
+  /** Points per million of end-of-season price; null when price is unknown. */
+  pointsPerMillion: number | null
+}
+
 export type SeasonHistoryInput = {
   playerCode: number
   webName: string

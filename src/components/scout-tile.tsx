@@ -1,10 +1,18 @@
 import { Link } from "@tanstack/react-router"
-import { useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { DataTile } from "@/components/data-tile"
 import { PlayerAvatar } from "@/components/player-avatar"
+import { PlayerDetailPane } from "@/components/player-detail-pane"
 import { ScrollFade } from "@/components/scroll-fade"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerPanel,
+  drawerChromeOffsetClassName,
+} from "@/components/ui/drawer"
+import { useMediaQuery } from "@/hooks/use-media-query"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
 import {
   getElementTypeLabel,
@@ -27,15 +35,25 @@ function ScoutPreviewCard({
   clubShortName,
   positionLabel,
   overall,
+  isSelected,
+  onSelect,
 }: {
   playerCode: number
   name: string
   clubShortName: string
   positionLabel: string
   overall: number
+  isSelected?: boolean
+  onSelect: () => void
 }) {
   return (
-    <div className="flex min-h-19 min-w-0 items-center gap-3 rounded-xl bg-foreground/4 p-3">
+    <button
+      type="button"
+      data-tile-row
+      data-selected={isSelected ? "true" : undefined}
+      onClick={onSelect}
+      className="flex min-h-19 min-w-0 items-center gap-3 rounded-xl bg-foreground/4 p-3 text-left"
+    >
       <PlayerAvatar playerCode={playerCode} name={name} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold leading-tight">{name}</p>
@@ -51,7 +69,7 @@ function ScoutPreviewCard({
       >
         {overall}
       </span>
-    </div>
+    </button>
   )
 }
 
@@ -61,11 +79,15 @@ function TopPlayersPreview({
   ratingsById,
   teamsById,
   isLoading,
+  selectedPlayerId,
+  onSelectPlayer,
 }: {
   players: FplElement[]
   ratingsById: Map<number, PlayerRatingSummary>
   teamsById: Map<number, FplTeam>
   isLoading: boolean
+  selectedPlayerId: number | null
+  onSelectPlayer: (player: FplElement) => void
 }) {
   if (isLoading) {
     return (
@@ -89,9 +111,13 @@ function TopPlayersPreview({
         const positionLabel = getElementTypeLabel(player.element_type)
 
         return (
-          <div
+          <button
             key={player.id}
-            className="flex min-w-0 items-center gap-2 rounded-lg bg-foreground/4 px-2 py-1.5"
+            type="button"
+            data-tile-row
+            data-selected={selectedPlayerId === player.id ? "true" : undefined}
+            onClick={() => onSelectPlayer(player)}
+            className="flex min-w-0 items-center gap-2 rounded-lg bg-foreground/4 px-2 py-1.5 text-left"
           >
             <PlayerAvatar
               playerCode={player.code}
@@ -116,7 +142,7 @@ function TopPlayersPreview({
                 {overall}
               </span>
             ) : null}
-          </div>
+          </button>
         )
       })}
     </div>
@@ -128,11 +154,15 @@ function FeaturedRatingsPreview({
   elementsById,
   teamsById,
   isLoading,
+  selectedPlayerId,
+  onSelectPlayer,
 }: {
   ratings: PlayerRatingSummary[]
   elementsById: Map<number, FplElement>
   teamsById: Map<number, FplTeam>
   isLoading: boolean
+  selectedPlayerId: number | null
+  onSelectPlayer: (player: FplElement) => void
 }) {
   if (isLoading) {
     return (
@@ -158,9 +188,11 @@ function FeaturedRatingsPreview({
     >
       {ratings.map((rating) => {
         const element = elementsById.get(rating.id)
-        const clubShortName = element
-          ? getPlayerClubShortName(element, teamsById)
-          : "—"
+        if (!element) {
+          return null
+        }
+
+        const clubShortName = getPlayerClubShortName(element, teamsById)
 
         return (
           <ScoutPreviewCard
@@ -170,6 +202,8 @@ function FeaturedRatingsPreview({
             clubShortName={clubShortName}
             positionLabel={getElementTypeLabel(rating.elementType)}
             overall={rating.overall}
+            isSelected={selectedPlayerId === element.id}
+            onSelect={() => onSelectPlayer(element)}
           />
         )
       })}
@@ -186,9 +220,12 @@ export function ScoutTile({
   className?: string
   titleStyle?: React.CSSProperties
 }) {
+  const isDesktop = useMediaQuery("(min-width: 1024px)")
   const { bootstrap, teamsById, elementsById, isLoading: bootstrapLoading } =
     useFplBootstrap()
   const { data: ratingsPayload, isLoading: ratingsLoading } = usePlayerRatings()
+  const [selectedPlayer, setSelectedPlayer] = useState<FplElement | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const isFeatured = scout.featured === true
 
@@ -224,51 +261,103 @@ export function ScoutTile({
 
   const isLoading = bootstrapLoading || ratingsLoading
 
-  return (
-    <Link
-      to="/scouts/$scoutSlug"
-      params={{ scoutSlug: scout.slug }}
-      data-tile-link=""
-      className={cn(
-        "block h-full min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-(--shell-foreground)/30",
-        className
-      )}
-    >
-      <DataTile
-        interactive
-        size={isFeatured ? "2x2" : "1x1"}
-        className="group/scout-tile h-full"
-      >
-        <DataTile.Header className={cn(isFeatured ? "pb-2" : "pb-0")}>
-          <DataTile.Heading>
-            <DataTile.Label style={titleStyle}>{scout.name}</DataTile.Label>
-          </DataTile.Heading>
-        </DataTile.Header>
+  const stopCarouselPointer = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      event.stopPropagation()
+    },
+    []
+  )
 
-        <DataTile.Content
-          align="between"
-          className={cn(
-            "min-h-0 flex-1",
-            isFeatured ? "justify-between gap-2 pt-1" : "justify-center gap-2 pt-2"
-          )}
+  const handleSelectPlayer = useCallback((player: FplElement) => {
+    setSelectedPlayer(player)
+    setDrawerOpen(true)
+  }, [])
+
+  const handleDrawerOpenChange = useCallback((open: boolean) => {
+    setDrawerOpen(open)
+    if (!open) {
+      setSelectedPlayer(null)
+    }
+  }, [])
+
+  const selectedPlayerId =
+    drawerOpen && selectedPlayer ? selectedPlayer.id : null
+
+  return (
+    <>
+      <div
+        className={cn("h-full min-h-0", className)}
+        onPointerDown={stopCarouselPointer}
+        onPointerUp={stopCarouselPointer}
+      >
+        <DataTile
+          interactive
+          size={isFeatured ? "2x2" : "1x1"}
+          className="group/scout-tile h-full"
         >
-          {isFeatured ? (
-            <FeaturedRatingsPreview
-              ratings={topRatedPlayers}
-              elementsById={elementsById}
+          <DataTile.Header className={cn(isFeatured ? "pb-2" : "pb-0")}>
+            <DataTile.Heading>
+              <Link
+                to="/scouts/$scoutSlug"
+                params={{ scoutSlug: scout.slug }}
+                data-tile-link=""
+                className="truncate text-base font-semibold text-foreground outline-none hover:underline focus-visible:underline lg:text-lg"
+                style={titleStyle}
+              >
+                {scout.name}
+              </Link>
+            </DataTile.Heading>
+          </DataTile.Header>
+
+          <DataTile.Content
+            align="between"
+            className={cn(
+              "min-h-0 flex-1",
+              isFeatured
+                ? "justify-between gap-2 pt-1"
+                : "justify-center gap-2 pt-2"
+            )}
+          >
+            {isFeatured ? (
+              <FeaturedRatingsPreview
+                ratings={topRatedPlayers}
+                elementsById={elementsById}
+                teamsById={teamsById}
+                isLoading={isLoading}
+                selectedPlayerId={selectedPlayerId}
+                onSelectPlayer={handleSelectPlayer}
+              />
+            ) : (
+              <TopPlayersPreview
+                players={hubPreviewPlayers}
+                ratingsById={ratingsById}
+                teamsById={teamsById}
+                isLoading={isLoading}
+                selectedPlayerId={selectedPlayerId}
+                onSelectPlayer={handleSelectPlayer}
+              />
+            )}
+          </DataTile.Content>
+        </DataTile>
+      </div>
+
+      <Drawer open={drawerOpen} onOpenChange={handleDrawerOpenChange}>
+        <DrawerContent
+          size="md"
+          align={isDesktop ? "dock-right" : "full"}
+        >
+          <DrawerPanel
+            title={selectedPlayer?.web_name ?? "Scout report"}
+            bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
+          >
+            <PlayerDetailPane
+              player={selectedPlayer}
               teamsById={teamsById}
-              isLoading={isLoading}
+              className={cn(drawerChromeOffsetClassName, "overflow-y-auto")}
             />
-          ) : (
-            <TopPlayersPreview
-              players={hubPreviewPlayers}
-              ratingsById={ratingsById}
-              teamsById={teamsById}
-              isLoading={isLoading}
-            />
-          )}
-        </DataTile.Content>
-      </DataTile>
-    </Link>
+          </DrawerPanel>
+        </DrawerContent>
+      </Drawer>
+    </>
   )
 }

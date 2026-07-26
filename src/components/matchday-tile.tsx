@@ -1,13 +1,26 @@
 import { Link } from "@tanstack/react-router"
-import { useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { DataTile } from "@/components/data-tile"
 import { FixtureRow } from "@/components/fixture-row"
+import { MatchDetailPane } from "@/components/match-detail-pane"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerPanel,
+  drawerChromeOffsetClassName,
+} from "@/components/ui/drawer"
+import { useMediaQuery } from "@/hooks/use-media-query"
 import { useEnrichmentMaps } from "@/lib/enrichment/hooks"
 import { getFixturePhase } from "@/lib/fixtures/form"
-import { sortFixturesByKickoff } from "@/lib/fixtures/group"
+import {
+  groupFixturesByDay,
+  sortFixturesByKickoff,
+} from "@/lib/fixtures/group"
+import type { FixtureDayGroup } from "@/lib/fixtures/group"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
+import type { FplFixture } from "@/lib/fpl/types"
 import { tabSearch } from "@/lib/nav-pages"
 import { cn } from "@/lib/utils"
 
@@ -20,6 +33,13 @@ function MatchdaySkeleton() {
   )
 }
 
+function takeFixturesPreservingDays(
+  fixtures: readonly FplFixture[],
+  limit: number
+): FixtureDayGroup[] {
+  return groupFixturesByDay(fixtures.slice(0, limit), undefined, "short")
+}
+
 export function MatchdayTile({
   className,
   comingSoon = false,
@@ -27,18 +47,22 @@ export function MatchdayTile({
   className?: string
   comingSoon?: boolean
 }) {
+  const isDesktop = useMediaQuery("(min-width: 1024px)")
   const { fixtures, teamsById, isLoading, error } = useFplBootstrap()
   const { teamsByCode } = useEnrichmentMaps()
+  const [selectedFixture, setSelectedFixture] = useState<FplFixture | null>(
+    null
+  )
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
-  const { title, subtitle, rows } = useMemo(() => {
+  const { title, dayGroups } = useMemo(() => {
     const live = sortFixturesByKickoff(
       fixtures.filter((fixture) => getFixturePhase(fixture) === "live")
     )
     if (live.length > 0) {
       return {
         title: "Live scores",
-        subtitle: `${live.length} live now`,
-        rows: live.slice(0, 3),
+        dayGroups: takeFixturesPreservingDays(live, 3),
       }
     }
 
@@ -50,13 +74,12 @@ export function MatchdayTile({
         }
         return new Date(fixture.kickoff_time).getTime() >= now
       })
-    ).slice(0, 3)
+    )
 
     if (upcoming.length > 0) {
       return {
         title: "Next fixtures",
-        subtitle: "Upcoming kickoffs",
-        rows: upcoming,
+        dayGroups: takeFixturesPreservingDays(upcoming, 3),
       }
     }
 
@@ -68,24 +91,57 @@ export function MatchdayTile({
 
     return {
       title: "Results",
-      subtitle: finished.length > 0 ? "Latest scores" : "No fixtures yet",
-      rows: finished,
+      dayGroups: takeFixturesPreservingDays(finished, 3),
     }
   }, [fixtures])
 
+  const hasRows = dayGroups.some((group) => group.fixtures.length > 0)
+
+  const stopCarouselPointer = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      event.stopPropagation()
+    },
+    []
+  )
+
+  const handleSelectFixture = useCallback((fixture: FplFixture) => {
+    setSelectedFixture(fixture)
+    setDrawerOpen(true)
+  }, [])
+
+  const handleDrawerOpenChange = useCallback((open: boolean) => {
+    setDrawerOpen(open)
+    if (!open) {
+      setSelectedFixture(null)
+    }
+  }, [])
+
+  const drawerTitle = selectedFixture
+    ? `${teamsById.get(selectedFixture.team_h)?.short_name ?? "Home"} v ${teamsById.get(selectedFixture.team_a)?.short_name ?? "Away"}`
+    : "Match centre"
+
   return (
-    <Link
-      to="/"
-      search={tabSearch("fixtures")}
-      data-tile-link=""
-      className={cn(className)}
-    >
-      <DataTile interactive comingSoon={comingSoon} className="relative h-full">
-        <div className="flex h-full min-h-0 flex-col">
+    <>
+      <DataTile
+        interactive
+        comingSoon={comingSoon}
+        className={cn("relative h-full", className)}
+      >
+        <div
+          className="flex h-full min-h-0 flex-col"
+          onPointerDown={stopCarouselPointer}
+          onPointerUp={stopCarouselPointer}
+        >
           <DataTile.Header className="p-3 pb-0">
             <DataTile.Heading>
-              <DataTile.Label>{title}</DataTile.Label>
-              <DataTile.Subtitle>{subtitle}</DataTile.Subtitle>
+              <Link
+                to="/"
+                search={tabSearch("fixtures")}
+                data-tile-link=""
+                className="truncate text-base font-semibold text-foreground outline-none hover:underline focus-visible:underline lg:text-lg"
+              >
+                {title}
+              </Link>
             </DataTile.Heading>
           </DataTile.Header>
 
@@ -99,41 +155,72 @@ export function MatchdayTile({
               <DataTile.EmptyState className="text-destructive">
                 {error}
               </DataTile.EmptyState>
-            ) : rows.length === 0 ? (
+            ) : !hasRows ? (
               <DataTile.EmptyState className="text-center">
                 No fixtures to show.
               </DataTile.EmptyState>
             ) : (
-              <div className="flex w-full flex-col gap-0.5">
-                {rows.map((fixture) => {
-                  const homeTeam = teamsById.get(fixture.team_h)
-                  const awayTeam = teamsById.get(fixture.team_a)
+              <div className="flex w-full flex-col gap-1.5 overflow-hidden">
+                {dayGroups.map((group) => (
+                  <section key={group.dateKey} className="flex flex-col gap-0.5">
+                    <h3 className="px-1 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      {group.label}
+                    </h3>
+                    <div className="flex flex-col gap-0.5">
+                      {group.fixtures.map((fixture) => {
+                        const homeTeam = teamsById.get(fixture.team_h)
+                        const awayTeam = teamsById.get(fixture.team_a)
 
-                  return (
-                    <FixtureRow
-                      key={fixture.id}
-                      fixture={fixture}
-                      homeTeam={homeTeam}
-                      awayTeam={awayTeam}
-                      homeBadgeUrl={
-                        homeTeam?.code != null
-                          ? teamsByCode.get(homeTeam.code)?.badgeUrl
-                          : null
-                      }
-                      awayBadgeUrl={
-                        awayTeam?.code != null
-                          ? teamsByCode.get(awayTeam.code)?.badgeUrl
-                          : null
-                      }
-                      compact
-                    />
-                  )
-                })}
+                        return (
+                          <FixtureRow
+                            key={fixture.id}
+                            fixture={fixture}
+                            homeTeam={homeTeam}
+                            awayTeam={awayTeam}
+                            homeBadgeUrl={
+                              homeTeam?.code != null
+                                ? teamsByCode.get(homeTeam.code)?.badgeUrl
+                                : null
+                            }
+                            awayBadgeUrl={
+                              awayTeam?.code != null
+                                ? teamsByCode.get(awayTeam.code)?.badgeUrl
+                                : null
+                            }
+                            compact
+                            isSelected={
+                              drawerOpen && selectedFixture?.id === fixture.id
+                            }
+                            onSelect={handleSelectFixture}
+                          />
+                        )
+                      })}
+                    </div>
+                  </section>
+                ))}
               </div>
             )}
           </DataTile.Content>
         </div>
       </DataTile>
-    </Link>
+
+      <Drawer open={drawerOpen} onOpenChange={handleDrawerOpenChange}>
+        <DrawerContent
+          size="lg"
+          align={isDesktop ? "dock-right" : "full"}
+        >
+          <DrawerPanel
+            title={drawerTitle}
+            bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
+          >
+            <MatchDetailPane
+              fixture={selectedFixture}
+              showOpenLink
+              className={cn(drawerChromeOffsetClassName, "overflow-hidden")}
+            />
+          </DrawerPanel>
+        </DrawerContent>
+      </Drawer>
+    </>
   )
 }

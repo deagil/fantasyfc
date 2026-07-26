@@ -74,7 +74,7 @@ export const RATING_HIERARCHY: RatingHierarchy = {
   DEF: {
     sub: {
       Actions: {
-        weight: 0.45,
+        weight: 0.55,
         stats: [
           { key: "defcon_per_90", weight: 0.35 },
           { key: "cbi_per_90", weight: 0.3 },
@@ -83,14 +83,14 @@ export const RATING_HIERARCHY: RatingHierarchy = {
         ],
       },
       Outcomes: {
-        weight: 0.35,
+        weight: 0.3,
         stats: [
           { key: "clean_sheets_per_90", weight: 0.55 },
           { key: "xgc_per_90", weight: 0.45, lowerIsBetter: true },
         ],
       },
       Discipline: {
-        weight: 0.2,
+        weight: 0.15,
         stats: [
           { key: "yellow_per_90", weight: 0.5, lowerIsBetter: true },
           { key: "red_per_90", weight: 0.3, lowerIsBetter: true },
@@ -249,5 +249,9 @@ export const MIN_CALIBRATION_COHORT = 12
  *     assessment.
  * v4: lowerIsBetter uses share-at-least (fixes zero-inflated discipline);
  *     REL uses season starts instead of starts_per_90.
+ * v5: pre-season DEF Actions fall back to latest history season when the
+ *     bootstrap cohort has no variance (FPL zeroes CBI/defcon/tackles/recoveries).
+ * v6: DEF sub-weights Actions 0.55 / Outcomes 0.30 / Discipline 0.15
+ *     (was 0.45 / 0.35 / 0.20).
  */
-export const RATINGS_ALGO_VERSION = 4
+export const RATINGS_ALGO_VERSION = 6

@@ -94,7 +94,7 @@ describe("fplKeys", () => {
   it("versions the bootstrap query key when element fields expand", async () => {
     const { fplKeys } = await import("@/lib/fpl/queries")
 
-    expect(fplKeys.bootstrap()).toEqual(["fpl", "bootstrap", "v3"])
+    expect(fplKeys.bootstrap()).toEqual(["fpl", "bootstrap", "v5"])
   })
 
   it("exposes season fixtures and event-status keys", async () => {

@@ -14,11 +14,12 @@ import type {
   PlayerRatingResult,
   PlayerRatingSummary,
   PlayerRatingsPayload,
+  PlayerSeasonHistoryEntry,
   RatingElementType,
   RatingsBootstrapElement,
   SeasonHistoryInput,
 } from "@/lib/ratings/model"
-import { deriveBootstrapStats } from "@/lib/ratings/stats"
+import { deriveBootstrapStats, fillDeadBootstrapStatsFromHistory } from "@/lib/ratings/stats"
 import {
   csvToRecords,
   mapPlayersRaw,
@@ -288,7 +289,10 @@ async function computeAndPersistRatings(): Promise<PlayerRatingsPayload> {
   const historyRows = await loadSeasonHistory()
   const baselines = computeExpectedBaselines(historyRows)
 
-  const players = bootstrap.elements.map(toEnginePlayer)
+  const players = fillDeadBootstrapStatsFromHistory(
+    bootstrap.elements.map(toEnginePlayer),
+    historyRows
+  )
   const currentRatings = computeRatings(players, { event })
   const results = calibrateRatings(blendRatings(currentRatings, baselines, event))
 
@@ -365,6 +369,57 @@ export const getPlayerRatingDetail = createServerFn({ method: "POST" })
       unassessed: typed.unassessed,
       categories: typed.categories,
     }
+  })
+
+function toFinite(value: unknown): number {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+/**
+ * Past-season aggregates for one player, oldest season first. Reads the same
+ * `player_season_history` rows the expected baselines are built from, so it
+ * needs no extra FPL API calls and covers whatever the vaastav seed holds.
+ */
+export const getPlayerSeasonHistory = createServerFn({ method: "POST" })
+  .validator((data: { playerCode: number }) => {
+    const playerCode = Number(data.playerCode)
+    if (!Number.isInteger(playerCode) || playerCode <= 0) {
+      throw new Error("Invalid playerCode")
+    }
+    return { playerCode }
+  })
+  .handler(async ({ data }): Promise<PlayerSeasonHistoryEntry[]> => {
+    const supabase = createServiceRoleClient()
+    const { data: rows, error } = await supabase
+      .from("player_season_history")
+      .select("season_name, stats")
+      .eq("player_code", data.playerCode)
+      .order("season_name", { ascending: true })
+
+    if (error) {
+      throw new Error(`Failed to load player season history: ${error.message}`)
+    }
+
+    return (rows as { season_name: string; stats: FplHistoryPastSeason }[]).map(
+      (row) => {
+        const totalPoints = toFinite(row.stats.total_points)
+        const endCost = toFinite(row.stats.end_cost)
+
+        return {
+          seasonName: row.season_name,
+          totalPoints,
+          minutes: toFinite(row.stats.minutes),
+          starts: toFinite(row.stats.starts),
+          goalsScored: toFinite(row.stats.goals_scored),
+          assists: toFinite(row.stats.assists),
+          cleanSheets: toFinite(row.stats.clean_sheets),
+          bonus: toFinite(row.stats.bonus),
+          endCost,
+          pointsPerMillion: endCost > 0 ? (totalPoints * 10) / endCost : null,
+        }
+      }
+    )
   })
 
 export type SeedRatingsHistoryResult = {

@@ -1,14 +1,27 @@
+import { useMemo } from "react"
+
 import { RatingCategoryBreakdown } from "@/components/rating-category-breakdown"
 import { PlayerTradingCard } from "@/components/player-trading-card"
-import { DataTile } from "@/components/data-tile"
+import { ScoutSummaryPanel } from "@/components/scout-summary"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  getElementTypeLabel,
-  getPlayerClubShortName,
-} from "@/lib/fpl/players"
+  getNextUnfinishedEvent,
+  getUpcomingTeamFixtures,
+} from "@/lib/fixtures/upcoming"
+import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
+import { useFplSeasonFixturesQuery } from "@/lib/fpl/hooks"
+import { getPlayerClubShortName } from "@/lib/fpl/players"
 import type { FplElement, FplTeam } from "@/lib/fpl/types"
-import { usePlayerRatingsById } from "@/lib/ratings/hooks"
+import {
+  usePlayerRatingDetail,
+  usePlayerRatingsById,
+  usePlayerSeasonHistory,
+} from "@/lib/ratings/hooks"
+import { buildScoutSummary } from "@/lib/scouts/summary"
 import { cn } from "@/lib/utils"
+
+/** Length of the fixture run shown in the summary strip. */
+const FIXTURE_RUN_EVENTS = 5
 
 type PlayerDetailPaneProps = {
   player: FplElement | null
@@ -21,7 +34,50 @@ export function PlayerDetailPane({
   teamsById,
   className,
 }: PlayerDetailPaneProps) {
+  const { bootstrap } = useFplBootstrap()
   const { ratingsById, isLoading: ratingsLoading } = usePlayerRatingsById()
+  const { data: detail, isLoading: detailLoading } = usePlayerRatingDetail(
+    player?.id ?? null
+  )
+  const { data: seasonFixtures } = useFplSeasonFixturesQuery()
+  const { data: seasonHistory } = usePlayerSeasonHistory(player?.code ?? null)
+
+  const clubShortName = player ? getPlayerClubShortName(player, teamsById) : ""
+
+  const summary = useMemo(() => {
+    if (!player) {
+      return null
+    }
+
+    const fixtures = seasonFixtures ?? []
+    const fromEvent = getNextUnfinishedEvent(fixtures)
+
+    return buildScoutSummary({
+      player,
+      clubShortName,
+      rating: ratingsById.get(player.id),
+      ratingsById,
+      players: bootstrap?.elements ?? [],
+      detailCategories: detail?.categories,
+      fixtures:
+        fromEvent === null
+          ? null
+          : getUpcomingTeamFixtures(player.team, fixtures, teamsById, {
+              fromEvent,
+              eventCount: FIXTURE_RUN_EVENTS,
+            }),
+      history: seasonHistory ?? [],
+    })
+  }, [
+    bootstrap?.elements,
+    clubShortName,
+    detail?.categories,
+    player,
+    ratingsById,
+    seasonFixtures,
+    seasonHistory,
+    teamsById,
+  ])
 
   if (!player) {
     return (
@@ -39,8 +95,6 @@ export function PlayerDetailPane({
     )
   }
 
-  const clubShortName = getPlayerClubShortName(player, teamsById)
-  const positionLabel = getElementTypeLabel(player.element_type)
   const rating = ratingsById.get(player.id)
   const team = teamsById.get(player.team)
 
@@ -63,14 +117,10 @@ export function PlayerDetailPane({
         isLoading={ratingsLoading}
       />
 
-      <div className="rounded-xl bg-muted/40 p-4">
-        <DataTile.Label className="text-sm">Scout summary</DataTile.Label>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          {player.web_name} is a {positionLabel.toLowerCase()} at {clubShortName} with{" "}
-          {player.total_points} season points. Detailed fixtures and history will appear
-          here in a later pass.
-        </p>
-      </div>
+      <ScoutSummaryPanel
+        summary={summary}
+        isLoading={ratingsLoading || detailLoading}
+      />
     </div>
   )
 }
