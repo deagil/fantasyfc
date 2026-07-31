@@ -2,6 +2,7 @@ import * as React from "react"
 import { Drawer as DrawerPrimitive } from "vaul"
 
 import { Button } from "@/components/ui/button"
+import { useDrawerKeyboardAvoidance } from "@/hooks/use-drawer-keyboard-avoidance"
 import { cn } from "@/lib/utils"
 
 export type DrawerSize = "sm" | "md" | "lg"
@@ -16,16 +17,25 @@ const drawerSizeClassNames: Record<DrawerSize, string> = {
 const drawerAlignClassNames: Record<DrawerAlign, string> = {
   full: "",
   "dock-right": cn(
-    "lg:data-[vaul-drawer-direction=bottom]:inset-x-auto lg:data-[vaul-drawer-direction=bottom]:left-[var(--hub-dock-sheet-left)] lg:data-[vaul-drawer-direction=bottom]:right-auto",
+    "lg:data-[vaul-drawer-direction=bottom]:inset-x-auto lg:data-[vaul-drawer-direction=bottom]:right-auto lg:data-[vaul-drawer-direction=bottom]:left-[var(--hub-dock-sheet-left)]",
     "lg:data-[vaul-drawer-direction=bottom]:w-[var(--hub-dock-sheet-width)]",
     "lg:data-[vaul-drawer-direction=bottom]:border-x"
   ),
 }
 
 function Drawer({
+  // We lift the sheet ourselves via visualViewport; Vaul's default
+  // repositioning fights fixed dvh heights and still leaves inputs covered.
+  repositionInputs = false,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
-  return <DrawerPrimitive.Root data-slot="drawer" {...props} />
+  return (
+    <DrawerPrimitive.Root
+      data-slot="drawer"
+      repositionInputs={repositionInputs}
+      {...props}
+    />
+  )
 }
 
 function DrawerTrigger({
@@ -72,6 +82,9 @@ function DrawerContent({
   size?: DrawerSize
   align?: DrawerAlign
 }) {
+  const contentRef = React.useRef<HTMLDivElement>(null)
+  useDrawerKeyboardAvoidance(contentRef)
+
   return (
     <DrawerPortal data-slot="drawer-portal">
       <DrawerOverlay />
@@ -80,7 +93,7 @@ function DrawerContent({
         data-drawer-size={size}
         data-drawer-align={align}
         className={cn(
-          "group/drawer-content fixed z-50 flex flex-col overflow-hidden text-sm bg-popover shadow-xl",
+          "group/drawer-content fixed z-50 flex flex-col overflow-hidden bg-popover text-sm shadow-xl",
           drawerSizeClassNames[size],
           "data-[vaul-drawer-direction=bottom]:inset-x-0 data-[vaul-drawer-direction=bottom]:bottom-0 data-[vaul-drawer-direction=bottom]:mt-0 data-[vaul-drawer-direction=bottom]:rounded-t-[min(var(--radius-4xl),24px)] data-[vaul-drawer-direction=bottom]:border-t data-[vaul-drawer-direction=bottom]:border-border",
           "data-[vaul-drawer-direction=left]:inset-y-0 data-[vaul-drawer-direction=left]:left-0 data-[vaul-drawer-direction=left]:h-auto data-[vaul-drawer-direction=left]:w-3/4 data-[vaul-drawer-direction=left]:sm:max-w-sm",
@@ -90,6 +103,7 @@ function DrawerContent({
           className
         )}
         {...props}
+        ref={contentRef}
       >
         <div className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-muted group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
         {children}
@@ -133,7 +147,7 @@ function DrawerChrome({
       )}
     >
       <div className="relative px-4 pt-1 pb-3">
-        <div className="pointer-events-auto relative z-10 flex w-full min-h-7 items-center gap-2">
+        <div className="pointer-events-auto relative z-10 flex min-h-7 w-full items-center gap-2">
           <div className="shrink-0">
             {leading ?? (
               <span
@@ -147,7 +161,7 @@ function DrawerChrome({
               {title}
             </DrawerTitle>
             {description ? (
-              <DrawerDescription className="block w-full line-clamp-2 text-center">
+              <DrawerDescription className="line-clamp-2 block w-full text-center">
                 {description}
               </DrawerDescription>
             ) : null}
@@ -194,16 +208,15 @@ function DrawerPanel({
 }: DrawerPanelProps) {
   return (
     <div
-      className={cn("relative flex min-h-0 flex-1 flex-col overflow-hidden", className)}
+      className={cn(
+        "relative flex min-h-0 flex-1 flex-col overflow-hidden",
+        className
+      )}
     >
       <div className={cn("flex min-h-0 flex-1 flex-col", bodyClassName)}>
         {children}
       </div>
-      <DrawerChrome
-        title={title}
-        description={description}
-        leading={leading}
-      />
+      <DrawerChrome title={title} description={description} leading={leading} />
     </div>
   )
 }
@@ -226,7 +239,7 @@ function DrawerFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="drawer-footer"
       className={cn(
-        "mt-auto shrink-0 flex flex-col gap-2 border-t border-border/40 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]",
+        "mt-auto flex shrink-0 flex-col gap-2 border-t border-border/40 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]",
         className
       )}
       {...props}
