@@ -14,15 +14,13 @@ import {
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useEnrichmentMaps } from "@/lib/enrichment/hooks"
 import { getFixturePhase } from "@/lib/fixtures/form"
-import {
-  groupFixturesByDay,
-  sortFixturesByKickoff,
-} from "@/lib/fixtures/group"
-import type { FixtureDayGroup } from "@/lib/fixtures/group"
+import { sortFixturesByKickoff } from "@/lib/fixtures/group"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
 import type { FplFixture } from "@/lib/fpl/types"
 import { tabSearch } from "@/lib/nav-pages"
 import { cn } from "@/lib/utils"
+
+const TILE_FIXTURE_LIMIT = 3
 
 function MatchdaySkeleton() {
   return (
@@ -31,13 +29,6 @@ function MatchdaySkeleton() {
       <Skeleton className="h-10 w-full rounded-xl" />
     </div>
   )
-}
-
-function takeFixturesPreservingDays(
-  fixtures: readonly FplFixture[],
-  limit: number
-): FixtureDayGroup[] {
-  return groupFixturesByDay(fixtures.slice(0, limit), undefined, "short")
 }
 
 export function MatchdayTile({
@@ -55,14 +46,14 @@ export function MatchdayTile({
   )
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  const { title, dayGroups } = useMemo(() => {
+  const { title, tileFixtures } = useMemo(() => {
     const live = sortFixturesByKickoff(
       fixtures.filter((fixture) => getFixturePhase(fixture) === "live")
     )
     if (live.length > 0) {
       return {
         title: "Live scores",
-        dayGroups: takeFixturesPreservingDays(live, 3),
+        tileFixtures: live.slice(0, TILE_FIXTURE_LIMIT),
       }
     }
 
@@ -79,23 +70,23 @@ export function MatchdayTile({
     if (upcoming.length > 0) {
       return {
         title: "Next fixtures",
-        dayGroups: takeFixturesPreservingDays(upcoming, 3),
+        tileFixtures: upcoming.slice(0, TILE_FIXTURE_LIMIT),
       }
     }
 
     const finished = sortFixturesByKickoff(
       fixtures.filter((fixture) => getFixturePhase(fixture) === "finished")
     )
-      .slice(-3)
+      .slice(-TILE_FIXTURE_LIMIT)
       .reverse()
 
     return {
       title: "Results",
-      dayGroups: takeFixturesPreservingDays(finished, 3),
+      tileFixtures: finished,
     }
   }, [fixtures])
 
-  const hasRows = dayGroups.some((group) => group.fixtures.length > 0)
+  const hasRows = tileFixtures.length > 0
 
   const stopCarouselPointer = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
@@ -160,44 +151,35 @@ export function MatchdayTile({
                 No fixtures to show.
               </DataTile.EmptyState>
             ) : (
-              <div className="flex w-full flex-col gap-1.5 overflow-hidden">
-                {dayGroups.map((group) => (
-                  <section key={group.dateKey} className="flex flex-col gap-0.5">
-                    <h3 className="px-1 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-                      {group.label}
-                    </h3>
-                    <div className="flex flex-col gap-0.5">
-                      {group.fixtures.map((fixture) => {
-                        const homeTeam = teamsById.get(fixture.team_h)
-                        const awayTeam = teamsById.get(fixture.team_a)
+              <div className="flex w-full flex-col gap-0.5 overflow-hidden">
+                {tileFixtures.map((fixture) => {
+                  const homeTeam = teamsById.get(fixture.team_h)
+                  const awayTeam = teamsById.get(fixture.team_a)
 
-                        return (
-                          <FixtureRow
-                            key={fixture.id}
-                            fixture={fixture}
-                            homeTeam={homeTeam}
-                            awayTeam={awayTeam}
-                            homeBadgeUrl={
-                              homeTeam?.code != null
-                                ? teamsByCode.get(homeTeam.code)?.badgeUrl
-                                : null
-                            }
-                            awayBadgeUrl={
-                              awayTeam?.code != null
-                                ? teamsByCode.get(awayTeam.code)?.badgeUrl
-                                : null
-                            }
-                            compact
-                            isSelected={
-                              drawerOpen && selectedFixture?.id === fixture.id
-                            }
-                            onSelect={handleSelectFixture}
-                          />
-                        )
-                      })}
-                    </div>
-                  </section>
-                ))}
+                  return (
+                    <FixtureRow
+                      key={fixture.id}
+                      fixture={fixture}
+                      homeTeam={homeTeam}
+                      awayTeam={awayTeam}
+                      homeBadgeUrl={
+                        homeTeam?.code != null
+                          ? teamsByCode.get(homeTeam.code)?.badgeUrl
+                          : null
+                      }
+                      awayBadgeUrl={
+                        awayTeam?.code != null
+                          ? teamsByCode.get(awayTeam.code)?.badgeUrl
+                          : null
+                      }
+                      compact
+                      isSelected={
+                        drawerOpen && selectedFixture?.id === fixture.id
+                      }
+                      onSelect={handleSelectFixture}
+                    />
+                  )
+                })}
               </div>
             )}
           </DataTile.Content>
