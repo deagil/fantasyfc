@@ -4,6 +4,7 @@ import { projectBonus } from "@/lib/fixtures/events"
 import { getGameweekShape } from "@/lib/fixtures/gameweek-shape"
 import { getFixturePhase, getTeamRecentForm } from "@/lib/fixtures/form"
 import { groupFixturesByDay, getEventFixtures } from "@/lib/fixtures/group"
+import { formatFixtureKickoff } from "@/lib/fixtures/kickoff"
 import {
   getFixturePointsByElement,
   isBonusAddedForEvent,
@@ -37,6 +38,27 @@ const teams: FplTeam[] = Array.from({ length: 4 }, (_, index) => ({
   name: `Team ${index + 1}`,
   short_name: `T${index + 1}`,
 }))
+
+describe("formatFixtureKickoff", () => {
+  it("returns TBC when kickoff is missing", () => {
+    expect(formatFixtureKickoff(null)).toBe("TBC")
+  })
+
+  it("formats time only by default", () => {
+    expect(formatFixtureKickoff("2026-08-15T14:00:00Z", { locale: "en-GB" })).toBe(
+      "14:00"
+    )
+  })
+
+  it("includes a short weekday when requested", () => {
+    expect(
+      formatFixtureKickoff("2026-08-15T14:00:00Z", {
+        includeWeekday: true,
+        locale: "en-GB",
+      })
+    ).toBe("Sat 14:00")
+  })
+})
 
 describe("groupFixturesByDay", () => {
   it("groups fixtures by kickoff calendar day and sorts chronologically", () => {

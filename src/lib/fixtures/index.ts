@@ -10,6 +10,7 @@ export {
   groupFixturesByDay,
   sortFixturesByKickoff,
 } from "@/lib/fixtures/group"
+export { formatFixtureKickoff } from "@/lib/fixtures/kickoff"
 export {
   getNextUnfinishedEvent,
   getUpcomingTeamFixtures,

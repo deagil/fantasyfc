@@ -1,18 +1,8 @@
 import { DifficultyDots, TeamCrest } from "@/components/team-crest"
 import { getFixturePhase } from "@/lib/fixtures/form"
+import { formatFixtureKickoff } from "@/lib/fixtures/kickoff"
 import type { FplFixture, FplTeam } from "@/lib/fpl/types"
 import { cn } from "@/lib/utils"
-
-function formatKickoff(kickoff: string | null): string {
-  if (!kickoff) {
-    return "TBC"
-  }
-
-  return new Date(kickoff).toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  })
-}
 
 export function FixtureRow({
   fixture,
@@ -39,7 +29,9 @@ export function FixtureRow({
 
   const scoreOrTime =
     phase === "pre-match"
-      ? formatKickoff(fixture.kickoff_time)
+      ? formatFixtureKickoff(fixture.kickoff_time, {
+          includeWeekday: compact,
+        })
       : `${fixture.team_h_score ?? 0}–${fixture.team_a_score ?? 0}`
 
   const statusLabel =
@@ -67,10 +59,18 @@ export function FixtureRow({
           <TeamCrest badgeUrl={homeBadgeUrl} shortName={homeShort} />
         </div>
 
-        <div className="flex w-14 shrink-0 flex-col items-center justify-center">
+        <div
+          className={cn(
+            "flex shrink-0 flex-col items-center justify-center",
+            compact && phase === "pre-match" ? "w-[4.75rem]" : "w-14"
+          )}
+        >
           <span
             className={cn(
-              "text-sm font-semibold tabular-nums",
+              "text-center font-semibold tabular-nums",
+              compact && phase === "pre-match"
+                ? "text-[11px] leading-tight tracking-wide uppercase"
+                : "text-sm",
               phase === "live" && "text-chart-2",
               phase === "pre-match" && "text-muted-foreground"
             )}
