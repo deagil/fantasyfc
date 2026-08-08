@@ -7,6 +7,7 @@ import { MatchHero } from "@/components/match-hero"
 import { MatchPrematch } from "@/components/match-prematch"
 import { MatchYourPlayers } from "@/components/match-your-players"
 import { ScrollFade } from "@/components/scroll-fade"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useEnrichmentMaps } from "@/lib/enrichment/hooks"
 import {
@@ -19,6 +20,7 @@ import {
   getFixturePhase,
   getHeadToHead,
   getTeamRecentForm,
+  getTeamRecord,
 } from "@/lib/fixtures/form"
 import {
   getFixturePointsByElement,
@@ -67,12 +69,40 @@ function DefconSection({
   )
 }
 
+/** Drawer chrome leading control — mirrors Close on the opposite side. */
+export function MatchOpenPageButton({
+  fixtureId,
+  className,
+}: {
+  fixtureId: number
+  className?: string
+}) {
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      className={cn("shell-chrome-btn shrink-0", className)}
+      nativeButton={false}
+      render={
+        <Link
+          to="/fixture/$fixtureId"
+          params={{ fixtureId: String(fixtureId) }}
+          aria-label="Open full match page"
+        />
+      }
+    >
+      Open
+    </Button>
+  )
+}
+
 export function MatchDetailPane({
   fixture,
   showOpenLink = false,
   className,
 }: {
   fixture: FplFixture | null
+  /** Desktop / non-drawer surfaces that still need an inline open control. */
   showOpenLink?: boolean
   className?: string
 }) {
@@ -84,7 +114,7 @@ export function MatchDetailPane({
   const isLive = phase === "live"
 
   const seasonFixturesQuery = useFplSeasonFixturesQuery({
-    enabled: fixture != null && phase === "pre-match",
+    enabled: fixture != null,
   })
   const liveQuery = useFplEventLiveQuery(fixture?.event, {
     enabled: fixture != null && (phase === "live" || phase === "finished"),
@@ -125,6 +155,20 @@ export function MatchDetailPane({
     }
     return getTeamRecentForm(fixture.team_a, seasonFixtures, teamsById)
   }, [fixture, seasonFixtures, teamsById])
+
+  const homeRecord = useMemo(() => {
+    if (!fixture) {
+      return null
+    }
+    return getTeamRecord(fixture.team_h, seasonFixtures)
+  }, [fixture, seasonFixtures])
+
+  const awayRecord = useMemo(() => {
+    if (!fixture) {
+      return null
+    }
+    return getTeamRecord(fixture.team_a, seasonFixtures)
+  }, [fixture, seasonFixtures])
 
   const headToHead = useMemo(() => {
     if (!fixture) {
@@ -251,25 +295,21 @@ export function MatchDetailPane({
 
   return (
     <div className={cn("flex h-full min-h-0 flex-col", className)}>
+      {showOpenLink ? (
+        <div className="flex justify-start px-4 pb-1">
+          <MatchOpenPageButton fixtureId={fixture.id} />
+        </div>
+      ) : null}
+
       <MatchHero
         fixture={fixture}
         homeTeam={homeTeam}
         awayTeam={awayTeam}
         homeBadgeUrl={homeBadgeUrl}
         awayBadgeUrl={awayBadgeUrl}
+        homeRecord={homeRecord}
+        awayRecord={awayRecord}
       />
-
-      {showOpenLink ? (
-        <div className="px-4 pb-2">
-          <Link
-            to="/fixture/$fixtureId"
-            params={{ fixtureId: String(fixture.id) }}
-            className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-          >
-            Open full match page
-          </Link>
-        </div>
-      ) : null}
 
       <ScrollFade
         className="flex min-h-0 w-full min-w-0 flex-1"

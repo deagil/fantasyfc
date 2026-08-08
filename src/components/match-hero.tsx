@@ -1,5 +1,6 @@
 import { TeamCrest } from "@/components/team-crest"
-import { getFixturePhase } from "@/lib/fixtures/form"
+import { formatTeamRecord, getFixturePhase } from "@/lib/fixtures/form"
+import type { TeamRecord } from "@/lib/fixtures/form"
 import type { FplFixture, FplTeam } from "@/lib/fpl/types"
 import { cn } from "@/lib/utils"
 
@@ -9,6 +10,8 @@ export function MatchHero({
   awayTeam,
   homeBadgeUrl,
   awayBadgeUrl,
+  homeRecord,
+  awayRecord,
   className,
 }: {
   fixture: FplFixture
@@ -16,6 +19,8 @@ export function MatchHero({
   awayTeam: FplTeam | undefined
   homeBadgeUrl?: string | null
   awayBadgeUrl?: string | null
+  homeRecord?: TeamRecord | null
+  awayRecord?: TeamRecord | null
   className?: string
 }) {
   const phase = getFixturePhase(fixture)
@@ -60,7 +65,9 @@ export function MatchHero({
           />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{homeName}</p>
-            <p className="text-xs text-muted-foreground">{homeShort}</p>
+            <p className="text-xs tabular-nums text-muted-foreground">
+              {homeRecord ? formatTeamRecord(homeRecord) : "0-0-0"}
+            </p>
           </div>
         </div>
 
@@ -86,7 +93,9 @@ export function MatchHero({
           />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{awayName}</p>
-            <p className="text-xs text-muted-foreground">{awayShort}</p>
+            <p className="text-xs tabular-nums text-muted-foreground">
+              {awayRecord ? formatTeamRecord(awayRecord) : "0-0-0"}
+            </p>
           </div>
         </div>
       </div>

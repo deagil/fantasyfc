@@ -1,5 +1,6 @@
 import { DifficultyDots } from "@/components/team-crest"
 import type { HeadToHeadResult, TeamFormEntry } from "@/lib/fixtures/form"
+import { describeFixtureDifficulty } from "@/lib/fixtures/upcoming"
 import type { FplFixture, FplTeam } from "@/lib/fpl/types"
 import { cn } from "@/lib/utils"
 
@@ -26,6 +27,22 @@ function FormPills({ entries }: { entries: TeamFormEntry[] }) {
       ))}
     </div>
   )
+}
+
+function difficultyLabelClass(difficulty: number): string {
+  const label = describeFixtureDifficulty(difficulty)
+  switch (label) {
+    case "easier":
+      return "text-rating-good"
+    case "harder":
+      return "text-rating-bad"
+    case "average":
+      return "text-muted-foreground"
+    default: {
+      const _exhaustive: never = label
+      return _exhaustive
+    }
+  }
 }
 
 export function MatchPrematch({
@@ -57,8 +74,13 @@ export function MatchPrematch({
               {homeTeam?.short_name ?? "Home"}
             </span>
             <DifficultyDots difficulty={fixture.team_h_difficulty} />
-            <span className="text-[10px] text-muted-foreground tabular-nums">
-              FDR {fixture.team_h_difficulty}
+            <span
+              className={cn(
+                "text-[10px] font-semibold capitalize",
+                difficultyLabelClass(fixture.team_h_difficulty)
+              )}
+            >
+              {describeFixtureDifficulty(fixture.team_h_difficulty)}
             </span>
           </div>
           <div className="flex flex-col items-center gap-1.5">
@@ -66,8 +88,13 @@ export function MatchPrematch({
               {awayTeam?.short_name ?? "Away"}
             </span>
             <DifficultyDots difficulty={fixture.team_a_difficulty} />
-            <span className="text-[10px] text-muted-foreground tabular-nums">
-              FDR {fixture.team_a_difficulty}
+            <span
+              className={cn(
+                "text-[10px] font-semibold capitalize",
+                difficultyLabelClass(fixture.team_a_difficulty)
+              )}
+            >
+              {describeFixtureDifficulty(fixture.team_a_difficulty)}
             </span>
           </div>
         </div>

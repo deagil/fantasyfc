@@ -147,26 +147,33 @@ function DrawerChrome({
       )}
     >
       <div className="relative px-4 pt-1 pb-3">
-        <div className="pointer-events-auto relative z-10 flex min-h-7 w-full items-center gap-2">
-          <div className="shrink-0">
+        <div className="pointer-events-auto relative z-10 flex min-h-7 w-full items-center justify-between gap-2">
+          <div className="relative z-10 flex min-w-0 shrink items-center justify-start">
             {leading ?? (
-              <span
+              // Invisible Close-sized spacer so the title stays centred when
+              // there is no leading action.
+              <Button
                 aria-hidden
-                className="inline-block h-7 w-[3.25rem] shrink-0"
-              />
+                size="sm"
+                variant="outline"
+                tabIndex={-1}
+                className="shell-chrome-btn invisible shrink-0"
+              >
+                Close
+              </Button>
             )}
           </div>
-          <div className="min-w-0 flex-1 overflow-hidden">
-            <DrawerTitle className="block w-full truncate text-center">
+          <div className="pointer-events-none absolute inset-x-0 flex flex-col items-center px-20">
+            <DrawerTitle className="max-w-full truncate text-center">
               {title}
             </DrawerTitle>
             {description ? (
-              <DrawerDescription className="line-clamp-2 block w-full text-center">
+              <DrawerDescription className="line-clamp-2 max-w-full text-center">
                 {description}
               </DrawerDescription>
             ) : null}
           </div>
-          <div className="shrink-0">
+          <div className="relative z-10 flex shrink-0 items-center justify-end">
             <DrawerClose asChild>
               <Button
                 size="sm"

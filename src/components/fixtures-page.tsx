@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { DataTile } from "@/components/data-tile"
 import { FixtureRow } from "@/components/fixture-row"
 import { GameweekPager } from "@/components/gameweek-pager"
-import { MatchDetailPane } from "@/components/match-detail-pane"
+import { MatchDetailPane, MatchOpenPageButton } from "@/components/match-detail-pane"
 import { ScrollFade } from "@/components/scroll-fade"
 import {
   Drawer,
@@ -275,11 +275,15 @@ export function FixturesPage() {
                   ? `${teamsById.get(mobileFixture.team_h)?.short_name ?? "Home"} v ${teamsById.get(mobileFixture.team_a)?.short_name ?? "Away"}`
                   : "Match centre"
               }
+              leading={
+                mobileFixture ? (
+                  <MatchOpenPageButton fixtureId={mobileFixture.id} />
+                ) : undefined
+              }
               bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
             >
               <MatchDetailPane
                 fixture={mobileFixture}
-                showOpenLink
                 className={cn(drawerChromeOffsetClassName, "overflow-hidden")}
               />
             </DrawerPanel>
