@@ -1,3 +1,4 @@
+import { MATCH_SIDES_GRID } from "@/components/match-layout"
 import { TeamCrest } from "@/components/team-crest"
 import { formatTeamRecord, getFixturePhase } from "@/lib/fixtures/form"
 import type { TeamRecord } from "@/lib/fixtures/form"
@@ -50,7 +51,7 @@ export function MatchHero({
         </div>
       ) : null}
 
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+      <div className={MATCH_SIDES_GRID}>
         <div className="flex min-w-0 flex-col items-center gap-3 text-center">
           <TeamCrest
             badgeUrl={homeBadgeUrl}
@@ -65,7 +66,7 @@ export function MatchHero({
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-center px-2">
+        <div className="flex flex-col items-center justify-center">
           {phase === "pre-match" ? (
             <span className="text-2xl font-bold tracking-tight text-muted-foreground">
               vs
