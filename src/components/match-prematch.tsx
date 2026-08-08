@@ -7,22 +7,34 @@ import {
   describeMatchAssetOutlook,
   type MatchAssetOutlookId,
 } from "@/lib/fixtures/upcoming"
+import { MATCH_SIDES_GRID } from "@/components/match-layout"
 import type { FplFixture, FplTeam } from "@/lib/fpl/types"
 import { cn } from "@/lib/utils"
 
 const FORM_SLOT_COUNT = 5
 
-function FormBoxes({ entries }: { entries: TeamFormEntry[] }) {
+function FormBoxes({
+  entries,
+  align,
+}: {
+  entries: TeamFormEntry[]
+  align: "start" | "end"
+}) {
   const slots = padTeamFormSlots(entries, FORM_SLOT_COUNT)
 
   return (
-    <div className="flex items-center justify-center gap-1">
+    <div
+      className={cn(
+        "flex min-w-0 items-center gap-0.5",
+        align === "end" ? "justify-end" : "justify-start"
+      )}
+    >
       {slots.map((entry, index) => {
         if (entry == null) {
           return (
             <span
               key={`empty-${index}`}
-              className="flex size-7 items-center justify-center rounded-md bg-foreground/5 text-xs font-semibold text-muted-foreground/50"
+              className="flex h-6 w-5 shrink-0 items-center justify-center rounded-sm bg-foreground/5 text-[10px] font-semibold text-muted-foreground/50"
               aria-label="No result yet"
             >
               –
@@ -34,7 +46,7 @@ function FormBoxes({ entries }: { entries: TeamFormEntry[] }) {
           <span
             key={entry.fixtureId}
             className={cn(
-              "flex size-7 items-center justify-center rounded-md text-xs font-bold",
+              "flex h-6 w-5 shrink-0 items-center justify-center rounded-sm text-[10px] font-bold",
               entry.result === "W" && "bg-pl-green/20 text-pl-green",
               entry.result === "D" && "bg-foreground/10 text-muted-foreground",
               entry.result === "L" && "bg-pl-pink/20 text-pl-pink"
@@ -108,12 +120,13 @@ export function MatchPrematch({
       </div>
 
       <div className="rounded-xl bg-foreground/3 p-3">
-        <p className="mb-3 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+        <p className="mb-3 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
           Form (last 5)
         </p>
-        <div className="grid grid-cols-2 gap-4">
-          <FormBoxes entries={homeForm} />
-          <FormBoxes entries={awayForm} />
+        <div className={MATCH_SIDES_GRID}>
+          <FormBoxes entries={homeForm} align="end" />
+          <div aria-hidden className="min-h-6" />
+          <FormBoxes entries={awayForm} align="start" />
         </div>
       </div>
 
