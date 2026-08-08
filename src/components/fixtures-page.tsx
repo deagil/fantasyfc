@@ -21,7 +21,6 @@ import { formatMatchSheetTitle } from "@/lib/fixtures/kickoff"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
 import { useFplSeasonFixturesQuery } from "@/lib/fpl/hooks"
 import type { FplFixture } from "@/lib/fpl/types"
-import { hubTileGridClassName } from "@/lib/layout"
 import { cn } from "@/lib/utils"
 
 function FixtureListSkeleton() {
@@ -177,71 +176,90 @@ export function FixturesPage() {
     </DataTile.Header>
   )
 
+  function renderFixtureListBody() {
+    if (isLoading) {
+      return <FixtureListSkeleton />
+    }
+    if (error) {
+      return <p className="px-4 py-6 text-sm text-muted-foreground">{error}</p>
+    }
+    if (dayGroups.length === 0) {
+      return (
+        <p className="px-4 py-6 text-sm text-muted-foreground">
+          No fixtures scheduled for this gameweek.
+        </p>
+      )
+    }
+
+    return dayGroups.map((group) => (
+      <section key={group.dateKey} className="flex flex-col gap-1.5">
+        <h3 className="px-1 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+          {group.label}
+        </h3>
+        <div className="flex flex-col gap-1">
+          {group.fixtures.map((fixture) => {
+            const homeTeam = teamsById.get(fixture.team_h)
+            const awayTeam = teamsById.get(fixture.team_a)
+
+            return (
+              <FixtureRow
+                key={fixture.id}
+                fixture={fixture}
+                homeTeam={homeTeam}
+                awayTeam={awayTeam}
+                homeBadgeUrl={
+                  homeTeam?.code != null
+                    ? teamsByCode.get(homeTeam.code)?.badgeUrl
+                    : null
+                }
+                awayBadgeUrl={
+                  awayTeam?.code != null
+                    ? teamsByCode.get(awayTeam.code)?.badgeUrl
+                    : null
+                }
+                isSelected={
+                  isDesktop
+                    ? selectedFixtureId === fixture.id
+                    : mobileFixture?.id === fixture.id && drawerOpen
+                }
+                onSelect={handleSelectFixture}
+              />
+            )
+          })}
+        </div>
+      </section>
+    ))
+  }
+
   return (
     <>
-      <div className={hubTileGridClassName}>
+      <div
+        className={cn(
+          "min-w-0 content-start",
+          "max-lg:flex max-lg:flex-col",
+          "lg:hub-tile-grid lg:hub-desktop-align"
+        )}
+      >
         <DataTile
           interactive
-          className="col-span-2 row-span-6 lg:row-span-3 lg:col-start-1 lg:row-start-1"
+          className="max-lg:h-auto lg:col-span-2 lg:row-span-3 lg:col-start-1 lg:row-start-1"
         >
           {listHeader}
           <DataTile.Content
             align="between"
-            className="min-h-0 flex-1 gap-2 overflow-hidden px-0 pt-0"
+            className="gap-2 px-0 pt-0 max-lg:flex-none lg:min-h-0 lg:flex-1 lg:overflow-hidden"
           >
-            {isLoading ? (
-              <FixtureListSkeleton />
-            ) : error ? (
-              <p className="px-4 py-6 text-sm text-muted-foreground">{error}</p>
-            ) : dayGroups.length === 0 ? (
-              <p className="px-4 py-6 text-sm text-muted-foreground">
-                No fixtures scheduled for this gameweek.
-              </p>
-            ) : (
-              <ScrollFade
-                className="flex min-h-0 w-full min-w-0 flex-1"
-                contentClassName="flex flex-col gap-4 content-start px-3 pb-4"
-              >
-                {dayGroups.map((group) => (
-                  <section key={group.dateKey} className="flex flex-col gap-1.5">
-                    <h3 className="px-1 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-                      {group.label}
-                    </h3>
-                    <div className="flex flex-col gap-1">
-                      {group.fixtures.map((fixture) => {
-                        const homeTeam = teamsById.get(fixture.team_h)
-                        const awayTeam = teamsById.get(fixture.team_a)
-
-                        return (
-                          <FixtureRow
-                            key={fixture.id}
-                            fixture={fixture}
-                            homeTeam={homeTeam}
-                            awayTeam={awayTeam}
-                            homeBadgeUrl={
-                              homeTeam?.code != null
-                                ? teamsByCode.get(homeTeam.code)?.badgeUrl
-                                : null
-                            }
-                            awayBadgeUrl={
-                              awayTeam?.code != null
-                                ? teamsByCode.get(awayTeam.code)?.badgeUrl
-                                : null
-                            }
-                            isSelected={
-                              isDesktop
-                                ? selectedFixtureId === fixture.id
-                                : mobileFixture?.id === fixture.id && drawerOpen
-                            }
-                            onSelect={handleSelectFixture}
-                          />
-                        )
-                      })}
-                    </div>
-                  </section>
-                ))}
-              </ScrollFade>
-            )}
+            {/* Mobile: hug the fixture list; page scroll handles overflow. */}
+            <div className="flex flex-col gap-4 content-start px-3 pb-4 lg:hidden">
+              {renderFixtureListBody()}
+            </div>
+            {/* Desktop: fill the hub cell and scroll inside the tile. */}
+            <ScrollFade
+              className="hidden min-h-0 w-full min-w-0 flex-1 lg:flex"
+              contentClassName="flex flex-col gap-4 content-start px-3 pb-4"
+            >
+              {renderFixtureListBody()}
+            </ScrollFade>
           </DataTile.Content>
         </DataTile>
 
