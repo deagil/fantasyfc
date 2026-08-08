@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  describeFixtureRunDifficulty,
   getNextUnfinishedEvent,
   getUpcomingTeamFixtures,
 } from "@/lib/fixtures/upcoming"
@@ -128,5 +129,13 @@ describe("getUpcomingTeamFixtures", () => {
 
     expect(run.averageDifficulty).toBeNull()
     expect(run.blankCount).toBe(3)
+  })
+})
+
+describe("describeFixtureRunDifficulty", () => {
+  it("labels runs relative to a neutral FDR of 3", () => {
+    expect(describeFixtureRunDifficulty(2.4)).toBe("easier")
+    expect(describeFixtureRunDifficulty(3)).toBe("average")
+    expect(describeFixtureRunDifficulty(3.2)).toBe("harder")
   })
 })

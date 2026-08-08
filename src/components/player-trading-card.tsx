@@ -191,7 +191,9 @@ export function PlayerTradingCard({
   const [isFlipped, setIsFlipped] = useState(false)
   const [photoFailed, setPhotoFailed] = useState(false)
   const [holoActive, setHoloActive] = useState(false)
-  const { playersByCode, teamsByCode } = useEnrichmentMaps()
+  const [tiltEnabled, setTiltEnabled] = useState(false)
+  const { playersByCode, teamsByCode, isLoading: enrichmentLoading } =
+    useEnrichmentMaps()
 
   const enrichment = playersByCode.get(player.code)
   const teamEnrichment =
@@ -209,7 +211,20 @@ export function PlayerTradingCard({
   useEffect(() => {
     setPhotoFailed(false)
     setIsFlipped(false)
-  }, [player.id, artUrl])
+  }, [player.id])
+
+  useEffect(() => {
+    setPhotoFailed(false)
+  }, [artUrl])
+
+  useEffect(() => {
+    // Fine pointers get the tilt; touch / flipped cards keep a clean 3D flip.
+    const media = window.matchMedia("(hover: hover) and (pointer: fine)")
+    const syncTilt = () => setTiltEnabled(media.matches)
+    syncTilt()
+    media.addEventListener("change", syncTilt)
+    return () => media.removeEventListener("change", syncTilt)
+  }, [])
 
   const positionLabel = getElementTypeLabel(player.element_type)
   const foilOverall = overall ?? 50
@@ -255,6 +270,7 @@ export function PlayerTradingCard({
   const backSubtitle = [team?.short_name, formatPlayerStatus(player.status)]
     .filter(Boolean)
     .join(" · ")
+  const showTilt = tiltEnabled && !isFlipped
 
   const cardInner = (
     <div
@@ -264,7 +280,7 @@ export function PlayerTradingCard({
       )}
       style={foilStyle}
     >
-      <div className="trading-card-face">
+      <div className="trading-card-face" aria-hidden={isFlipped}>
         <CardFace
           holoActive={holoActive}
           showHolo={showHolo}
@@ -312,7 +328,10 @@ export function PlayerTradingCard({
         </CardFace>
       </div>
 
-      <div className="trading-card-face trading-card-face--back">
+      <div
+        className="trading-card-face trading-card-face--back"
+        aria-hidden={!isFlipped}
+      >
         <CardFace
           holoActive={holoActive}
           showHolo={showHolo}
@@ -336,6 +355,8 @@ export function PlayerTradingCard({
                   />
                 ))}
               </div>
+            ) : enrichmentLoading ? (
+              <p className="trading-card-back-loading">Loading profile…</p>
             ) : null}
 
             <div className="trading-card-back-stats trading-card-back-stats--fpl">
@@ -367,12 +388,13 @@ export function PlayerTradingCard({
         role="button"
         tabIndex={0}
         title={`${player.web_name} trading card. Click to flip.`}
+        aria-pressed={isFlipped}
       >
         <Tilt
           glareEnable={false}
           gyroscope={false}
-          scale={1.02}
-          tiltEnable
+          scale={showTilt ? 1.02 : 1}
+          tiltEnable={showTilt}
           tiltMaxAngleX={12}
           tiltMaxAngleY={12}
           transitionSpeed={400}

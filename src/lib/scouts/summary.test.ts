@@ -11,6 +11,7 @@ import {
   buildScoutSummary,
   buildSummaryChips,
   formatPercentile,
+  markerPercentForBands,
   medianOf,
   ordinal,
   percentileOf,
@@ -116,35 +117,65 @@ describe("quantile", () => {
   })
 })
 
+describe("markerPercentForBands", () => {
+  it("puts boundary values on the equal-width band edges", () => {
+    expect(markerPercentForBands(65, [65, 76, 90], 40, 99)).toBe(25)
+    expect(markerPercentForBands(76, [65, 76, 90], 40, 99)).toBe(50)
+    expect(markerPercentForBands(90, [65, 76, 90], 40, 99)).toBe(75)
+  })
+
+  it("keeps elite markers inside the final quarter of the bar", () => {
+    expect(markerPercentForBands(93, [65, 76, 90], 40, 99)).toBeGreaterThan(75)
+    expect(markerPercentForBands(99, [65, 76, 90], 40, 99)).toBe(100)
+  })
+})
+
 describe("buildMetricRange", () => {
   // 0, 1, 2, ... 99 — a flat distribution makes the band edges easy to reason about.
   const flat = Array.from({ length: 100 }, (_, index) => index)
 
-  it("reports the quartile boundaries in the metric's own units", () => {
+  it("labels cohort metrics at the 25th / 50th / 90th percentiles", () => {
     const range = buildMetricRange(flat, 50, { unit: "pts", decimals: 0 })
 
     expect(range?.boundaries[0]).toBeCloseTo(24.75)
     expect(range?.boundaries[1]).toBeCloseTo(49.5)
-    expect(range?.boundaries[2]).toBeCloseTo(74.25)
+    expect(range?.boundaries[2]).toBeCloseTo(89.1)
   })
 
-  it("positions the marker by rank, so a huge outlier cannot skew the axis", () => {
-    const withOutlier = [...flat, 100000].sort((a, b) => a - b)
-    const range = buildMetricRange(withOutlier, 50, { unit: "pts", decimals: 0 })
-
-    // Rank space is immune to the outlier: 50 still beats about half the field.
-    expect(range?.valuePercentile).toBeGreaterThan(45)
-    expect(range?.valuePercentile).toBeLessThan(55)
-  })
-
-  it("assigns one band per quartile of the cohort", () => {
+  it("keeps elite as the top decile, not the top quartile", () => {
     const band = (value: number) =>
       buildMetricRange(flat, value, { unit: "pts", decimals: 0 })?.bandId
 
     expect(band(5)).toBe("poor")
     expect(band(30)).toBe("typical")
     expect(band(60)).toBe("strong")
-    expect(band(90)).toBe("elite")
+    expect(band(85)).toBe("strong")
+    expect(band(95)).toBe("elite")
+  })
+
+  it("maps markers within equal-width bands so outliers cannot squash purple", () => {
+    const withOutlier = [...flat, 100000].sort((a, b) => a - b)
+    const mid = buildMetricRange(withOutlier, 50, { unit: "pts", decimals: 0 })
+    const elite = buildMetricRange(withOutlier, 95, { unit: "pts", decimals: 0 })
+
+    expect(mid?.markerPercent).toBeGreaterThan(25)
+    expect(mid?.markerPercent).toBeLessThan(55)
+    expect(elite?.bandId).toBe("elite")
+    expect(elite?.markerPercent).toBeGreaterThanOrEqual(75)
+  })
+
+  it("uses fixed rating-tone boundaries for ability", () => {
+    const range = buildMetricRange(flat, 93, {
+      unit: "",
+      decimals: 0,
+      boundaries: [65, 76, 90],
+      scaleMin: 40,
+      scaleMax: 99,
+    })
+
+    expect(range?.boundaries).toEqual([65, 76, 90])
+    expect(range?.bandId).toBe("elite")
+    expect(range?.markerPercent).toBeGreaterThanOrEqual(75)
   })
 
   it("declines to band a cohort that is too small or has no spread", () => {

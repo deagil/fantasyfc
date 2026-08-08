@@ -2,7 +2,10 @@ import { useMemo } from "react"
 
 import { RatingCategoryBreakdown } from "@/components/rating-category-breakdown"
 import { PlayerTradingCard } from "@/components/player-trading-card"
-import { ScoutSummaryPanel } from "@/components/scout-summary"
+import {
+  AvailabilityBanner,
+  ScoutSummaryPanel,
+} from "@/components/scout-summary"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   getNextUnfinishedEvent,
@@ -111,6 +114,10 @@ export function PlayerDetailPane({
         />
       )}
 
+      {summary?.availability ? (
+        <AvailabilityBanner availability={summary.availability} />
+      ) : null}
+
       <RatingCategoryBreakdown
         playerId={player.id}
         categories={rating?.categories}
@@ -120,6 +127,7 @@ export function PlayerDetailPane({
       <ScoutSummaryPanel
         summary={summary}
         isLoading={ratingsLoading || detailLoading}
+        hideAvailability
       />
     </div>
   )

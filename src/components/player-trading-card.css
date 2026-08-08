@@ -53,10 +53,16 @@
   width: 100%;
   max-width: 300px;
   margin-inline: auto;
+  /* Keep nested tilt transforms from flattening the flip. */
+  transform-style: preserve-3d;
 }
 
 .trading-card-scene--static {
   perspective: none;
+}
+
+.trading-card-scene > * {
+  transform-style: preserve-3d;
 }
 
 .trading-card-inner {
@@ -65,6 +71,7 @@
   aspect-ratio: 320 / 446;
   transform-style: preserve-3d;
   transition: transform 0.65s cubic-bezier(0.2, 0, 0, 1);
+  -webkit-transform-style: preserve-3d;
 }
 
 .trading-card-inner--flipped {
@@ -76,13 +83,25 @@
   inset: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  transform: rotateY(0deg) translateZ(0.5px);
+  -webkit-transform: rotateY(0deg) translateZ(0.5px);
   border-radius: 1rem;
   overflow: hidden;
   box-shadow: var(--card-shadow);
+  /* Belt-and-braces for mobile WebKit when a parent transform flattens 3D. */
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .trading-card-face--back {
-  transform: rotateY(180deg);
+  transform: rotateY(180deg) translateZ(0.5px);
+  -webkit-transform: rotateY(180deg) translateZ(0.5px);
+}
+
+.trading-card-inner--flipped > .trading-card-face:not(.trading-card-face--back),
+.trading-card-inner:not(.trading-card-inner--flipped) > .trading-card-face--back {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .trading-card-shield {
@@ -391,6 +410,12 @@
 
 .trading-card-back-stats--trivia .trading-card-back-stat-value {
   font-size: 0.95rem;
+}
+
+.trading-card-back-loading {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--card-muted);
 }
 
 .trading-card-flip-hint {

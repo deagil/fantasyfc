@@ -6,7 +6,10 @@ import {
 } from "@/components/metric-range-bar"
 import { SeasonPointsChart } from "@/components/season-points-chart"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { FixtureRun } from "@/lib/fixtures/upcoming"
+import {
+  describeFixtureRunDifficulty,
+  type FixtureRun,
+} from "@/lib/fixtures/upcoming"
 import type { PlayerSeasonHistoryEntry } from "@/lib/ratings/model"
 import { METRIC_BAND_LABELS } from "@/lib/scouts/summary"
 import type {
@@ -42,12 +45,19 @@ function difficultyClassName(difficulty: number): string {
   return "bg-rating-bad/15 text-rating-bad"
 }
 
-function AvailabilityBanner({ availability }: { availability: SummaryAvailability }) {
+export function AvailabilityBanner({
+  availability,
+  className,
+}: {
+  availability: SummaryAvailability
+  className?: string
+}) {
   return (
     <div
       className={cn(
-        "mt-3 rounded-lg px-3 py-2",
-        availability.tone === "negative" ? "bg-rating-bad/10" : "bg-foreground/5"
+        "rounded-lg px-3 py-2",
+        availability.tone === "negative" ? "bg-rating-bad/10" : "bg-foreground/5",
+        className
       )}
     >
       <p className={cn("text-sm font-semibold", TONE_TEXT[availability.tone])}>
@@ -121,18 +131,29 @@ function FixtureStrip({ fixtures }: { fixtures: FixtureRun }) {
     )
   }
 
+  const runDifficulty =
+    fixtures.averageDifficulty === null
+      ? null
+      : describeFixtureRunDifficulty(fixtures.averageDifficulty)
+
   return (
     <div className="mt-6">
       <div className="flex items-baseline justify-between gap-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Next {fixtures.events.length} gameweeks
         </p>
-        {fixtures.averageDifficulty !== null ? (
-          <p className="text-xs text-muted-foreground">
-            Avg FDR{" "}
-            <span className="font-semibold tabular-nums text-foreground">
-              {fixtures.averageDifficulty.toFixed(1)}
-            </span>
+        {runDifficulty ? (
+          <p
+            className={cn(
+              "text-xs font-semibold capitalize",
+              runDifficulty === "easier"
+                ? "text-rating-good"
+                : runDifficulty === "harder"
+                  ? "text-rating-bad"
+                  : "text-muted-foreground"
+            )}
+          >
+            {runDifficulty}
           </p>
         ) : null}
       </div>
@@ -192,12 +213,15 @@ type ScoutSummaryPanelProps = {
   summary: ScoutSummary | null
   isLoading: boolean
   className?: string
+  /** When true, the availability banner is rendered by the parent instead. */
+  hideAvailability?: boolean
 }
 
 export function ScoutSummaryPanel({
   summary,
   isLoading,
   className,
+  hideAvailability = false,
 }: ScoutSummaryPanelProps) {
   if (isLoading || !summary) {
     return <Skeleton className={cn("h-64 rounded-xl", className)} />
@@ -211,8 +235,11 @@ export function ScoutSummaryPanel({
         {summary.headline}
       </p>
 
-      {summary.availability ? (
-        <AvailabilityBanner availability={summary.availability} />
+      {!hideAvailability && summary.availability ? (
+        <AvailabilityBanner
+          availability={summary.availability}
+          className="mt-3"
+        />
       ) : null}
 
       <ul className="mt-3 space-y-1.5">
