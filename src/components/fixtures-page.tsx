@@ -182,7 +182,7 @@ export function FixturesPage() {
       <div className={hubTileGridClassName}>
         <DataTile
           interactive
-          className="col-span-2 row-span-3 lg:col-start-1 lg:row-start-1"
+          className="col-span-2 row-span-6 lg:row-span-3 lg:col-start-1 lg:row-start-1"
         >
           {listHeader}
           <DataTile.Content
