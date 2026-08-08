@@ -136,6 +136,18 @@ function FixtureStrip({ fixtures }: { fixtures: FixtureRun }) {
       ? null
       : describeFixtureRunDifficulty(fixtures.averageDifficulty)
 
+  let runDifficultyClass = "text-muted-foreground"
+  if (runDifficulty === "easier") {
+    runDifficultyClass = "text-rating-good"
+  } else if (runDifficulty === "harder") {
+    runDifficultyClass = "text-rating-bad"
+  } else if (runDifficulty === "average") {
+    runDifficultyClass = "text-muted-foreground"
+  } else if (runDifficulty !== null) {
+    const _exhaustive: never = runDifficulty
+    void _exhaustive
+  }
+
   return (
     <div className="mt-6">
       <div className="flex items-baseline justify-between gap-2">
@@ -143,16 +155,7 @@ function FixtureStrip({ fixtures }: { fixtures: FixtureRun }) {
           Next {fixtures.events.length} gameweeks
         </p>
         {runDifficulty ? (
-          <p
-            className={cn(
-              "text-xs font-semibold capitalize",
-              runDifficulty === "easier"
-                ? "text-rating-good"
-                : runDifficulty === "harder"
-                  ? "text-rating-bad"
-                  : "text-muted-foreground"
-            )}
-          >
+          <p className={cn("text-xs font-semibold capitalize", runDifficultyClass)}>
             {runDifficulty}
           </p>
         ) : null}
