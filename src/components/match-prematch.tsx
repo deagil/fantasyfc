@@ -1,8 +1,9 @@
-import { DifficultyDots } from "@/components/team-crest"
 import type { HeadToHeadResult, TeamFormEntry } from "@/lib/fixtures/form"
 import {
   describeFixtureDifficulty,
+  describeMatchAssetOutlook,
   type FixtureDifficultyLabel,
+  type MatchAssetOutlookId,
 } from "@/lib/fixtures/upcoming"
 import type { FplFixture, FplTeam } from "@/lib/fpl/types"
 import { cn } from "@/lib/utils"
@@ -49,21 +50,35 @@ function difficultyLabelClass(label: FixtureDifficultyLabel): string {
   }
 }
 
+function outlookToneClass(id: MatchAssetOutlookId): string {
+  switch (id) {
+    case "home_favoured":
+    case "away_favoured":
+    case "both_open":
+      return "text-rating-good"
+    case "both_tough":
+      return "text-rating-bad"
+    case "even":
+      return "text-muted-foreground"
+    default: {
+      const _exhaustive: never = id
+      return _exhaustive
+    }
+  }
+}
+
 function DifficultySide({ difficulty }: { difficulty: number }) {
   const label = describeFixtureDifficulty(difficulty)
 
   return (
-    <div className="flex flex-col items-center gap-1.5">
-      <DifficultyDots difficulty={difficulty} />
-      <span
-        className={cn(
-          "text-[10px] font-semibold capitalize",
-          difficultyLabelClass(label)
-        )}
-      >
-        {label}
-      </span>
-    </div>
+    <p
+      className={cn(
+        "text-center text-base font-semibold capitalize tracking-tight",
+        difficultyLabelClass(label)
+      )}
+    >
+      {label}
+    </p>
   )
 }
 
@@ -84,16 +99,32 @@ export function MatchPrematch({
   headToHead: HeadToHeadResult[]
   className?: string
 }) {
+  const outlook = describeMatchAssetOutlook(
+    fixture.team_h_difficulty,
+    fixture.team_a_difficulty
+  )
+
   return (
     <div className={cn("flex flex-col gap-3", className)}>
       <div className="rounded-xl bg-foreground/3 p-3">
-        <p className="mb-3 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-          Fixture difficulty
+        <p className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+          FPL outlook
         </p>
-        <div className="grid grid-cols-2 gap-4">
+        <p className="mt-1 text-xs leading-snug text-muted-foreground">
+          How hard this opponent looks for each side&apos;s assets
+        </p>
+        <div className="mt-3 grid grid-cols-2 gap-4">
           <DifficultySide difficulty={fixture.team_h_difficulty} />
           <DifficultySide difficulty={fixture.team_a_difficulty} />
         </div>
+        <p
+          className={cn(
+            "mt-3 text-center text-xs font-medium",
+            outlookToneClass(outlook.id)
+          )}
+        >
+          {outlook.label}
+        </p>
       </div>
 
       <div className="rounded-xl bg-foreground/3 p-3">

@@ -23,6 +23,7 @@ export { formatFixtureKickoff } from "@/lib/fixtures/kickoff"
 export {
   describeFixtureDifficulty,
   describeFixtureRunDifficulty,
+  describeMatchAssetOutlook,
   getNextUnfinishedEvent,
   getUpcomingTeamFixtures,
 } from "@/lib/fixtures/upcoming"
@@ -31,6 +32,8 @@ export type {
   FixtureRun,
   FixtureRunDifficultyLabel,
   FixtureRunEvent,
+  MatchAssetOutlook,
+  MatchAssetOutlookId,
   UpcomingFixture,
 } from "@/lib/fixtures/upcoming"
 export {

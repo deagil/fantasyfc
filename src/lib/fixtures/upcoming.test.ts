@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   describeFixtureDifficulty,
   describeFixtureRunDifficulty,
+  describeMatchAssetOutlook,
   getNextUnfinishedEvent,
   getUpcomingTeamFixtures,
 } from "@/lib/fixtures/upcoming"
@@ -140,6 +141,31 @@ describe("describeFixtureDifficulty", () => {
     expect(describeFixtureDifficulty(3)).toBe("average")
     expect(describeFixtureDifficulty(4)).toBe("harder")
     expect(describeFixtureDifficulty(5)).toBe("tough")
+  })
+})
+
+describe("describeMatchAssetOutlook", () => {
+  it("treats FDR as per-side opponent difficulty, not a zero-sum pair", () => {
+    expect(describeMatchAssetOutlook(2, 5)).toEqual({
+      id: "home_favoured",
+      label: "Home assets favoured",
+    })
+    expect(describeMatchAssetOutlook(5, 2)).toEqual({
+      id: "away_favoured",
+      label: "Away assets favoured",
+    })
+    expect(describeMatchAssetOutlook(4, 4)).toEqual({
+      id: "both_tough",
+      label: "Tough for both sides",
+    })
+    expect(describeMatchAssetOutlook(2, 2)).toEqual({
+      id: "both_open",
+      label: "Open for both sides",
+    })
+    expect(describeMatchAssetOutlook(3, 3)).toEqual({
+      id: "even",
+      label: "Even outlook",
+    })
   })
 })
 

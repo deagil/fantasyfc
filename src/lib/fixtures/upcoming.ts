@@ -35,6 +35,10 @@ export type FixtureDifficultyLabel =
 /**
  * Label a single FDR (1–5) from that side's perspective.
  * Extremes get stronger wording than the near-neutral 2 / 4 band.
+ *
+ * FDR is not a zero-sum match score: each value is "how hard is this
+ * opponent for this team's FPL assets", derived from the opponent's
+ * strength and home/away form. So 2 vs 5 and 4 vs 4 are both valid.
  */
 export function describeFixtureDifficulty(
   difficulty: number
@@ -56,6 +60,50 @@ export function describeFixtureDifficulty(
       return _exhaustive
     }
   }
+}
+
+export type MatchAssetOutlookId =
+  | "home_favoured"
+  | "away_favoured"
+  | "both_open"
+  | "both_tough"
+  | "even"
+
+export type MatchAssetOutlook = {
+  id: MatchAssetOutlookId
+  /** Short reading of the pair for FPL asset selection. */
+  label: string
+}
+
+/**
+ * Interpret a home/away FDR pair. Because each rating is opponent-relative,
+ * the useful question is who (if anyone) gets the favourable asset game —
+ * not whether the two numbers "add up".
+ */
+export function describeMatchAssetOutlook(
+  homeDifficulty: number,
+  awayDifficulty: number
+): MatchAssetOutlook {
+  const home = Math.min(5, Math.max(1, Math.round(homeDifficulty)))
+  const away = Math.min(5, Math.max(1, Math.round(awayDifficulty)))
+  const homeEasy = home <= 2
+  const awayEasy = away <= 2
+  const homeHard = home >= 4
+  const awayHard = away >= 4
+
+  if (homeEasy && awayHard) {
+    return { id: "home_favoured", label: "Home assets favoured" }
+  }
+  if (awayEasy && homeHard) {
+    return { id: "away_favoured", label: "Away assets favoured" }
+  }
+  if (homeEasy && awayEasy) {
+    return { id: "both_open", label: "Open for both sides" }
+  }
+  if (homeHard && awayHard) {
+    return { id: "both_tough", label: "Tough for both sides" }
+  }
+  return { id: "even", label: "Even outlook" }
 }
 
 export type FixtureRunDifficultyLabel = "easier" | "average" | "harder"
