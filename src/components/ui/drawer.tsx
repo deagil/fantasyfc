@@ -195,6 +195,8 @@ function DrawerChrome({
 }
 
 const drawerChromeOffsetClassName = "pt-20"
+/** Tighter top inset for match drawers whose first content sits just under the title row. */
+const drawerMatchChromeOffsetClassName = "pt-14"
 
 type DrawerPanelProps = {
   title: React.ReactNode
@@ -294,6 +296,7 @@ export {
   DrawerChrome,
   DrawerPanel,
   drawerChromeOffsetClassName,
+  drawerMatchChromeOffsetClassName,
   DrawerBody,
   DrawerFooter,
   DrawerTitle,

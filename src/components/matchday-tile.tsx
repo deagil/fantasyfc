@@ -9,7 +9,7 @@ import {
   Drawer,
   DrawerContent,
   DrawerPanel,
-  drawerChromeOffsetClassName,
+  drawerMatchChromeOffsetClassName,
 } from "@/components/ui/drawer"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useEnrichmentMaps } from "@/lib/enrichment/hooks"
@@ -202,7 +202,7 @@ export function MatchdayTile({
           >
             <MatchDetailPane
               fixture={selectedFixture}
-              className={cn(drawerChromeOffsetClassName, "overflow-hidden")}
+              className={cn(drawerMatchChromeOffsetClassName, "overflow-hidden")}
             />
           </DrawerPanel>
         </DrawerContent>

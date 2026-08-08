@@ -25,35 +25,55 @@ export type FixtureRunEvent = {
   fixtures: UpcomingFixture[]
 }
 
-export type FixtureDifficultyLabel = "easier" | "average" | "harder"
+export type FixtureDifficultyLabel =
+  | "favourite"
+  | "easier"
+  | "average"
+  | "harder"
+  | "tough"
 
 /**
- * Label a single FDR (1–5) or a run average relative to a neutral 3.
- * Below is easier for that side; above is harder.
+ * Label a single FDR (1–5) from that side's perspective.
+ * Extremes get stronger wording than the near-neutral 2 / 4 band.
  */
 export function describeFixtureDifficulty(
   difficulty: number
 ): FixtureDifficultyLabel {
-  if (difficulty < 3) {
-    return "easier"
+  const clamped = Math.min(5, Math.max(1, Math.round(difficulty)))
+  switch (clamped) {
+    case 1:
+      return "favourite"
+    case 2:
+      return "easier"
+    case 3:
+      return "average"
+    case 4:
+      return "harder"
+    case 5:
+      return "tough"
+    default: {
+      const _exhaustive: never = clamped as never
+      return _exhaustive
+    }
   }
-  if (difficulty > 3) {
-    return "harder"
-  }
-  return "average"
 }
 
-export type FixtureRunDifficultyLabel = FixtureDifficultyLabel
+export type FixtureRunDifficultyLabel = "easier" | "average" | "harder"
 
 /**
  * Summarise a fixture run relative to a neutral FDR of 3: below is easier,
- * above is harder. The float itself is secondary to whether the stretch is
- * favourable.
+ * above is harder. Averages are continuous, so extremes are not discrete.
  */
 export function describeFixtureRunDifficulty(
   averageDifficulty: number
 ): FixtureRunDifficultyLabel {
-  return describeFixtureDifficulty(averageDifficulty)
+  if (averageDifficulty < 3) {
+    return "easier"
+  }
+  if (averageDifficulty > 3) {
+    return "harder"
+  }
+  return "average"
 }
 
 function toUpcomingFixture(
