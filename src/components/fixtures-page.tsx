@@ -17,6 +17,7 @@ import { useEnrichmentMaps } from "@/lib/enrichment/hooks"
 import { getEventFixtures, groupFixturesByDay } from "@/lib/fixtures/group"
 import { getGameweekShapes } from "@/lib/fixtures/gameweek-shape"
 import { getFixturePhase } from "@/lib/fixtures/form"
+import { formatMatchSheetTitle } from "@/lib/fixtures/kickoff"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
 import { useFplSeasonFixturesQuery } from "@/lib/fpl/hooks"
 import type { FplFixture } from "@/lib/fpl/types"
@@ -272,7 +273,7 @@ export function FixturesPage() {
             <DrawerPanel
               title={
                 mobileFixture
-                  ? `${teamsById.get(mobileFixture.team_h)?.short_name ?? "Home"} v ${teamsById.get(mobileFixture.team_a)?.short_name ?? "Away"}`
+                  ? formatMatchSheetTitle(mobileFixture)
                   : "Match centre"
               }
               leading={
@@ -284,6 +285,7 @@ export function FixturesPage() {
             >
               <MatchDetailPane
                 fixture={mobileFixture}
+                sheetChrome
                 className={cn(drawerMatchChromeOffsetClassName, "overflow-hidden")}
               />
             </DrawerPanel>

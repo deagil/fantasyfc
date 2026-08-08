@@ -99,11 +99,14 @@ export function MatchOpenPageButton({
 export function MatchDetailPane({
   fixture,
   showOpenLink = false,
+  /** When true, kickoff/live/FT lives in sheet chrome — hide the hero status row. */
+  sheetChrome = false,
   className,
 }: {
   fixture: FplFixture | null
   /** Desktop / non-drawer surfaces that still need an inline open control. */
   showOpenLink?: boolean
+  sheetChrome?: boolean
   className?: string
 }) {
   const { teamsById, elementsById } = useFplBootstrap()
@@ -309,6 +312,7 @@ export function MatchDetailPane({
         awayBadgeUrl={awayBadgeUrl}
         homeRecord={homeRecord}
         awayRecord={awayRecord}
+        showStatus={!sheetChrome}
       />
 
       <ScrollFade

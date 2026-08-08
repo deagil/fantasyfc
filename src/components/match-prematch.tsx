@@ -1,8 +1,6 @@
 import type { HeadToHeadResult, TeamFormEntry } from "@/lib/fixtures/form"
 import {
-  describeFixtureDifficulty,
   describeMatchAssetOutlook,
-  type FixtureDifficultyLabel,
   type MatchAssetOutlookId,
 } from "@/lib/fixtures/upcoming"
 import type { FplFixture, FplTeam } from "@/lib/fpl/types"
@@ -33,23 +31,6 @@ function FormPills({ entries }: { entries: TeamFormEntry[] }) {
   )
 }
 
-function difficultyLabelClass(label: FixtureDifficultyLabel): string {
-  switch (label) {
-    case "favourite":
-    case "easier":
-      return "text-rating-good"
-    case "harder":
-    case "tough":
-      return "text-rating-bad"
-    case "average":
-      return "text-muted-foreground"
-    default: {
-      const _exhaustive: never = label
-      return _exhaustive
-    }
-  }
-}
-
 function previewToneClass(id: MatchAssetOutlookId): string {
   switch (id) {
     case "home_favoured":
@@ -65,21 +46,6 @@ function previewToneClass(id: MatchAssetOutlookId): string {
       return _exhaustive
     }
   }
-}
-
-function DifficultySide({ difficulty }: { difficulty: number }) {
-  const label = describeFixtureDifficulty(difficulty)
-
-  return (
-    <p
-      className={cn(
-        "text-center text-xs font-medium capitalize",
-        difficultyLabelClass(label)
-      )}
-    >
-      {label}
-    </p>
-  )
 }
 
 export function MatchPrematch({
@@ -109,22 +75,18 @@ export function MatchPrematch({
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <div className="rounded-xl bg-foreground/3 p-3">
+      <div className="rounded-xl bg-foreground/3 px-3 py-4">
         <p className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
           Match preview
         </p>
         <p
           className={cn(
-            "mt-2 text-center text-lg font-semibold tracking-tight text-balance",
+            "mt-4 mb-1 text-center text-lg font-semibold tracking-tight text-balance",
             previewToneClass(preview.id)
           )}
         >
           {preview.label}
         </p>
-        <div className="mt-2 grid grid-cols-2 gap-4">
-          <DifficultySide difficulty={fixture.team_h_difficulty} />
-          <DifficultySide difficulty={fixture.team_a_difficulty} />
-        </div>
       </div>
 
       <div className="rounded-xl bg-foreground/3 p-3">

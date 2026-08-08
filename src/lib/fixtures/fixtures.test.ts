@@ -4,7 +4,7 @@ import { projectBonus } from "@/lib/fixtures/events"
 import { getGameweekShape } from "@/lib/fixtures/gameweek-shape"
 import { getFixturePhase, getTeamRecentForm, getTeamRecord, formatTeamRecord } from "@/lib/fixtures/form"
 import { groupFixturesByDay, getEventFixtures } from "@/lib/fixtures/group"
-import { formatFixtureKickoff } from "@/lib/fixtures/kickoff"
+import { formatFixtureKickoff, formatMatchKickoffTitle, formatMatchSheetTitle } from "@/lib/fixtures/kickoff"
 import {
   getFixturePointsByElement,
   isBonusAddedForEvent,
@@ -57,6 +57,35 @@ describe("formatFixtureKickoff", () => {
         locale: "en-GB",
       })
     ).toBe("Sat 14:00")
+  })
+})
+
+describe("formatMatchKickoffTitle", () => {
+  it("formats a pundit-style kickoff title", () => {
+    const label = formatMatchKickoffTitle("2026-08-22T11:30:00Z", "en-GB")
+    expect(label).toMatch(/^Sat 22 Aug at \d{1,2}:\d{2}$/)
+  })
+
+  it("returns Kickoff TBC when missing", () => {
+    expect(formatMatchKickoffTitle(null)).toBe("Kickoff TBC")
+  })
+})
+
+describe("formatMatchSheetTitle", () => {
+  it("uses kickoff for pre-match and status once underway", () => {
+    expect(
+      formatMatchSheetTitle(
+        fixture({ id: 1, kickoff_time: "2026-08-22T11:30:00Z" })
+      )
+    ).toContain("at")
+    expect(
+      formatMatchSheetTitle(fixture({ id: 2, started: true, minutes: 67 }))
+    ).toBe("Live 67'")
+    expect(
+      formatMatchSheetTitle(
+        fixture({ id: 3, finished: true, started: true, minutes: 90 })
+      )
+    ).toBe("Full time")
   })
 })
 

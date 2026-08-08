@@ -98,24 +98,24 @@ export function describeMatchAssetOutlook(
   const gap = away - home
 
   if (home <= 2 && away <= 2) {
-    return { id: "both_open", label: "Open game" }
+    return { id: "both_open", label: "Could be open" }
   }
   if (home >= 4 && away >= 4) {
-    return { id: "both_tough", label: "Tight contest" }
+    return { id: "both_tough", label: "Cagey affair" }
   }
   if (gap >= 3) {
-    return { id: "home_favoured", label: `${teams.homeName} dominate` }
+    return { id: "home_favoured", label: `Big advantage ${teams.homeName}` }
   }
   if (gap <= -3) {
-    return { id: "away_favoured", label: `${teams.awayName} dominate` }
+    return { id: "away_favoured", label: `Big advantage ${teams.awayName}` }
   }
   if (gap >= 2) {
-    return { id: "home_favoured", label: `${teams.homeName} favoured` }
+    return { id: "home_favoured", label: `Advantage ${teams.homeName}` }
   }
   if (gap <= -2) {
-    return { id: "away_favoured", label: `${teams.awayName} favoured` }
+    return { id: "away_favoured", label: `Advantage ${teams.awayName}` }
   }
-  return { id: "competitive", label: "Competitive game" }
+  return { id: "competitive", label: "Anyone's game" }
 }
 
 export type FixtureRunDifficultyLabel = "easier" | "average" | "harder"

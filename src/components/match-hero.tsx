@@ -1,6 +1,7 @@
 import { TeamCrest } from "@/components/team-crest"
 import { formatTeamRecord, getFixturePhase } from "@/lib/fixtures/form"
 import type { TeamRecord } from "@/lib/fixtures/form"
+import { formatMatchKickoffTitle } from "@/lib/fixtures/kickoff"
 import type { FplFixture, FplTeam } from "@/lib/fpl/types"
 import { cn } from "@/lib/utils"
 
@@ -12,6 +13,8 @@ export function MatchHero({
   awayBadgeUrl,
   homeRecord,
   awayRecord,
+  /** When false, kickoff / live / FT is expected in surrounding chrome instead. */
+  showStatus = true,
   className,
 }: {
   fixture: FplFixture
@@ -21,6 +24,7 @@ export function MatchHero({
   awayBadgeUrl?: string | null
   homeRecord?: TeamRecord | null
   awayRecord?: TeamRecord | null
+  showStatus?: boolean
   className?: string
 }) {
   const phase = getFixturePhase(fixture)
@@ -29,30 +33,22 @@ export function MatchHero({
   const homeName = homeTeam?.name ?? homeShort
   const awayName = awayTeam?.name ?? awayShort
 
-  const kickoffLabel = fixture.kickoff_time
-    ? new Date(fixture.kickoff_time).toLocaleString(undefined, {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-        hour: "numeric",
-        minute: "2-digit",
-      })
-    : "Kickoff TBC"
-
   return (
     <div className={cn("flex flex-col gap-4 px-4 pt-0 pb-3", className)}>
-      <div className="flex items-center justify-center text-xs font-medium text-muted-foreground">
-        {phase === "live" ? (
-          <span className="inline-flex items-center gap-1.5 text-pl-pink">
-            <span className="size-1.5 animate-pulse rounded-full bg-pl-pink" />
-            LIVE {fixture.minutes > 0 ? `${fixture.minutes}'` : ""}
-          </span>
-        ) : phase === "finished" ? (
-          <span>Full time</span>
-        ) : (
-          <span>{kickoffLabel}</span>
-        )}
-      </div>
+      {showStatus ? (
+        <div className="flex items-center justify-center text-xs font-medium text-muted-foreground">
+          {phase === "live" ? (
+            <span className="inline-flex items-center gap-1.5 text-pl-pink">
+              <span className="size-1.5 animate-pulse rounded-full bg-pl-pink" />
+              LIVE {fixture.minutes > 0 ? `${fixture.minutes}'` : ""}
+            </span>
+          ) : phase === "finished" ? (
+            <span>Full time</span>
+          ) : (
+            <span>{formatMatchKickoffTitle(fixture.kickoff_time)}</span>
+          )}
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
         <div className="flex min-w-0 flex-col items-center gap-3 text-center">
