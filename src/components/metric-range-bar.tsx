@@ -21,10 +21,9 @@ export const BAND_TEXT: Record<MetricBandId, string> = {
 }
 
 /**
- * Where a player sits among their position cohort, split into quartiles. Each
- * band is a quarter of the bar and a quarter of the players, so the marker
- * position reads directly as "how much of the field he is ahead of", and the
- * boundary values say what each verdict is worth in real units.
+ * Where a player sits on four equal-width verdict bands. Segment widths stay
+ * balanced for readability; the labelled edges are the real cutoffs (rating
+ * tones or cohort percentiles), and the marker is mapped within each band.
  */
 export function MetricRangeBar({
   range,
@@ -34,7 +33,7 @@ export function MetricRangeBar({
   className?: string
 }) {
   const format = (value: number) => formatRangeValue(value, range.decimals)
-  const markerLeft = Math.min(100, Math.max(0, range.valuePercentile))
+  const markerLeft = Math.min(100, Math.max(0, range.markerPercent))
 
   return (
     <div className={cn("min-w-0", className)}>

@@ -25,6 +25,25 @@ export type FixtureRunEvent = {
   fixtures: UpcomingFixture[]
 }
 
+export type FixtureRunDifficultyLabel = "easier" | "average" | "harder"
+
+/**
+ * Summarise a fixture run relative to a neutral FDR of 3: below is easier,
+ * above is harder. The float itself is secondary to whether the stretch is
+ * favourable.
+ */
+export function describeFixtureRunDifficulty(
+  averageDifficulty: number
+): FixtureRunDifficultyLabel {
+  if (averageDifficulty < 3) {
+    return "easier"
+  }
+  if (averageDifficulty > 3) {
+    return "harder"
+  }
+  return "average"
+}
+
 function toUpcomingFixture(
   fixture: FplFixture,
   teamId: number,

@@ -52,21 +52,41 @@ export const METRIC_BAND_ORDER: MetricBandId[] = [
 ]
 
 /**
- * A metric plotted against its position cohort as quartiles: four equal bands
- * holding a quarter of the players each. The axis is rank, not value, so the
- * bands stay evenly weighted instead of "average" swallowing the bar — and the
- * boundary values still say what counts as good in the metric's own units.
+ * A metric plotted on four equal-width visual bands. Band edges are meaningful
+ * cutoffs in the metric's own units (rating tones for ability; cohort
+ * percentiles for everything else) — not population-proportional widths — so
+ * "Excellent" stays rare while the bar stays readable.
  */
 export type MetricRange = {
   value: number
-  /** 0–100 rank within the cohort; drives the marker position. */
-  valuePercentile: number
-  /** Values at the 25th, 50th and 75th percentiles, ascending. */
+  /**
+   * 0–100 position on the equal-width bar. Mapped piecewise within each band
+   * so a player near a boundary sits near the colour edge, not by raw rank.
+   */
+  markerPercent: number
+  /** Values at the three band boundaries, ascending. */
   boundaries: [number, number, number]
   bandId: MetricBandId
   decimals: number
   unit: string
 }
+
+/**
+ * Ability (overall rating) band edges, aligned with rating colour tones:
+ * fair ≥65, good ≥76, elite/purple ≥90. Equal bar segments keep purple readable
+ * even though 90+ players are a tiny slice of the cohort.
+ */
+export const ABILITY_BAND_BOUNDARIES: [number, number, number] = [65, 76, 90]
+
+/** Practical floor/ceiling for overall ratings when placing the marker. */
+const ABILITY_SCALE_MIN = 40
+const ABILITY_SCALE_MAX = 99
+
+/**
+ * Cohort percentile cutoffs for non-rating metrics. Elite is the top 10% so
+ * "Excellent" means exceptional, not merely top-quartile.
+ */
+const COHORT_BAND_PERCENTILES: [number, number, number] = [0.25, 0.5, 0.9]
 
 const BAND_TONE: Record<MetricBandId, SummaryTone> = {
   poor: "negative",
@@ -233,46 +253,103 @@ export function formatRangeValue(value: number, decimals: number): string {
     : value.toFixed(decimals)
 }
 
-/** Split the cohort into quartiles and locate the player among them. */
+export function bandIdForBoundaries(
+  value: number,
+  boundaries: readonly [number, number, number]
+): MetricBandId {
+  const [low, mid, high] = boundaries
+  if (value >= high) {
+    return "elite"
+  }
+  if (value >= mid) {
+    return "strong"
+  }
+  if (value >= low) {
+    return "typical"
+  }
+  return "poor"
+}
+
+/**
+ * Place `value` on an equal-width four-band bar. Each band owns 25% of the
+ * track; progress within a band is linear between that band's value edges.
+ */
+export function markerPercentForBands(
+  value: number,
+  boundaries: readonly [number, number, number],
+  scaleMin: number,
+  scaleMax: number
+): number {
+  const [b0, b1, b2] = boundaries
+  const edges = [scaleMin, b0, b1, b2, scaleMax]
+
+  for (let index = 0; index < 4; index += 1) {
+    const start = edges[index]
+    const end = edges[index + 1]
+    if (value > end && index < 3) {
+      continue
+    }
+
+    const span = end - start
+    const t = span <= 0 ? 1 : Math.min(1, Math.max(0, (value - start) / span))
+    return Math.min(100, Math.max(0, (index + t) * 25))
+  }
+
+  return 100
+}
+
+export type BuildMetricRangeOptions = {
+  unit: string
+  decimals: number
+  /**
+   * Fixed value boundaries for the three colour edges. When omitted, boundaries
+   * come from the cohort at {@link COHORT_BAND_PERCENTILES}.
+   */
+  boundaries?: readonly [number, number, number]
+  /** Inclusive floor used when interpolating the below-par band. */
+  scaleMin?: number
+  /** Inclusive ceiling used when interpolating the excellent band. */
+  scaleMax?: number
+}
+
+/**
+ * Build an equal-width banded range for a player value. Ability passes fixed
+ * rating-tone boundaries; other metrics derive edges from the cohort so the
+ * labels stay in real units while elite stays the top decile.
+ */
 export function buildMetricRange(
   sortedValues: readonly number[],
   value: number | null,
-  { unit, decimals }: { unit: string; decimals: number }
+  { unit, decimals, boundaries: fixedBoundaries, scaleMin, scaleMax }: BuildMetricRangeOptions
 ): MetricRange | null {
   if (value === null || sortedValues.length < RANGE_MIN_SAMPLES) {
     return null
   }
 
-  const q25 = quantile(sortedValues, 0.25)
-  const q50 = quantile(sortedValues, 0.5)
-  const q75 = quantile(sortedValues, 0.75)
-  const valuePercentile = percentileOf(sortedValues, value)
+  let boundaries: [number, number, number]
+  if (fixedBoundaries) {
+    boundaries = [fixedBoundaries[0], fixedBoundaries[1], fixedBoundaries[2]]
+  } else {
+    const low = quantile(sortedValues, COHORT_BAND_PERCENTILES[0])
+    const mid = quantile(sortedValues, COHORT_BAND_PERCENTILES[1])
+    const high = quantile(sortedValues, COHORT_BAND_PERCENTILES[2])
+    if (low === null || mid === null || high === null || high <= low) {
+      return null
+    }
+    boundaries = [low, mid, high]
+  }
 
-  if (
-    q25 === null ||
-    q50 === null ||
-    q75 === null ||
-    valuePercentile === null ||
-    // A cohort with no spread across its middle half cannot be banded.
-    q75 <= q25
-  ) {
+  const floor = scaleMin ?? sortedValues[0]
+  const ceiling = scaleMax ?? sortedValues[sortedValues.length - 1]
+  if (ceiling <= floor) {
     return null
   }
 
-  const bandId: MetricBandId =
-    valuePercentile >= 75
-      ? "elite"
-      : valuePercentile >= 50
-        ? "strong"
-        : valuePercentile >= 25
-          ? "typical"
-          : "poor"
-
   return {
     value,
-    valuePercentile,
-    boundaries: [q25, q50, q75],
-    bandId,
+    markerPercent: markerPercentForBands(value, boundaries, floor, ceiling),
+    boundaries,
+    bandId: bandIdForBoundaries(value, boundaries),
     decimals,
     unit,
   }
@@ -636,7 +713,13 @@ export function buildScoutSummary({
   const abilityRange = buildMetricRange(
     cohort.overall,
     rating?.overall ?? null,
-    { unit: "", decimals: 0 }
+    {
+      unit: "",
+      decimals: 0,
+      boundaries: ABILITY_BAND_BOUNDARIES,
+      scaleMin: ABILITY_SCALE_MIN,
+      scaleMax: ABILITY_SCALE_MAX,
+    }
   )
   const valueRange = buildMetricRange(cohort.pointsPerMillion, ppm, {
     unit: "pts/£m",
