@@ -1,4 +1,8 @@
-import type { HeadToHeadResult, TeamFormEntry } from "@/lib/fixtures/form"
+import {
+  padTeamFormSlots,
+  type HeadToHeadResult,
+  type TeamFormEntry,
+} from "@/lib/fixtures/form"
 import {
   describeMatchAssetOutlook,
   type MatchAssetOutlookId,
@@ -6,27 +10,41 @@ import {
 import type { FplFixture, FplTeam } from "@/lib/fpl/types"
 import { cn } from "@/lib/utils"
 
-function FormPills({ entries }: { entries: TeamFormEntry[] }) {
-  if (entries.length === 0) {
-    return <span className="text-xs text-muted-foreground">No form yet</span>
-  }
+const FORM_SLOT_COUNT = 5
+
+function FormBoxes({ entries }: { entries: TeamFormEntry[] }) {
+  const slots = padTeamFormSlots(entries, FORM_SLOT_COUNT)
 
   return (
-    <div className="flex items-center gap-1">
-      {[...entries].reverse().map((entry) => (
-        <span
-          key={entry.fixtureId}
-          className={cn(
-            "flex size-5 items-center justify-center rounded-full text-[10px] font-bold",
-            entry.result === "W" && "bg-pl-green/20 text-pl-green",
-            entry.result === "D" && "bg-foreground/10 text-muted-foreground",
-            entry.result === "L" && "bg-pl-pink/20 text-pl-pink"
-          )}
-          title={`${entry.wasHome ? "H" : "A"} ${entry.goalsFor}-${entry.goalsAgainst} vs ${entry.opponentShort}`}
-        >
-          {entry.result}
-        </span>
-      ))}
+    <div className="flex items-center justify-center gap-1">
+      {slots.map((entry, index) => {
+        if (entry == null) {
+          return (
+            <span
+              key={`empty-${index}`}
+              className="flex size-7 items-center justify-center rounded-md bg-foreground/5 text-xs font-semibold text-muted-foreground/50"
+              aria-label="No result yet"
+            >
+              –
+            </span>
+          )
+        }
+
+        return (
+          <span
+            key={entry.fixtureId}
+            className={cn(
+              "flex size-7 items-center justify-center rounded-md text-xs font-bold",
+              entry.result === "W" && "bg-pl-green/20 text-pl-green",
+              entry.result === "D" && "bg-foreground/10 text-muted-foreground",
+              entry.result === "L" && "bg-pl-pink/20 text-pl-pink"
+            )}
+            title={`${entry.wasHome ? "H" : "A"} ${entry.goalsFor}-${entry.goalsAgainst} vs ${entry.opponentShort}`}
+          >
+            {entry.result}
+          </span>
+        )
+      })}
     </div>
   )
 }
@@ -93,19 +111,9 @@ export function MatchPrematch({
         <p className="mb-3 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
           Form (last 5)
         </p>
-        <div className="flex flex-col gap-2.5">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-medium">
-              {homeTeam?.short_name ?? "Home"}
-            </span>
-            <FormPills entries={homeForm} />
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-medium">
-              {awayTeam?.short_name ?? "Away"}
-            </span>
-            <FormPills entries={awayForm} />
-          </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormBoxes entries={homeForm} />
+          <FormBoxes entries={awayForm} />
         </div>
       </div>
 

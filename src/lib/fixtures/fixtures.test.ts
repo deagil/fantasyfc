@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { projectBonus } from "@/lib/fixtures/events"
 import { getGameweekShape } from "@/lib/fixtures/gameweek-shape"
-import { getFixturePhase, getTeamRecentForm, getTeamRecord, formatTeamRecord } from "@/lib/fixtures/form"
+import { getFixturePhase, getTeamRecentForm, getTeamRecord, formatTeamRecord, padTeamFormSlots } from "@/lib/fixtures/form"
 import { groupFixturesByDay, getEventFixtures } from "@/lib/fixtures/group"
 import { formatFixtureKickoff, formatMatchKickoffTitle, formatMatchSheetTitle } from "@/lib/fixtures/kickoff"
 import {
@@ -209,6 +209,42 @@ describe("form helpers", () => {
     const form = getTeamRecentForm(1, fixtures, teamsById)
 
     expect(form.map((entry) => entry.result)).toEqual(["D", "W"])
+  })
+
+  it("pads form strips to five oldest-to-newest slots", () => {
+    const fixtures = [
+      fixture({
+        id: 1,
+        team_h: 1,
+        team_a: 2,
+        team_h_score: 2,
+        team_a_score: 0,
+        finished: true,
+        kickoff_time: "2026-08-01T14:00:00Z",
+      }),
+      fixture({
+        id: 2,
+        team_h: 3,
+        team_a: 1,
+        team_h_score: 1,
+        team_a_score: 1,
+        finished: true,
+        kickoff_time: "2026-08-08T14:00:00Z",
+      }),
+    ]
+    const teamsById = new Map(teams.map((team) => [team.id, team]))
+    const form = getTeamRecentForm(1, fixtures, teamsById)
+    const slots = padTeamFormSlots(form)
+
+    expect(slots).toHaveLength(5)
+    expect(slots.map((entry) => entry?.result ?? null)).toEqual([
+      "W",
+      "D",
+      null,
+      null,
+      null,
+    ])
+    expect(padTeamFormSlots([])).toEqual([null, null, null, null, null])
   })
 
   it("aggregates season W-D-L records", () => {
