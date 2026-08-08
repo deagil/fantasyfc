@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  describeFixtureDifficulty,
   describeFixtureRunDifficulty,
   getNextUnfinishedEvent,
   getUpcomingTeamFixtures,
@@ -129,6 +130,14 @@ describe("getUpcomingTeamFixtures", () => {
 
     expect(run.averageDifficulty).toBeNull()
     expect(run.blankCount).toBe(3)
+  })
+})
+
+describe("describeFixtureDifficulty", () => {
+  it("labels single FDRs relative to a neutral 3", () => {
+    expect(describeFixtureDifficulty(2)).toBe("easier")
+    expect(describeFixtureDifficulty(3)).toBe("average")
+    expect(describeFixtureDifficulty(5)).toBe("harder")
   })
 })
 

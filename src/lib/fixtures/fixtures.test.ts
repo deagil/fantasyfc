@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { projectBonus } from "@/lib/fixtures/events"
 import { getGameweekShape } from "@/lib/fixtures/gameweek-shape"
-import { getFixturePhase, getTeamRecentForm } from "@/lib/fixtures/form"
+import { getFixturePhase, getTeamRecentForm, getTeamRecord, formatTeamRecord } from "@/lib/fixtures/form"
 import { groupFixturesByDay, getEventFixtures } from "@/lib/fixtures/group"
 import { formatFixtureKickoff } from "@/lib/fixtures/kickoff"
 import {
@@ -180,6 +180,47 @@ describe("form helpers", () => {
     const form = getTeamRecentForm(1, fixtures, teamsById)
 
     expect(form.map((entry) => entry.result)).toEqual(["D", "W"])
+  })
+
+  it("aggregates season W-D-L records", () => {
+    const fixtures = [
+      fixture({
+        id: 1,
+        finished: true,
+        team_h: 1,
+        team_a: 2,
+        team_h_score: 2,
+        team_a_score: 0,
+      }),
+      fixture({
+        id: 2,
+        finished: true,
+        team_h: 3,
+        team_a: 1,
+        team_h_score: 1,
+        team_a_score: 1,
+      }),
+      fixture({
+        id: 3,
+        finished: true,
+        team_h: 1,
+        team_a: 4,
+        team_h_score: 0,
+        team_a_score: 3,
+      }),
+      fixture({
+        id: 4,
+        finished: false,
+        team_h: 1,
+        team_a: 2,
+        team_h_score: null,
+        team_a_score: null,
+      }),
+    ]
+
+    const record = getTeamRecord(1, fixtures)
+    expect(record).toEqual({ wins: 1, draws: 1, losses: 1, played: 3 })
+    expect(formatTeamRecord(record)).toBe("1-1-1")
   })
 
   it("resolves fixture phase", () => {

@@ -2,7 +2,7 @@ import { LockIcon } from "lucide-react"
 import { useCallback, useMemo, useState } from "react"
 
 import { DataTile } from "@/components/data-tile"
-import { MatchDetailPane } from "@/components/match-detail-pane"
+import { MatchDetailPane, MatchOpenPageButton } from "@/components/match-detail-pane"
 import { TeamCrest } from "@/components/team-crest"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -449,11 +449,15 @@ export function GameweekTile({
         >
           <DrawerPanel
             title={drawerTitle}
+            leading={
+              selectedFixture ? (
+                <MatchOpenPageButton fixtureId={selectedFixture.id} />
+              ) : undefined
+            }
             bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
           >
             <MatchDetailPane
               fixture={selectedFixture}
-              showOpenLink
               className={cn(drawerChromeOffsetClassName, "overflow-hidden")}
             />
           </DrawerPanel>

@@ -25,7 +25,25 @@ export type FixtureRunEvent = {
   fixtures: UpcomingFixture[]
 }
 
-export type FixtureRunDifficultyLabel = "easier" | "average" | "harder"
+export type FixtureDifficultyLabel = "easier" | "average" | "harder"
+
+/**
+ * Label a single FDR (1–5) or a run average relative to a neutral 3.
+ * Below is easier for that side; above is harder.
+ */
+export function describeFixtureDifficulty(
+  difficulty: number
+): FixtureDifficultyLabel {
+  if (difficulty < 3) {
+    return "easier"
+  }
+  if (difficulty > 3) {
+    return "harder"
+  }
+  return "average"
+}
+
+export type FixtureRunDifficultyLabel = FixtureDifficultyLabel
 
 /**
  * Summarise a fixture run relative to a neutral FDR of 3: below is easier,
@@ -35,13 +53,7 @@ export type FixtureRunDifficultyLabel = "easier" | "average" | "harder"
 export function describeFixtureRunDifficulty(
   averageDifficulty: number
 ): FixtureRunDifficultyLabel {
-  if (averageDifficulty < 3) {
-    return "easier"
-  }
-  if (averageDifficulty > 3) {
-    return "harder"
-  }
-  return "average"
+  return describeFixtureDifficulty(averageDifficulty)
 }
 
 function toUpcomingFixture(
