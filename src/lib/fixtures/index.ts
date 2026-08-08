@@ -19,7 +19,7 @@ export {
   groupFixturesByDay,
   sortFixturesByKickoff,
 } from "@/lib/fixtures/group"
-export { formatFixtureKickoff } from "@/lib/fixtures/kickoff"
+export { formatFixtureKickoff, formatMatchKickoffTitle, formatMatchSheetTitle } from "@/lib/fixtures/kickoff"
 export {
   describeFixtureDifficulty,
   describeFixtureRunDifficulty,

@@ -14,6 +14,7 @@ import {
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useNow } from "@/hooks/use-now"
 import { useEnrichmentMaps } from "@/lib/enrichment/hooks"
+import { formatMatchSheetTitle } from "@/lib/fixtures/kickoff"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
 import {
   formatCountdown,
@@ -380,7 +381,7 @@ export function GameweekTile({
   }, [])
 
   const drawerTitle = selectedFixture
-    ? `${teamsById.get(selectedFixture.team_h)?.short_name ?? "Home"} v ${teamsById.get(selectedFixture.team_a)?.short_name ?? "Away"}`
+    ? formatMatchSheetTitle(selectedFixture)
     : "Match centre"
 
   return (
@@ -458,6 +459,7 @@ export function GameweekTile({
           >
             <MatchDetailPane
               fixture={selectedFixture}
+              sheetChrome
               className={cn(drawerMatchChromeOffsetClassName, "overflow-hidden")}
             />
           </DrawerPanel>

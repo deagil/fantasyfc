@@ -15,6 +15,7 @@ import { useMediaQuery } from "@/hooks/use-media-query"
 import { useEnrichmentMaps } from "@/lib/enrichment/hooks"
 import { getFixturePhase } from "@/lib/fixtures/form"
 import { sortFixturesByKickoff } from "@/lib/fixtures/group"
+import { formatMatchSheetTitle } from "@/lib/fixtures/kickoff"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
 import type { FplFixture } from "@/lib/fpl/types"
 import { tabSearch } from "@/lib/nav-pages"
@@ -108,7 +109,7 @@ export function MatchdayTile({
   }, [])
 
   const drawerTitle = selectedFixture
-    ? `${teamsById.get(selectedFixture.team_h)?.short_name ?? "Home"} v ${teamsById.get(selectedFixture.team_a)?.short_name ?? "Away"}`
+    ? formatMatchSheetTitle(selectedFixture)
     : "Match centre"
 
   return (
@@ -202,6 +203,7 @@ export function MatchdayTile({
           >
             <MatchDetailPane
               fixture={selectedFixture}
+              sheetChrome
               className={cn(drawerMatchChromeOffsetClassName, "overflow-hidden")}
             />
           </DrawerPanel>
