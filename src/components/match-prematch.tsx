@@ -1,3 +1,4 @@
+import { MATCH_SIDES_GRID } from "@/components/match-layout"
 import {
   padTeamFormSlots,
   type HeadToHeadResult,
@@ -7,7 +8,6 @@ import {
   describeMatchAssetOutlook,
   type MatchAssetOutlookId,
 } from "@/lib/fixtures/upcoming"
-import { MATCH_SIDES_GRID } from "@/components/match-layout"
 import type { FplFixture, FplTeam } from "@/lib/fpl/types"
 import { cn } from "@/lib/utils"
 
