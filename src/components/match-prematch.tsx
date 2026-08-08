@@ -50,7 +50,7 @@ function difficultyLabelClass(label: FixtureDifficultyLabel): string {
   }
 }
 
-function outlookToneClass(id: MatchAssetOutlookId): string {
+function previewToneClass(id: MatchAssetOutlookId): string {
   switch (id) {
     case "home_favoured":
     case "away_favoured":
@@ -58,8 +58,8 @@ function outlookToneClass(id: MatchAssetOutlookId): string {
       return "text-rating-good"
     case "both_tough":
       return "text-rating-bad"
-    case "even":
-      return "text-muted-foreground"
+    case "competitive":
+      return "text-foreground"
     default: {
       const _exhaustive: never = id
       return _exhaustive
@@ -73,7 +73,7 @@ function DifficultySide({ difficulty }: { difficulty: number }) {
   return (
     <p
       className={cn(
-        "text-center text-base font-semibold capitalize tracking-tight",
+        "text-center text-xs font-medium capitalize",
         difficultyLabelClass(label)
       )}
     >
@@ -99,32 +99,32 @@ export function MatchPrematch({
   headToHead: HeadToHeadResult[]
   className?: string
 }) {
-  const outlook = describeMatchAssetOutlook(
+  const homeName = homeTeam?.name ?? homeTeam?.short_name ?? "Home"
+  const awayName = awayTeam?.name ?? awayTeam?.short_name ?? "Away"
+  const preview = describeMatchAssetOutlook(
     fixture.team_h_difficulty,
-    fixture.team_a_difficulty
+    fixture.team_a_difficulty,
+    { homeName, awayName }
   )
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
       <div className="rounded-xl bg-foreground/3 p-3">
         <p className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-          FPL outlook
+          Match preview
         </p>
-        <p className="mt-1 text-xs leading-snug text-muted-foreground">
-          How hard this opponent looks for each side&apos;s assets
+        <p
+          className={cn(
+            "mt-2 text-center text-lg font-semibold tracking-tight text-balance",
+            previewToneClass(preview.id)
+          )}
+        >
+          {preview.label}
         </p>
-        <div className="mt-3 grid grid-cols-2 gap-4">
+        <div className="mt-2 grid grid-cols-2 gap-4">
           <DifficultySide difficulty={fixture.team_h_difficulty} />
           <DifficultySide difficulty={fixture.team_a_difficulty} />
         </div>
-        <p
-          className={cn(
-            "mt-3 text-center text-xs font-medium",
-            outlookToneClass(outlook.id)
-          )}
-        >
-          {outlook.label}
-        </p>
       </div>
 
       <div className="rounded-xl bg-foreground/3 p-3">

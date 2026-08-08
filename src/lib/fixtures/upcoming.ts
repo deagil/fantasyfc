@@ -67,43 +67,55 @@ export type MatchAssetOutlookId =
   | "away_favoured"
   | "both_open"
   | "both_tough"
-  | "even"
+  | "competitive"
 
 export type MatchAssetOutlook = {
   id: MatchAssetOutlookId
-  /** Short reading of the pair for FPL asset selection. */
+  /** Concise match reading for someone skimming the fixture. */
   label: string
 }
 
+export type MatchAssetOutlookTeams = {
+  homeName: string
+  awayName: string
+}
+
 /**
- * Interpret a home/away FDR pair. Because each rating is opponent-relative,
- * the useful question is who (if anyone) gets the favourable asset game —
- * not whether the two numbers "add up".
+ * Turn a home/away FDR pair into a plain-language match preview.
+ *
+ * Lower FDR = easier opponent for that side = they are the stronger side in
+ * FPL terms. We compare the gap (not whether both hit absolute buckets), so
+ * Average vs Tough correctly reads as the average side being favoured.
  */
 export function describeMatchAssetOutlook(
   homeDifficulty: number,
-  awayDifficulty: number
+  awayDifficulty: number,
+  teams: MatchAssetOutlookTeams
 ): MatchAssetOutlook {
   const home = Math.min(5, Math.max(1, Math.round(homeDifficulty)))
   const away = Math.min(5, Math.max(1, Math.round(awayDifficulty)))
-  const homeEasy = home <= 2
-  const awayEasy = away <= 2
-  const homeHard = home >= 4
-  const awayHard = away >= 4
+  // Positive gap => home faces the easier opponent => home are preferred.
+  const gap = away - home
 
-  if (homeEasy && awayHard) {
-    return { id: "home_favoured", label: "Home assets favoured" }
+  if (home <= 2 && away <= 2) {
+    return { id: "both_open", label: "Open game" }
   }
-  if (awayEasy && homeHard) {
-    return { id: "away_favoured", label: "Away assets favoured" }
+  if (home >= 4 && away >= 4) {
+    return { id: "both_tough", label: "Tight contest" }
   }
-  if (homeEasy && awayEasy) {
-    return { id: "both_open", label: "Open for both sides" }
+  if (gap >= 3) {
+    return { id: "home_favoured", label: `${teams.homeName} dominate` }
   }
-  if (homeHard && awayHard) {
-    return { id: "both_tough", label: "Tough for both sides" }
+  if (gap <= -3) {
+    return { id: "away_favoured", label: `${teams.awayName} dominate` }
   }
-  return { id: "even", label: "Even outlook" }
+  if (gap >= 2) {
+    return { id: "home_favoured", label: `${teams.homeName} favoured` }
+  }
+  if (gap <= -2) {
+    return { id: "away_favoured", label: `${teams.awayName} favoured` }
+  }
+  return { id: "competitive", label: "Competitive game" }
 }
 
 export type FixtureRunDifficultyLabel = "easier" | "average" | "harder"

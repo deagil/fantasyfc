@@ -145,26 +145,46 @@ describe("describeFixtureDifficulty", () => {
 })
 
 describe("describeMatchAssetOutlook", () => {
-  it("treats FDR as per-side opponent difficulty, not a zero-sum pair", () => {
-    expect(describeMatchAssetOutlook(2, 5)).toEqual({
+  const teams = { homeName: "Man City", awayName: "Bournemouth" }
+
+  it("compares the FDR gap so Average vs Tough favours the easier side", () => {
+    expect(describeMatchAssetOutlook(3, 5, teams)).toEqual({
       id: "home_favoured",
-      label: "Home assets favoured",
+      label: "Man City favoured",
     })
-    expect(describeMatchAssetOutlook(5, 2)).toEqual({
+    expect(describeMatchAssetOutlook(5, 3, teams)).toEqual({
       id: "away_favoured",
-      label: "Away assets favoured",
+      label: "Bournemouth favoured",
     })
-    expect(describeMatchAssetOutlook(4, 4)).toEqual({
+  })
+
+  it("uses stronger wording for a wide gap, and named teams", () => {
+    expect(describeMatchAssetOutlook(2, 5, teams)).toEqual({
+      id: "home_favoured",
+      label: "Man City dominate",
+    })
+    expect(describeMatchAssetOutlook(5, 1, teams)).toEqual({
+      id: "away_favoured",
+      label: "Bournemouth dominate",
+    })
+  })
+
+  it("describes balanced and mutual cases in plain language", () => {
+    expect(describeMatchAssetOutlook(4, 4, teams)).toEqual({
       id: "both_tough",
-      label: "Tough for both sides",
+      label: "Tight contest",
     })
-    expect(describeMatchAssetOutlook(2, 2)).toEqual({
+    expect(describeMatchAssetOutlook(2, 2, teams)).toEqual({
       id: "both_open",
-      label: "Open for both sides",
+      label: "Open game",
     })
-    expect(describeMatchAssetOutlook(3, 3)).toEqual({
-      id: "even",
-      label: "Even outlook",
+    expect(describeMatchAssetOutlook(3, 3, teams)).toEqual({
+      id: "competitive",
+      label: "Competitive game",
+    })
+    expect(describeMatchAssetOutlook(3, 4, teams)).toEqual({
+      id: "competitive",
+      label: "Competitive game",
     })
   })
 })
