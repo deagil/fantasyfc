@@ -78,6 +78,22 @@ export function getTeamRecentForm(
   })
 }
 
+/**
+ * Oldest → newest form slots for a fixed-width strip. Unplayed slots are
+ * null so the UI can render "-" until those games exist.
+ */
+export function padTeamFormSlots(
+  entries: readonly TeamFormEntry[],
+  limit = 5
+): Array<TeamFormEntry | null> {
+  const chronological = [...entries].reverse().slice(-limit)
+  const slots: Array<TeamFormEntry | null> = [...chronological]
+  while (slots.length < limit) {
+    slots.push(null)
+  }
+  return slots
+}
+
 export function getHeadToHead(
   homeTeamId: number,
   awayTeamId: number,
