@@ -13,22 +13,11 @@ import { cn } from "@/lib/utils"
 
 const FORM_SLOT_COUNT = 5
 
-function FormBoxes({
-  entries,
-  align,
-}: {
-  entries: TeamFormEntry[]
-  align: "start" | "end"
-}) {
+function FormBoxes({ entries }: { entries: TeamFormEntry[] }) {
   const slots = padTeamFormSlots(entries, FORM_SLOT_COUNT)
 
   return (
-    <div
-      className={cn(
-        "flex min-w-0 items-center gap-0.5",
-        align === "end" ? "justify-end" : "justify-start"
-      )}
-    >
+    <div className="flex min-w-0 items-center justify-center gap-0.5">
       {slots.map((entry, index) => {
         if (entry == null) {
           return (
@@ -124,9 +113,9 @@ export function MatchPrematch({
           Form (last 5)
         </p>
         <div className={MATCH_SIDES_GRID}>
-          <FormBoxes entries={homeForm} align="end" />
+          <FormBoxes entries={homeForm} />
           <div aria-hidden className="min-h-6" />
-          <FormBoxes entries={awayForm} align="start" />
+          <FormBoxes entries={awayForm} />
         </div>
       </div>
 
