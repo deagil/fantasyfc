@@ -34,6 +34,7 @@ export type {
   FixtureRunEvent,
   MatchAssetOutlook,
   MatchAssetOutlookId,
+  MatchAssetOutlookTeams,
   UpcomingFixture,
 } from "@/lib/fixtures/upcoming"
 export {
