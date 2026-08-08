@@ -40,10 +40,8 @@ export function MatchHero({
     : "Kickoff TBC"
 
   return (
-    <div className={cn("flex flex-col gap-3 px-4 pt-1 pb-3", className)}>
-      <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground">
-        <span>GW{fixture.event}</span>
-        <span aria-hidden="true">·</span>
+    <div className={cn("flex flex-col gap-4 px-4 pt-0 pb-3", className)}>
+      <div className="flex items-center justify-center text-xs font-medium text-muted-foreground">
         {phase === "live" ? (
           <span className="inline-flex items-center gap-1.5 text-pl-pink">
             <span className="size-1.5 animate-pulse rounded-full bg-pl-pink" />
@@ -57,15 +55,15 @@ export function MatchHero({
       </div>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-        <div className="flex min-w-0 flex-col items-center gap-2 text-center">
+        <div className="flex min-w-0 flex-col items-center gap-3 text-center">
           <TeamCrest
             badgeUrl={homeBadgeUrl}
             shortName={homeShort}
-            className="size-10"
+            className="size-11"
           />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{homeName}</p>
-            <p className="text-xs tabular-nums text-muted-foreground">
+            <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
               {homeRecord ? formatTeamRecord(homeRecord) : "0-0-0"}
             </p>
           </div>
@@ -85,15 +83,15 @@ export function MatchHero({
           )}
         </div>
 
-        <div className="flex min-w-0 flex-col items-center gap-2 text-center">
+        <div className="flex min-w-0 flex-col items-center gap-3 text-center">
           <TeamCrest
             badgeUrl={awayBadgeUrl}
             shortName={awayShort}
-            className="size-10"
+            className="size-11"
           />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{awayName}</p>
-            <p className="text-xs tabular-nums text-muted-foreground">
+            <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
               {awayRecord ? formatTeamRecord(awayRecord) : "0-0-0"}
             </p>
           </div>

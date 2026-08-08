@@ -9,7 +9,7 @@ import {
   Drawer,
   DrawerContent,
   DrawerPanel,
-  drawerChromeOffsetClassName,
+  drawerMatchChromeOffsetClassName,
 } from "@/components/ui/drawer"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useMediaQuery } from "@/hooks/use-media-query"
@@ -284,7 +284,7 @@ export function FixturesPage() {
             >
               <MatchDetailPane
                 fixture={mobileFixture}
-                className={cn(drawerChromeOffsetClassName, "overflow-hidden")}
+                className={cn(drawerMatchChromeOffsetClassName, "overflow-hidden")}
               />
             </DrawerPanel>
           </DrawerContent>

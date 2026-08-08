@@ -134,10 +134,12 @@ describe("getUpcomingTeamFixtures", () => {
 })
 
 describe("describeFixtureDifficulty", () => {
-  it("labels single FDRs relative to a neutral 3", () => {
+  it("uses stronger labels at the FDR extremes", () => {
+    expect(describeFixtureDifficulty(1)).toBe("favourite")
     expect(describeFixtureDifficulty(2)).toBe("easier")
     expect(describeFixtureDifficulty(3)).toBe("average")
-    expect(describeFixtureDifficulty(5)).toBe("harder")
+    expect(describeFixtureDifficulty(4)).toBe("harder")
+    expect(describeFixtureDifficulty(5)).toBe("tough")
   })
 })
 

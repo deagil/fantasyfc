@@ -1,6 +1,9 @@
 import { DifficultyDots } from "@/components/team-crest"
 import type { HeadToHeadResult, TeamFormEntry } from "@/lib/fixtures/form"
-import { describeFixtureDifficulty } from "@/lib/fixtures/upcoming"
+import {
+  describeFixtureDifficulty,
+  type FixtureDifficultyLabel,
+} from "@/lib/fixtures/upcoming"
 import type { FplFixture, FplTeam } from "@/lib/fpl/types"
 import { cn } from "@/lib/utils"
 
@@ -29,12 +32,13 @@ function FormPills({ entries }: { entries: TeamFormEntry[] }) {
   )
 }
 
-function difficultyLabelClass(difficulty: number): string {
-  const label = describeFixtureDifficulty(difficulty)
+function difficultyLabelClass(label: FixtureDifficultyLabel): string {
   switch (label) {
+    case "favourite":
     case "easier":
       return "text-rating-good"
     case "harder":
+    case "tough":
       return "text-rating-bad"
     case "average":
       return "text-muted-foreground"
@@ -43,6 +47,24 @@ function difficultyLabelClass(difficulty: number): string {
       return _exhaustive
     }
   }
+}
+
+function DifficultySide({ difficulty }: { difficulty: number }) {
+  const label = describeFixtureDifficulty(difficulty)
+
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <DifficultyDots difficulty={difficulty} />
+      <span
+        className={cn(
+          "text-[10px] font-semibold capitalize",
+          difficultyLabelClass(label)
+        )}
+      >
+        {label}
+      </span>
+    </div>
+  )
 }
 
 export function MatchPrematch({
@@ -69,34 +91,8 @@ export function MatchPrematch({
           Fixture difficulty
         </p>
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col items-center gap-1.5">
-            <span className="text-xs font-medium">
-              {homeTeam?.short_name ?? "Home"}
-            </span>
-            <DifficultyDots difficulty={fixture.team_h_difficulty} />
-            <span
-              className={cn(
-                "text-[10px] font-semibold capitalize",
-                difficultyLabelClass(fixture.team_h_difficulty)
-              )}
-            >
-              {describeFixtureDifficulty(fixture.team_h_difficulty)}
-            </span>
-          </div>
-          <div className="flex flex-col items-center gap-1.5">
-            <span className="text-xs font-medium">
-              {awayTeam?.short_name ?? "Away"}
-            </span>
-            <DifficultyDots difficulty={fixture.team_a_difficulty} />
-            <span
-              className={cn(
-                "text-[10px] font-semibold capitalize",
-                difficultyLabelClass(fixture.team_a_difficulty)
-              )}
-            >
-              {describeFixtureDifficulty(fixture.team_a_difficulty)}
-            </span>
-          </div>
+          <DifficultySide difficulty={fixture.team_h_difficulty} />
+          <DifficultySide difficulty={fixture.team_a_difficulty} />
         </div>
       </div>
 
