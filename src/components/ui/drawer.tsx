@@ -27,14 +27,12 @@ function Drawer({
   // We lift the sheet ourselves via visualViewport; Vaul's default
   // repositioning fights fixed dvh heights and still leaves inputs covered.
   repositionInputs = false,
+  nested = false,
   ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Root>) {
+}: React.ComponentProps<typeof DrawerPrimitive.Root> & { nested?: boolean }) {
+  const Root = nested ? DrawerPrimitive.NestedRoot : DrawerPrimitive.Root
   return (
-    <DrawerPrimitive.Root
-      data-slot="drawer"
-      repositionInputs={repositionInputs}
-      {...props}
-    />
+    <Root data-slot="drawer" repositionInputs={repositionInputs} {...props} />
   )
 }
 

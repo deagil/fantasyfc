@@ -61,7 +61,13 @@ const formation343: FplPick[] = [
   pick({ element: 8, position: 8, element_type: 3 }),
   pick({ element: 9, position: 9, element_type: 4 }),
   pick({ element: 10, position: 10, element_type: 4 }),
-  pick({ element: 11, position: 11, element_type: 4, is_captain: true, multiplier: 2 }),
+  pick({
+    element: 11,
+    position: 11,
+    element_type: 4,
+    is_captain: true,
+    multiplier: 2,
+  }),
   pick({ element: 12, position: 12, element_type: 1, multiplier: 0 }),
   pick({ element: 13, position: 13, element_type: 2, multiplier: 0 }),
   pick({ element: 14, position: 14, element_type: 3, multiplier: 0 }),
@@ -71,7 +77,9 @@ const formation343: FplPick[] = [
 describe("splitPicks", () => {
   it("puts positions 1–11 on the pitch and 12–15 on the bench", () => {
     const { starting, bench } = splitPicks(formation343)
-    expect(starting.map((item) => item.position)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+    expect(starting.map((item) => item.position)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+    ])
     expect(bench.map((item) => item.position)).toEqual([12, 13, 14, 15])
   })
 
@@ -170,9 +178,23 @@ describe("pitch lines", () => {
       new Map(),
       new Map()
     )
-    expect(groupSlotsByPitchLine(slots).map((line) => line.type)).toEqual([4, 3, 2, 1])
-    expect(groupSlotsByPitchLine(slots).map((line) => line.slots.length)).toEqual([
-      3, 4, 3, 1,
+    expect(groupSlotsByPitchLine(slots).map((line) => line.type)).toEqual([
+      4, 3, 2, 1,
     ])
+    expect(
+      groupSlotsByPitchLine(slots).map((line) => line.slots.length)
+    ).toEqual([3, 4, 3, 1])
+  })
+
+  it("copies live points and minutes onto each slot", () => {
+    const elementsById = new Map([[1, element(1, 1)]])
+    const slots = buildSquadSlots(
+      [pick({ element: 1, position: 1, element_type: 1 })],
+      elementsById,
+      new Map(),
+      new Map([[1, { points: 0, minutes: 67 }]])
+    )
+    expect(slots[0]?.eventPoints).toBe(0)
+    expect(slots[0]?.eventMinutes).toBe(67)
   })
 })

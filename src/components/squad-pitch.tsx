@@ -89,7 +89,7 @@ function PitchLineRow({
   const compact = line.slots.length >= 5
 
   return (
-    <div className="relative z-10 flex w-full items-end justify-evenly px-1">
+    <div className="relative z-10 flex w-full items-end justify-evenly px-1 pt-2">
       {line.slots.map((slot) => (
         <SquadPlayerToken
           key={slot.player.id}
@@ -128,7 +128,7 @@ export function SquadPitch({
     <div className={cn("flex min-h-0 flex-1 flex-col gap-2", className)}>
       <div
         className={cn(
-          "relative flex min-h-[22rem] flex-1 flex-col justify-around overflow-hidden py-3",
+          "relative flex min-h-[22rem] flex-1 flex-col justify-around overflow-hidden px-2 pt-5 pb-3",
           "rounded-xl lg:rounded-[2px]"
         )}
         style={{
@@ -164,7 +164,7 @@ export function SquadPitch({
             </span>
           ) : null}
         </div>
-        <div className="flex items-end justify-evenly">
+        <div className="flex items-end justify-evenly pt-2">
           {bench.map((slot) => (
             <SquadPlayerToken
               key={slot.player.id}
@@ -192,7 +192,7 @@ export function SquadPitchSkeleton() {
             {Array.from({ length: count }, (_, index) => (
               <Skeleton
                 key={index}
-                className="h-16 w-12 rounded-md bg-white/15"
+                className="h-14 w-11 rounded-md bg-white/15"
               />
             ))}
           </div>

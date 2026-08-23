@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { DataTile } from "@/components/data-tile"
-import { GameweekPager } from "@/components/gameweek-pager"
 import { PlayerDetailPane } from "@/components/player-detail-pane"
 import { SquadPitch, SquadPitchSkeleton } from "@/components/squad-pitch"
 import {
@@ -11,16 +10,14 @@ import {
   drawerChromeOffsetClassName,
 } from "@/components/ui/drawer"
 import { useMediaQuery } from "@/hooks/use-media-query"
-import { getGameweekShapes } from "@/lib/fixtures/gameweek-shape"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
 import {
   useFplEntryPicksQuery,
   useFplEntryQuery,
   useFplEventLiveQuery,
-  useFplSeasonFixturesQuery,
 } from "@/lib/fpl/hooks"
 import {
-  buildLivePointsByElement,
+  buildLiveStatsByElement,
   buildSquadSlots,
   getChipLabel,
   getFormation,
@@ -33,21 +30,29 @@ import { hubMasterDetailGridClassName } from "@/lib/layout"
 import { usePlayerRatingsById } from "@/lib/ratings/hooks"
 import { cn } from "@/lib/utils"
 
-function resolveInitialEventId(
+function resolveCurrentEventId(
   events: Array<{ id: number; is_current: boolean; is_next: boolean }>
 ): number | null {
-  return (
-    events.find((event) => event.is_current)?.id ??
-    events.find((event) => event.is_next)?.id ??
-    events[0]?.id ??
-    null
-  )
+  const current = events.find((event) => event.is_current)
+  if (current) {
+    return current.id
+  }
+  const next = events.find((event) => event.is_next)
+  if (next) {
+    return next.id
+  }
+  if (events.length === 0) {
+    return null
+  }
+  return events[0].id
 }
 
 export type TeamPageProps = {
   entryId: number | null
   title?: string
   emptyLabel?: string
+  variant?: "page" | "sheet"
+  className?: string
 }
 
 export function MyTeamPage() {
@@ -64,6 +69,8 @@ export function TeamPage({
   entryId,
   title,
   emptyLabel = "Connect a team",
+  variant = "page",
+  className,
 }: TeamPageProps) {
   const isDesktop = useMediaQuery("(min-width: 1024px)")
   const {
@@ -75,28 +82,19 @@ export function TeamPage({
   } = useFplBootstrap()
   const { ratingsById } = usePlayerRatingsById()
   const entryQuery = useFplEntryQuery(entryId)
-  const fixturesQuery = useFplSeasonFixturesQuery({ enabled: !!bootstrap })
 
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null)
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null)
   const [mobilePlayer, setMobilePlayer] = useState<FplElement | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const events = bootstrap?.events ?? []
-  const teams = bootstrap?.teams ?? []
-
-  useEffect(() => {
-    if (selectedEventId != null || events.length === 0) {
-      return
-    }
-    setSelectedEventId(resolveInitialEventId(events))
-  }, [events, selectedEventId])
-
+  const selectedEventId = useMemo(() => resolveCurrentEventId(events), [events])
   const selectedEvent = useMemo(
     () => events.find((event) => event.id === selectedEventId) ?? null,
     [events, selectedEventId]
   )
   const isLive = Boolean(selectedEvent?.is_current && !selectedEvent.finished)
+  const useSplitPane = isDesktop && variant === "page"
 
   const picksQuery = useFplEntryPicksQuery(entryId, selectedEventId, {
     enabled: entryId != null && selectedEventId != null,
@@ -107,31 +105,20 @@ export function TeamPage({
     isLive,
   })
 
-  const shapes = useMemo(
-    () =>
-      getGameweekShapes(
-        events.map((event) => event.id),
-        fixturesQuery.data ?? [],
-        teams
-      ),
-    [events, fixturesQuery.data, teams]
-  )
-
   const picks = picksQuery.data?.picks ?? []
-  const pointsByElement = useMemo(
-    () => buildLivePointsByElement(liveQuery.data?.elements),
+  const liveByElement = useMemo(
+    () => buildLiveStatsByElement(liveQuery.data?.elements),
     [liveQuery.data?.elements]
   )
 
   const { starting, bench } = useMemo(() => splitPicks(picks), [picks])
   const startingSlots = useMemo(
-    () =>
-      buildSquadSlots(starting, elementsById, ratingsById, pointsByElement),
-    [elementsById, pointsByElement, ratingsById, starting]
+    () => buildSquadSlots(starting, elementsById, ratingsById, liveByElement),
+    [elementsById, liveByElement, ratingsById, starting]
   )
   const benchSlots = useMemo(
-    () => buildSquadSlots(bench, elementsById, ratingsById, pointsByElement),
-    [bench, elementsById, pointsByElement, ratingsById]
+    () => buildSquadSlots(bench, elementsById, ratingsById, liveByElement),
+    [bench, elementsById, liveByElement, ratingsById]
   )
   const lines = useMemo(
     () => groupSlotsByPitchLine(startingSlots),
@@ -162,10 +149,10 @@ export function TeamPage({
     setSelectedPlayerId(null)
     setMobilePlayer(null)
     setDrawerOpen(false)
-  }, [entryId, selectedEventId])
+  }, [entryId])
 
   useEffect(() => {
-    if (!isDesktop || startingSlots.length === 0) {
+    if (!useSplitPane || startingSlots.length === 0) {
       return
     }
 
@@ -178,8 +165,8 @@ export function TeamPage({
 
     const captain =
       startingSlots.find((slot) => slot.pick.is_captain) ?? startingSlots[0]
-    setSelectedPlayerId(captain?.player.id ?? null)
-  }, [isDesktop, selectedPlayerId, startingSlots])
+    setSelectedPlayerId(captain.player.id)
+  }, [useSplitPane, selectedPlayerId, startingSlots])
 
   const handleSelectPlayer = useCallback(
     (playerId: number) => {
@@ -189,7 +176,7 @@ export function TeamPage({
         return
       }
 
-      if (isDesktop) {
+      if (useSplitPane) {
         setSelectedPlayerId(playerId)
         return
       }
@@ -197,7 +184,7 @@ export function TeamPage({
       setMobilePlayer(player)
       setDrawerOpen(true)
     },
-    [allSlots, isDesktop]
+    [allSlots, useSplitPane]
   )
 
   const handleDrawerOpenChange = useCallback((open: boolean) => {
@@ -210,40 +197,13 @@ export function TeamPage({
   const isLoading =
     bootstrapLoading ||
     (entryId != null && picksQuery.isPending && picks.length === 0)
-  const picksError = picksQuery.isError
-    ? "Could not load this squad."
-    : error
+  const picksError = picksQuery.isError ? "Could not load this squad." : error
 
   const subtitleParts = [
     formation,
     gwPoints != null ? `${gwPoints} pts` : null,
     chipLabel,
   ].filter((part): part is string => part != null)
-
-  const header = (
-    <DataTile.Header className="flex-col items-stretch gap-3 px-3 pt-3 pb-2 lg:px-4">
-      <DataTile.Heading>
-        <DataTile.Label style={{ viewTransitionName: "vt-team-title" }}>
-          {teamName}
-        </DataTile.Label>
-        <DataTile.Subtitle className="text-sm font-medium">
-          {subtitleParts.length > 0
-            ? subtitleParts.join(" · ")
-            : selectedEventId != null
-              ? `Gameweek ${selectedEventId}`
-              : "Squad"}
-        </DataTile.Subtitle>
-      </DataTile.Heading>
-      {events.length > 0 && selectedEventId != null ? (
-        <GameweekPager
-          events={events}
-          selectedEventId={selectedEventId}
-          shapes={shapes}
-          onSelect={setSelectedEventId}
-        />
-      ) : null}
-    </DataTile.Header>
-  )
 
   function renderPitch() {
     if (entryId == null) {
@@ -276,7 +236,7 @@ export function TeamPage({
         chipLabel={chipLabel}
         chipId={chipId}
         selectedPlayerId={
-          isDesktop
+          useSplitPane
             ? selectedPlayerId
             : mobilePlayer && drawerOpen
               ? mobilePlayer.id
@@ -288,14 +248,62 @@ export function TeamPage({
     )
   }
 
+  const playerDrawer = !useSplitPane ? (
+    <Drawer
+      nested={variant === "sheet"}
+      open={drawerOpen}
+      onOpenChange={handleDrawerOpenChange}
+    >
+      <DrawerContent size="md" align="full">
+        <DrawerPanel
+          title={mobilePlayer?.web_name ?? "Player"}
+          bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
+        >
+          <PlayerDetailPane
+            player={mobilePlayer}
+            teamsById={teamsById}
+            className={cn(drawerChromeOffsetClassName, "overflow-y-auto")}
+          />
+        </DrawerPanel>
+      </DrawerContent>
+    </Drawer>
+  ) : null
+
+  if (variant === "sheet") {
+    return (
+      <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
+        {subtitleParts.length > 0 ? (
+          <p className="px-4 pb-2 text-center text-sm font-medium text-muted-foreground">
+            {subtitleParts.join(" · ")}
+          </p>
+        ) : null}
+        {renderPitch()}
+        {playerDrawer}
+      </div>
+    )
+  }
+
   return (
     <>
-      <div className={hubMasterDetailGridClassName}>
+      <div className={cn(hubMasterDetailGridClassName, className)}>
         <DataTile
           interactive
-          className="max-lg:h-auto lg:col-span-2 lg:row-span-3 lg:col-start-1 lg:row-start-1"
+          className="max-lg:h-auto lg:col-span-2 lg:col-start-1 lg:row-span-3 lg:row-start-1"
         >
-          {header}
+          <DataTile.Header className="flex-col items-stretch gap-1 px-3 pt-3 pb-2 lg:px-4">
+            <DataTile.Heading>
+              <DataTile.Label style={{ viewTransitionName: "vt-team-title" }}>
+                {teamName}
+              </DataTile.Label>
+              <DataTile.Subtitle className="text-sm font-medium">
+                {subtitleParts.length > 0
+                  ? subtitleParts.join(" · ")
+                  : selectedEventId != null
+                    ? `Gameweek ${selectedEventId}`
+                    : "Squad"}
+              </DataTile.Subtitle>
+            </DataTile.Heading>
+          </DataTile.Header>
           <DataTile.Content
             align="between"
             className="min-h-0 flex-1 gap-2 overflow-hidden px-0 pt-0 max-lg:flex-none"
@@ -306,7 +314,7 @@ export function TeamPage({
 
         <DataTile
           interactive
-          className="hidden col-span-2 row-span-3 lg:col-start-3 lg:row-start-1 lg:flex"
+          className="col-span-2 row-span-3 hidden lg:col-start-3 lg:row-start-1 lg:flex"
         >
           <DataTile.Header className="pt-3 pb-2">
             <DataTile.Heading>
@@ -328,22 +336,7 @@ export function TeamPage({
         </DataTile>
       </div>
 
-      {!isDesktop ? (
-        <Drawer open={drawerOpen} onOpenChange={handleDrawerOpenChange}>
-          <DrawerContent size="md" align="full">
-            <DrawerPanel
-              title={mobilePlayer?.web_name ?? "Player"}
-              bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
-            >
-              <PlayerDetailPane
-                player={mobilePlayer}
-                teamsById={teamsById}
-                className={cn(drawerChromeOffsetClassName, "overflow-y-auto")}
-              />
-            </DrawerPanel>
-          </DrawerContent>
-        </Drawer>
-      ) : null}
+      {playerDrawer}
     </>
   )
 }

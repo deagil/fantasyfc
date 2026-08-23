@@ -1,12 +1,7 @@
 import type { CSSProperties } from "react"
 
 export type CardFoilTier =
-  | "purple"
-  | "gold"
-  | "silver"
-  | "bronze"
-  | "grey"
-  | "brown"
+  "purple" | "gold" | "silver" | "bronze" | "grey" | "brown"
 
 export type CardFoilSkin = {
   /** CSS background gradient for the card face. */
@@ -114,6 +109,19 @@ const FOIL_SKINS: Record<CardFoilTier, CardFoilSkin> = {
     shadow:
       "0 0 0 1px rgba(161,98,7,0.25), 0 20px 40px -12px rgba(28,20,16,0.55)",
   },
+}
+
+/**
+ * Pitch tokens are simplified trading cards and only use the four metal
+ * foils. Ratings that would be grey/brown on the full card fall back to bronze.
+ */
+export function getPitchCardFoilOverall(
+  overall: number | null | undefined
+): number {
+  if (overall == null || overall < 60) {
+    return 60
+  }
+  return overall
 }
 
 export function getCardFoilSkin(overall: number): CardFoilSkin {

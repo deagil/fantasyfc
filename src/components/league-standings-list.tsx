@@ -36,12 +36,53 @@ export function StandingRow({
   standing,
   isCurrentTeam,
   fromLeague,
+  onSelect,
 }: {
   standing: FplLeagueStanding
   isCurrentTeam: boolean
   fromLeague?: number
+  onSelect?: (standing: FplLeagueStanding) => void
 }) {
   const rankChange = standing.last_rank - standing.rank
+  const rowClassName = cn(
+    "flex w-full items-center gap-3 px-4 py-2.5 text-left",
+    isCurrentTeam && "bg-chart-2/10 ring-1 ring-chart-2/20 ring-inset"
+  )
+
+  const rowBody = (
+    <>
+      <span className="w-8 shrink-0 text-sm font-medium text-muted-foreground tabular-nums">
+        {standing.rank}
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="truncate text-sm font-medium">
+          {standing.entry_name}
+        </span>
+        <span className="truncate text-xs text-muted-foreground">
+          {standing.player_name}
+        </span>
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-0.5">
+        <span className="text-sm font-semibold tabular-nums">
+          {standing.total}
+        </span>
+        <RankChangeIndicator change={rankChange} />
+      </div>
+    </>
+  )
+
+  if (onSelect) {
+    return (
+      <button
+        type="button"
+        data-tile-row
+        className={rowClassName}
+        onClick={() => onSelect(standing)}
+      >
+        {rowBody}
+      </button>
+    )
+  }
 
   return (
     <Link
@@ -49,24 +90,9 @@ export function StandingRow({
       params={{ entryId: String(standing.entry) }}
       search={fromLeague != null ? { fromLeague } : {}}
       data-tile-row
-      className={cn(
-        "flex w-full items-center gap-3 px-4 py-2.5 text-left",
-        isCurrentTeam && "bg-chart-2/10 ring-1 ring-inset ring-chart-2/20"
-      )}
+      className={rowClassName}
     >
-      <span className="w-8 shrink-0 text-sm font-medium tabular-nums text-muted-foreground">
-        {standing.rank}
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="truncate text-sm font-medium">{standing.entry_name}</span>
-        <span className="truncate text-xs text-muted-foreground">
-          {standing.player_name}
-        </span>
-      </div>
-      <div className="flex shrink-0 flex-col items-end gap-0.5">
-        <span className="text-sm font-semibold tabular-nums">{standing.total}</span>
-        <RankChangeIndicator change={rankChange} />
-      </div>
+      {rowBody}
     </Link>
   )
 }
@@ -79,6 +105,7 @@ export function LeagueStandingsList({
   contentClassName,
   fadeFrom,
   fromLeague,
+  onSelectStanding,
 }: {
   standings: FplLeagueStanding[]
   currentTeamId: number | null
@@ -87,6 +114,7 @@ export function LeagueStandingsList({
   contentClassName?: string
   fadeFrom?: string
   fromLeague?: number
+  onSelectStanding?: (standing: FplLeagueStanding) => void
 }) {
   return (
     <ScrollFade
@@ -113,6 +141,7 @@ export function LeagueStandingsList({
             standing={standing}
             isCurrentTeam={standing.entry === currentTeamId}
             fromLeague={fromLeague}
+            onSelect={onSelectStanding}
           />
         ))
       )}
