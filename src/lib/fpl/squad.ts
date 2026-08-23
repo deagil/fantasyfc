@@ -1,11 +1,17 @@
 import type { PlayerRatingSummary } from "@/lib/ratings/model"
 import type { FplElement, FplElementTypeId, FplPick } from "@/lib/fpl/types"
 
+export type LiveElementTotals = {
+  points: number
+  minutes: number
+}
+
 export type SquadSlot = {
   pick: FplPick
   player: FplElement
   overall: number | null
   eventPoints: number | null
+  eventMinutes: number | null
 }
 
 export type SquadLine = {
@@ -62,13 +68,30 @@ export function getChipLabel(chip: string | null | undefined): string | null {
     case "wildcard":
       return "Wildcard"
     default:
-      return chip.replaceAll("_", " ").replace(/\b\w/g, (char) => char.toUpperCase())
+      return chip
+        .replaceAll("_", " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase())
   }
+}
+
+export function buildLiveStatsByElement(
+  liveElements:
+    | Array<{ id: number; stats: { total_points: number; minutes: number } }>
+    | undefined
+): Map<number, LiveElementTotals> {
+  const statsByElement = new Map<number, LiveElementTotals>()
+  for (const element of liveElements ?? []) {
+    statsByElement.set(element.id, {
+      points: element.stats.total_points,
+      minutes: element.stats.minutes,
+    })
+  }
+  return statsByElement
 }
 
 export function buildLivePointsByElement(
   liveElements:
-    | Array<{ id: number; stats: { total_points: number } }>
+    | Array<{ id: number; stats: { total_points: number; minutes?: number } }>
     | undefined
 ): Map<number, number> {
   const pointsByElement = new Map<number, number>()
@@ -102,7 +125,7 @@ export function buildSquadSlots(
   picks: readonly FplPick[],
   elementsById: Map<number, FplElement>,
   ratingsById: Map<number, PlayerRatingSummary>,
-  pointsByElement: Map<number, number>
+  liveByElement: Map<number, LiveElementTotals>
 ): SquadSlot[] {
   return picks.flatMap((pick) => {
     const player = elementsById.get(pick.element)
@@ -110,22 +133,23 @@ export function buildSquadSlots(
       return []
     }
 
-    const eventPoints = pointsByElement.has(pick.element)
-      ? (pointsByElement.get(pick.element) ?? 0)
-      : null
+    const live = liveByElement.get(pick.element)
 
     return [
       {
         pick,
         player,
         overall: ratingsById.get(player.id)?.overall ?? null,
-        eventPoints,
+        eventPoints: live?.points ?? null,
+        eventMinutes: live?.minutes ?? null,
       },
     ]
   })
 }
 
-export function groupSlotsByPitchLine(slots: readonly SquadSlot[]): SquadLine[] {
+export function groupSlotsByPitchLine(
+  slots: readonly SquadSlot[]
+): SquadLine[] {
   return PITCH_LINE_ORDER.flatMap((type) => {
     const lineSlots = slots.filter((slot) => slot.player.element_type === type)
     if (lineSlots.length === 0) {

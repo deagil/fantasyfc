@@ -4,6 +4,7 @@ import { ArrowDownIcon, ArrowUpIcon } from "lucide-react"
 
 import { LeagueStandingsList } from "@/components/league-standings-list"
 import { ScrollFade } from "@/components/scroll-fade"
+import { TeamPage } from "@/components/team-page"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -27,7 +28,11 @@ import {
   isLeagueTabId,
 } from "@/lib/fpl/leagues"
 import { useLeaguesInspector } from "@/lib/fpl/leagues-inspector-context"
-import type { FplClassicLeague, FplEntry } from "@/lib/fpl/types"
+import type {
+  FplClassicLeague,
+  FplEntry,
+  FplLeagueStanding,
+} from "@/lib/fpl/types"
 import { useTeam } from "@/lib/fpl/team-context"
 import { cn } from "@/lib/utils"
 
@@ -205,6 +210,8 @@ export function LeaguesTile({
     useState<FplClassicLeague | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [leagueIdCopied, setLeagueIdCopied] = useState(false)
+  const [selectedStanding, setSelectedStanding] =
+    useState<FplLeagueStanding | null>(null)
 
   const classicLeagues = entry?.leagues.classic ?? []
   const leagueIds = useMemo(
@@ -224,8 +231,7 @@ export function LeaguesTile({
   })
 
   const standings = standingsQuery.data?.standings.results ?? []
-  const standingsLoading =
-    standingsQuery.isPending && standings.length === 0
+  const standingsLoading = standingsQuery.isPending && standings.length === 0
   const standingsError = standingsQuery.error
     ? "Could not load standings."
     : null
@@ -246,6 +252,7 @@ export function LeaguesTile({
       }
 
       setLeagueTab(value)
+      setSelectedStanding(null)
       if (isDesktop) {
         closeLeagueDrawer()
       } else {
@@ -267,16 +274,19 @@ export function LeaguesTile({
     (league: FplClassicLeague) => {
       if (isDesktop) {
         if (selectedLeague?.id === league.id) {
+          setSelectedStanding(null)
           closeLeagueDrawer()
           return
         }
 
         selectLeague(league)
+        setSelectedStanding(null)
         setLeagueIdCopied(false)
         return
       }
 
       setMobileSelectedLeague(league)
+      setSelectedStanding(null)
       setDrawerOpen(true)
       setLeagueIdCopied(false)
     },
@@ -287,6 +297,7 @@ export function LeaguesTile({
     (open: boolean) => {
       if (isDesktop) {
         if (!open) {
+          setSelectedStanding(null)
           closeLeagueDrawer()
         }
         return
@@ -295,6 +306,7 @@ export function LeaguesTile({
       setDrawerOpen(open)
       if (!open) {
         setMobileSelectedLeague(null)
+        setSelectedStanding(null)
       }
     },
     [closeLeagueDrawer, isDesktop]
@@ -314,6 +326,16 @@ export function LeaguesTile({
     }
   }, [drawerLeague])
 
+  const handleSelectStanding = useCallback((standing: FplLeagueStanding) => {
+    setSelectedStanding(standing)
+  }, [])
+
+  const handleTeamDrawerOpenChange = useCallback((open: boolean) => {
+    if (!open) {
+      setSelectedStanding(null)
+    }
+  }, [])
+
   const handleOpenLeagueDetail = useCallback(() => {
     if (!drawerLeague) {
       return
@@ -321,6 +343,7 @@ export function LeaguesTile({
 
     const leagueId = String(drawerLeague.id)
 
+    setSelectedStanding(null)
     if (isDesktop) {
       closeLeagueDrawer()
     } else {
@@ -338,7 +361,12 @@ export function LeaguesTile({
 
   return (
     <>
-      <DataTile size="2x2" interactive comingSoon={comingSoon} className={className}>
+      <DataTile
+        size="2x2"
+        interactive
+        comingSoon={comingSoon}
+        className={className}
+      >
         <Tabs
           value={leagueTab}
           onValueChange={handleLeagueTabChange}
@@ -346,7 +374,7 @@ export function LeaguesTile({
           onPointerDown={stopCarouselPointer}
           onPointerUp={stopCarouselPointer}
         >
-          <DataTile.Header className="relative z-10 pb-2 pt-3">
+          <DataTile.Header className="relative z-10 pt-3 pb-2">
             <TabsList className="relative z-10 h-8 w-full">
               <TabsTrigger value="private" className="text-xs">
                 My leagues
@@ -414,8 +442,38 @@ export function LeaguesTile({
               error={standingsError}
               fadeFrom="--popover"
               contentClassName={cn(drawerChromeOffsetClassName, "pb-4")}
+              onSelectStanding={handleSelectStanding}
             />
           </DrawerPanel>
+          <Drawer
+            nested
+            open={selectedStanding != null}
+            onOpenChange={handleTeamDrawerOpenChange}
+          >
+            <DrawerContent size="md" align={isDesktop ? "dock-right" : "full"}>
+              <DrawerPanel
+                title={selectedStanding?.entry_name ?? "Team"}
+                description={
+                  selectedStanding
+                    ? `${selectedStanding.event_total} pts this GW`
+                    : undefined
+                }
+                bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))]"
+              >
+                {selectedStanding ? (
+                  <TeamPage
+                    entryId={selectedStanding.entry}
+                    title={selectedStanding.entry_name}
+                    variant="sheet"
+                    className={cn(
+                      drawerChromeOffsetClassName,
+                      "overflow-y-auto"
+                    )}
+                  />
+                ) : null}
+              </DrawerPanel>
+            </DrawerContent>
+          </Drawer>
         </DrawerContent>
       </Drawer>
     </>
