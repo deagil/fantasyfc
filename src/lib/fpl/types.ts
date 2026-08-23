@@ -142,7 +142,30 @@ export type FplPick = {
   element_type: number
 }
 
+export type FplAutomaticSub = {
+  entry: number
+  element_in: number
+  element_out: number
+  event: number
+}
+
+export type FplPicksEntryHistory = {
+  event: number
+  points: number
+  total_points: number
+  rank: number | null
+  overall_rank: number | null
+  bank: number
+  value: number
+  event_transfers: number
+  event_transfers_cost: number
+  points_on_bench: number
+}
+
 export type FplEntryPicks = {
+  active_chip?: string | null
+  automatic_subs?: FplAutomaticSub[]
+  entry_history?: FplPicksEntryHistory
   picks: FplPick[]
 }
 

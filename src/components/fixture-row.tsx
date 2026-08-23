@@ -4,6 +4,57 @@ import { formatFixtureKickoff } from "@/lib/fixtures/kickoff"
 import type { FplFixture, FplTeam } from "@/lib/fpl/types"
 import { cn } from "@/lib/utils"
 
+function formatLiveMinuteLabel(minutes: number | null | undefined): string {
+  return minutes != null && minutes > 0 ? `${minutes}'` : "LIVE"
+}
+
+export function LiveScoreCluster({
+  homeScore,
+  awayScore,
+  minutes,
+  className,
+}: {
+  homeScore: number | null
+  awayScore: number | null
+  minutes: number | null | undefined
+  className?: string
+}) {
+  const home = homeScore ?? 0
+  const away = awayScore ?? 0
+  const minuteLabel = formatLiveMinuteLabel(minutes)
+  const statusLabel =
+    minutes != null && minutes > 0 ? `${minutes} minutes` : "live"
+
+  return (
+    <div
+      className={cn(
+        "flex min-w-16 shrink-0 items-center justify-center gap-1.5",
+        className
+      )}
+      aria-label={`${home}–${away}, ${statusLabel}`}
+    >
+      <span
+        aria-hidden="true"
+        className="text-sm font-semibold tabular-nums leading-none"
+      >
+        {home}
+      </span>
+      <span
+        aria-hidden="true"
+        className="rounded-full bg-pl-pink/15 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums leading-none text-pl-pink"
+      >
+        {minuteLabel}
+      </span>
+      <span
+        aria-hidden="true"
+        className="text-sm font-semibold tabular-nums leading-none"
+      >
+        {away}
+      </span>
+    </div>
+  )
+}
+
 export function FixtureRow({
   fixture,
   homeTeam,
@@ -34,15 +85,6 @@ export function FixtureRow({
         })
       : `${fixture.team_h_score ?? 0}–${fixture.team_a_score ?? 0}`
 
-  const statusLabel =
-    phase === "finished"
-      ? "FT"
-      : phase === "live"
-        ? fixture.minutes > 0
-          ? `${fixture.minutes}'`
-          : "LIVE"
-        : null
-
   const content = (
     <>
       <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -59,35 +101,37 @@ export function FixtureRow({
           <TeamCrest badgeUrl={homeBadgeUrl} shortName={homeShort} />
         </div>
 
-        <div
-          className={cn(
-            "flex shrink-0 flex-col items-center justify-center",
-            compact && phase === "pre-match" ? "w-[4.75rem]" : "w-14"
-          )}
-        >
-          <span
+        {phase === "live" ? (
+          <LiveScoreCluster
+            homeScore={fixture.team_h_score}
+            awayScore={fixture.team_a_score}
+            minutes={fixture.minutes}
+          />
+        ) : (
+          <div
             className={cn(
-              "text-center font-semibold tabular-nums",
-              compact && phase === "pre-match"
-                ? "text-[11px] leading-tight tracking-wide uppercase"
-                : "text-sm",
-              phase === "live" && "text-chart-2",
-              phase === "pre-match" && "text-muted-foreground"
+              "flex shrink-0 flex-col items-center justify-center",
+              compact && phase === "pre-match" ? "w-[4.75rem]" : "w-14"
             )}
           >
-            {scoreOrTime}
-          </span>
-          {statusLabel && phase === "finished" ? (
-            <span className="text-[10px] font-medium text-muted-foreground">
-              {statusLabel}
+            <span
+              className={cn(
+                "text-center font-semibold tabular-nums",
+                compact && phase === "pre-match"
+                  ? "text-[11px] leading-tight tracking-wide uppercase"
+                  : "text-sm",
+                phase === "pre-match" && "text-muted-foreground"
+              )}
+            >
+              {scoreOrTime}
             </span>
-          ) : null}
-          {phase === "live" ? (
-            <span className="rounded-full bg-pl-pink/15 px-1.5 text-[10px] font-semibold tracking-wide text-pl-pink">
-              LIVE
-            </span>
-          ) : null}
-        </div>
+            {phase === "finished" ? (
+              <span className="text-[10px] font-medium text-muted-foreground">
+                FT
+              </span>
+            ) : null}
+          </div>
+        )}
 
         <div className="flex min-w-0 flex-1 items-center gap-1.5">
           <TeamCrest badgeUrl={awayBadgeUrl} shortName={awayShort} />

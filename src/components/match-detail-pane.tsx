@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router"
 import { useMemo, type ReactNode } from "react"
 
 import { MatchBonusList, MatchBpsTable } from "@/components/match-bps-table"
+import { MatchCard, MatchSidesColumns } from "@/components/match-card"
 import { MatchEvents } from "@/components/match-events"
 import { MatchHero } from "@/components/match-hero"
 import { MatchPrematch } from "@/components/match-prematch"
@@ -47,25 +48,52 @@ function DefconSection({
     return null
   }
 
+  const home = rows.filter((row) => row.side === "h")
+  const away = rows.filter((row) => row.side === "a")
+
   return (
-    <div className="rounded-xl bg-foreground/3 p-3">
-      <p className="mb-2 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-        Defensive contributions
-      </p>
-      <ul className="flex flex-col gap-1.5">
-        {rows.map((row) => (
-          <li
-            key={`${row.side}-${row.element}`}
-            className="flex items-center justify-between gap-2 text-sm"
-          >
-            <span className="truncate font-medium">{row.webName}</span>
-            <span className="shrink-0 tabular-nums text-muted-foreground">
-              {row.value}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <MatchCard title="Defensive contributions">
+      <MatchSidesColumns
+        home={
+          home.length === 0 ? (
+            <p className="text-xs text-muted-foreground">—</p>
+          ) : (
+            <ul className="flex flex-col items-center gap-1.5">
+              {home.map((row) => (
+                <li
+                  key={`${row.side}-${row.element}`}
+                  className="flex max-w-full flex-col items-center gap-0.5 text-sm"
+                >
+                  <span className="truncate font-medium">{row.webName}</span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {row.value}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+        away={
+          away.length === 0 ? (
+            <p className="text-xs text-muted-foreground">—</p>
+          ) : (
+            <ul className="flex flex-col items-center gap-1.5">
+              {away.map((row) => (
+                <li
+                  key={`${row.side}-${row.element}`}
+                  className="flex max-w-full flex-col items-center gap-0.5 text-sm"
+                >
+                  <span className="truncate font-medium">{row.webName}</span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {row.value}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      />
+    </MatchCard>
   )
 }
 
@@ -304,21 +332,20 @@ export function MatchDetailPane({
         </div>
       ) : null}
 
-      <MatchHero
-        fixture={fixture}
-        homeTeam={homeTeam}
-        awayTeam={awayTeam}
-        homeBadgeUrl={homeBadgeUrl}
-        awayBadgeUrl={awayBadgeUrl}
-        homeRecord={homeRecord}
-        awayRecord={awayRecord}
-        showStatus={!sheetChrome}
-      />
-
       <ScrollFade
         className="flex min-h-0 w-full min-w-0 flex-1"
         contentClassName="flex flex-col gap-3 px-4 pb-4"
       >
+        <MatchHero
+          fixture={fixture}
+          homeTeam={homeTeam}
+          awayTeam={awayTeam}
+          homeBadgeUrl={homeBadgeUrl}
+          awayBadgeUrl={awayBadgeUrl}
+          homeRecord={homeRecord}
+          awayRecord={awayRecord}
+          showStatus={!sheetChrome}
+        />
         {body}
       </ScrollFade>
     </div>

@@ -15,6 +15,14 @@ export const hubDesktopAlignClassName = "hub-desktop-align"
 export const hubTileGridClassName =
   "hub-tile-grid hub-desktop-align content-start min-w-0"
 
+/**
+ * Master-detail hub pages (fixtures, team): stacked and height-hugging on
+ * mobile, 4×3 tile grid on desktop. `hub-tile-grid` is a Tailwind `@utility`
+ * so the `lg:` variant is real CSS — a component-layer class would be dropped.
+ */
+export const hubMasterDetailGridClassName =
+  "min-w-0 content-start max-lg:flex max-lg:flex-col lg:hub-tile-grid lg:hub-desktop-align"
+
 export const appShellClassName =
   "app-shell relative min-h-dvh text-(--shell-foreground)"
 

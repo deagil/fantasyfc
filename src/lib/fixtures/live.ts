@@ -1,9 +1,5 @@
-import type {
-  FplElement,
-  FplEntryPicks,
-  FplEventLive,
-  FplPick,
-} from "@/lib/fpl/types"
+import type { MatchSide } from "@/lib/fixtures/events"
+import type { FplElement, FplEntryPicks, FplEventLive, FplPick } from "@/lib/fpl/types"
 
 export type FixturePlayerPoints = {
   element: number
@@ -18,6 +14,7 @@ export type YourPlayerInFixture = {
   points: number
   appliedPoints: number
   isOnBench: boolean
+  side: MatchSide
 }
 
 /**
@@ -91,6 +88,7 @@ export function getYourPlayersInFixture(
       points,
       appliedPoints: points * pick.multiplier,
       isOnBench,
+      side: element.team === homeTeamId ? "h" : "a",
     })
   }
 

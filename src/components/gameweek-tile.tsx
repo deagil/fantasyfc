@@ -2,6 +2,7 @@ import { LockIcon } from "lucide-react"
 import { useCallback, useMemo, useState } from "react"
 
 import { DataTile } from "@/components/data-tile"
+import { LiveScoreCluster } from "@/components/fixture-row"
 import { MatchDetailPane, MatchOpenPageButton } from "@/components/match-detail-pane"
 import { TeamCrest } from "@/components/team-crest"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -103,44 +104,47 @@ function FixtureRow({
       ? (teamsByCode.get(awayTeam.code)?.badgeUrl ?? null)
       : null
 
-  const score =
-    fixture.status === "upcoming"
-      ? fixture.kickoffLabel
-      : `${fixture.homeScore ?? 0}–${fixture.awayScore ?? 0}`
-
   return (
     <button
       type="button"
       data-tile-row
       data-selected={isSelected ? "true" : undefined}
       onClick={() => onSelect(fixture.id)}
-      className="flex w-full items-center justify-between gap-2 rounded-lg px-1 py-0.5 text-left text-sm"
+      className="flex w-full min-w-0 items-center gap-2 rounded-lg px-1 py-0.5 text-left text-sm"
     >
-      <span className="flex min-w-0 items-center gap-1.5 font-medium tabular-nums">
+      <span className="flex min-w-0 flex-1 items-center justify-between gap-2 font-medium tabular-nums">
+        <span className="truncate">{fixture.homeShort}</span>
         <TeamCrest
           badgeUrl={homeBadgeUrl}
           shortName={fixture.homeShort}
           className="size-4"
         />
-        <span className="truncate">
-          {fixture.homeShort} v {fixture.awayShort}
+      </span>
+      {fixture.status === "live" ? (
+        <LiveScoreCluster
+          homeScore={fixture.homeScore}
+          awayScore={fixture.awayScore}
+          minutes={fixture.minutes}
+        />
+      ) : (
+        <span
+          className={cn(
+            "flex w-14 shrink-0 items-center justify-center text-xs font-medium tabular-nums",
+            fixture.status === "upcoming" && "text-muted-foreground"
+          )}
+        >
+          {fixture.status === "upcoming"
+            ? (fixture.kickoffLabel ?? "TBC")
+            : `${fixture.homeScore ?? 0}–${fixture.awayScore ?? 0}`}
         </span>
+      )}
+      <span className="flex min-w-0 flex-1 items-center justify-between gap-2 font-medium tabular-nums">
         <TeamCrest
           badgeUrl={awayBadgeUrl}
           shortName={fixture.awayShort}
           className="size-4"
         />
-      </span>
-      <span
-        className={cn(
-          "shrink-0 text-xs font-medium tabular-nums",
-          fixture.status === "live" && "text-chart-2",
-          fixture.status !== "live" && "text-muted-foreground"
-        )}
-      >
-        {fixture.status === "live" && fixture.minutes !== null
-          ? `${fixture.minutes}'`
-          : score}
+        <span className="truncate">{fixture.awayShort}</span>
       </span>
     </button>
   )

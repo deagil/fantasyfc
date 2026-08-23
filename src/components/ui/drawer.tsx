@@ -56,6 +56,11 @@ function DrawerClose({
   return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />
 }
 
+function preventBackgroundScroll(event: React.SyntheticEvent) {
+  event.preventDefault()
+  event.stopPropagation()
+}
+
 function DrawerOverlay({
   className,
   ...props
@@ -64,10 +69,12 @@ function DrawerOverlay({
     <DrawerPrimitive.Overlay
       data-slot="drawer-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-black/30 supports-backdrop-filter:backdrop-blur-sm data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 z-50 touch-none overscroll-none bg-black/30 supports-backdrop-filter:backdrop-blur-sm data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
+      onWheel={preventBackgroundScroll}
+      onTouchMove={preventBackgroundScroll}
     />
   )
 }
@@ -93,7 +100,7 @@ function DrawerContent({
         data-drawer-size={size}
         data-drawer-align={align}
         className={cn(
-          "group/drawer-content fixed z-50 flex flex-col overflow-hidden bg-popover text-sm shadow-xl",
+          "group/drawer-content fixed z-50 flex flex-col overflow-hidden overscroll-contain bg-popover text-sm shadow-xl",
           drawerSizeClassNames[size],
           "data-[vaul-drawer-direction=bottom]:inset-x-0 data-[vaul-drawer-direction=bottom]:bottom-0 data-[vaul-drawer-direction=bottom]:mt-0 data-[vaul-drawer-direction=bottom]:rounded-t-[min(var(--radius-4xl),24px)] data-[vaul-drawer-direction=bottom]:border-t data-[vaul-drawer-direction=bottom]:border-border",
           "data-[vaul-drawer-direction=left]:inset-y-0 data-[vaul-drawer-direction=left]:left-0 data-[vaul-drawer-direction=left]:h-auto data-[vaul-drawer-direction=left]:w-3/4 data-[vaul-drawer-direction=left]:sm:max-w-sm",

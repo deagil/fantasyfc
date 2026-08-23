@@ -1,4 +1,4 @@
-import { CartesianGrid, LabelList, Line, LineChart, XAxis } from "recharts"
+import { CartesianGrid, LabelList, Line, LineChart, XAxis, YAxis } from "recharts"
 
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import type { ChartConfig } from "@/components/ui/chart"
@@ -10,6 +10,10 @@ const chartConfig = {
     color: "var(--chart-1)",
   },
 } satisfies ChartConfig
+
+/** Default ceiling; jumps to 300 only when a season clears 250. */
+const POINTS_AXIS_DEFAULT_MAX = 250
+const POINTS_AXIS_ELITE_MAX = 300
 
 /** "2025/26" → "25/26" — the century is dead weight on a crowded axis. */
 function shortSeason(seasonName: string): string {
@@ -60,6 +64,16 @@ export function SeasonPointsChart({
     pointsPerMillion: season.pointsPerMillion,
   }))
 
+  const peak = Math.max(0, ...data.map((season) => season.points))
+  const axisMax =
+    peak > POINTS_AXIS_DEFAULT_MAX
+      ? POINTS_AXIS_ELITE_MAX
+      : POINTS_AXIS_DEFAULT_MAX
+  const ticks =
+    axisMax === POINTS_AXIS_ELITE_MAX
+      ? [0, 100, 200, 300]
+      : [0, 100, 200, 250]
+
   return (
     <ChartContainer
       config={chartConfig}
@@ -69,7 +83,7 @@ export function SeasonPointsChart({
       <LineChart
         accessibilityLayer
         data={data}
-        margin={{ top: 20, left: 12, right: 12 }}
+        margin={{ top: 20, left: 4, right: 12 }}
       >
         <CartesianGrid vertical={false} />
         <XAxis
@@ -77,6 +91,14 @@ export function SeasonPointsChart({
           tickLine={false}
           axisLine={false}
           tickMargin={8}
+        />
+        <YAxis
+          domain={[0, axisMax]}
+          ticks={ticks}
+          width={28}
+          tickLine={false}
+          axisLine={false}
+          tickMargin={4}
         />
         <ChartTooltip
           cursor={false}

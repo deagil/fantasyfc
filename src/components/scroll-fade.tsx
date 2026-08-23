@@ -123,8 +123,9 @@ export function ScrollFade({
         className={cn(
           "min-h-0 min-w-0",
           orientation === "horizontal" && "overflow-x-auto overflow-y-hidden",
-          orientation === "vertical" && "flex-1 overflow-y-auto overflow-x-hidden",
-          orientation === "both" && "flex-1 overflow-auto",
+          orientation === "vertical" &&
+            "flex-1 overflow-y-auto overflow-x-hidden overscroll-contain",
+          orientation === "both" && "flex-1 overflow-auto overscroll-contain",
           contentClassName
         )}
       >

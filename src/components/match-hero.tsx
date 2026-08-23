@@ -35,7 +35,7 @@ export function MatchHero({
   const awayName = awayTeam?.name ?? awayShort
 
   return (
-    <div className={cn("flex flex-col gap-4 px-4 pt-0 pb-3", className)}>
+    <div className={cn("flex flex-col gap-4 px-0 pt-0 pb-3", className)}>
       {showStatus ? (
         <div className="flex items-center justify-center text-xs font-medium text-muted-foreground">
           {phase === "live" ? (
@@ -72,7 +72,7 @@ export function MatchHero({
               vs
             </span>
           ) : (
-            <span className="text-3xl font-bold tabular-nums tracking-tight">
+            <span className="flex items-center justify-center whitespace-nowrap text-3xl font-bold tabular-nums tracking-tight">
               {fixture.team_h_score ?? 0}
               <span className="mx-1 text-muted-foreground">–</span>
               {fixture.team_a_score ?? 0}

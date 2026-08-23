@@ -5,6 +5,29 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Hub grid as utilities so `lg:hub-tile-grid` / `lg:hub-desktop-align` emit CSS. */
+@utility hub-tile-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(2, round(down, var(--hub-cell), 1px));
+  grid-template-rows: repeat(6, round(down, var(--hub-cell), 1px));
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, round(down, var(--hub-cell), 1px));
+    grid-template-rows: repeat(3, round(down, var(--hub-cell), 1px));
+  }
+}
+
+@utility hub-desktop-align {
+  @media (min-width: 1024px) {
+    width: min(
+      100%,
+      round(down, calc(var(--hub-cell) * 4 + var(--hub-col-gap-total)), 1px)
+    );
+    margin-inline: auto;
+  }
+}
+
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: 'Inter Variable', sans-serif;
@@ -253,13 +276,6 @@
     --hub-cell: calc((100cqw - var(--hub-col-gap-total)) / 2);
   }
 
-  .hub-tile-grid {
-    display: grid;
-    gap: 0.5rem;
-    grid-template-columns: repeat(2, round(down, var(--hub-cell), 1px));
-    grid-template-rows: repeat(6, round(down, var(--hub-cell), 1px));
-  }
-
   @media (min-width: 1024px) {
     .hub-tile-container {
       --hub-col-gap-total: 1.5rem;
@@ -271,23 +287,6 @@
         (100cqw - var(--hub-cell-gap-for-size)) / var(--hub-cell-divisor),
         (100svh - var(--hub-desktop-chrome) - var(--hub-row-gap-total)) / 3
       );
-    }
-
-    .hub-desktop-align {
-      width: min(
-        100%,
-        round(
-          down,
-          calc(var(--hub-cell) * 4 + var(--hub-col-gap-total)),
-          1px
-        )
-      );
-      margin-inline: auto;
-    }
-
-    .hub-tile-grid {
-      grid-template-columns: repeat(4, round(down, var(--hub-cell), 1px));
-      grid-template-rows: repeat(3, round(down, var(--hub-cell), 1px));
     }
 
     /* League standings dock: 2× tile width, aligned to the right grid columns */

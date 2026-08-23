@@ -1,4 +1,4 @@
-import { MATCH_SIDES_GRID } from "@/components/match-layout"
+import { MatchCard, MatchSidesColumns } from "@/components/match-card"
 import {
   padTeamFormSlots,
   type HeadToHeadResult,
@@ -94,37 +94,27 @@ export function MatchPrematch({
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <div className="rounded-xl bg-foreground/3 px-3 py-4">
-        <p className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-          Match preview
-        </p>
+      <MatchCard title="Match preview" className="px-3 py-4">
         <p
           className={cn(
-            "mt-4 mb-1 text-center text-lg font-semibold tracking-tight text-balance",
+            "mt-1 mb-1 text-center text-lg font-semibold tracking-tight text-balance",
             previewToneClass(preview.id)
           )}
         >
           {preview.label}
         </p>
-      </div>
+      </MatchCard>
 
-      <div className="rounded-xl bg-foreground/3 p-3">
-        <p className="mb-3 text-center text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-          Form (last 5)
-        </p>
-        <div className={MATCH_SIDES_GRID}>
-          <FormBoxes entries={homeForm} />
-          <div aria-hidden className="min-h-6" />
-          <FormBoxes entries={awayForm} />
-        </div>
-      </div>
+      <MatchCard title="Form (last 5)">
+        <MatchSidesColumns
+          home={<FormBoxes entries={homeForm} />}
+          away={<FormBoxes entries={awayForm} />}
+        />
+      </MatchCard>
 
       {headToHead.length > 0 ? (
-        <div className="rounded-xl bg-foreground/3 p-3">
-          <p className="mb-2 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-            Season head-to-head
-          </p>
-          <ul className="flex flex-col gap-1.5">
+        <MatchCard title="Season head-to-head">
+          <ul className="flex flex-col gap-1.5 px-3">
             {headToHead.map((result) => (
               <li
                 key={result.fixtureId}
@@ -139,7 +129,7 @@ export function MatchPrematch({
               </li>
             ))}
           </ul>
-        </div>
+        </MatchCard>
       ) : null}
     </div>
   )
