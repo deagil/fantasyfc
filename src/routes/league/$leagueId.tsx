@@ -89,6 +89,7 @@ function LeagueDetailPage() {
 
           <div className={cn(hubTileGridClassName, "lg:mt-2")}>
             <DataTile
+              interactive
               className="col-span-2 row-span-3 lg:col-start-1 lg:row-start-1"
             >
               <DataTile.Header className="pb-2 pt-3">
@@ -106,6 +107,7 @@ function LeagueDetailPage() {
                   isLoading={standingsLoading}
                   error={standingsError}
                   contentClassName="pb-4"
+                  fromLeague={leagueId}
                 />
               </DataTile.Content>
             </DataTile>

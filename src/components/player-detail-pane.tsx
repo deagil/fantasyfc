@@ -30,12 +30,16 @@ type PlayerDetailPaneProps = {
   player: FplElement | null
   teamsById: Map<number, FplTeam>
   className?: string
+  emptyTitle?: string
+  emptyDescription?: string
 }
 
 export function PlayerDetailPane({
   player,
   teamsById,
   className,
+  emptyTitle = "Select a player",
+  emptyDescription = "Choose a player from the grid to view their scout report.",
 }: PlayerDetailPaneProps) {
   const { bootstrap } = useFplBootstrap()
   const { ratingsById, isLoading: ratingsLoading } = usePlayerRatingsById()
@@ -90,9 +94,9 @@ export function PlayerDetailPane({
           className
         )}
       >
-        <p className="text-sm font-medium text-foreground">Select a player</p>
+        <p className="text-sm font-medium text-foreground">{emptyTitle}</p>
         <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-          Choose a player from the grid to view their scout report.
+          {emptyDescription}
         </p>
       </div>
     )

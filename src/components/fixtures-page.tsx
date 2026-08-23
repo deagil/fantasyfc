@@ -21,6 +21,7 @@ import { formatMatchSheetTitle } from "@/lib/fixtures/kickoff"
 import { useFplBootstrap } from "@/lib/fpl/bootstrap-context"
 import { useFplSeasonFixturesQuery } from "@/lib/fpl/hooks"
 import type { FplFixture } from "@/lib/fpl/types"
+import { hubMasterDetailGridClassName } from "@/lib/layout"
 import { cn } from "@/lib/utils"
 
 function FixtureListSkeleton() {
@@ -233,13 +234,7 @@ export function FixturesPage() {
 
   return (
     <>
-      <div
-        className={cn(
-          "min-w-0 content-start",
-          "max-lg:flex max-lg:flex-col",
-          "lg:hub-tile-grid lg:hub-desktop-align"
-        )}
-      >
+      <div className={hubMasterDetailGridClassName}>
         <DataTile
           interactive
           className="max-lg:h-auto lg:col-span-2 lg:row-span-3 lg:col-start-1 lg:row-start-1"

@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router"
 import { ArrowDownIcon, ArrowUpIcon, MinusIcon } from "lucide-react"
 
 import { ScrollFade } from "@/components/scroll-fade"
@@ -34,16 +35,22 @@ export function RankChangeIndicator({ change }: { change: number }) {
 export function StandingRow({
   standing,
   isCurrentTeam,
+  fromLeague,
 }: {
   standing: FplLeagueStanding
   isCurrentTeam: boolean
+  fromLeague?: number
 }) {
   const rankChange = standing.last_rank - standing.rank
 
   return (
-    <div
+    <Link
+      to="/team/$entryId"
+      params={{ entryId: String(standing.entry) }}
+      search={fromLeague != null ? { fromLeague } : {}}
+      data-tile-row
       className={cn(
-        "flex w-full items-center gap-3 px-4 py-2.5",
+        "flex w-full items-center gap-3 px-4 py-2.5 text-left",
         isCurrentTeam && "bg-chart-2/10 ring-1 ring-inset ring-chart-2/20"
       )}
     >
@@ -60,7 +67,7 @@ export function StandingRow({
         <span className="text-sm font-semibold tabular-nums">{standing.total}</span>
         <RankChangeIndicator change={rankChange} />
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -71,6 +78,7 @@ export function LeagueStandingsList({
   error,
   contentClassName,
   fadeFrom,
+  fromLeague,
 }: {
   standings: FplLeagueStanding[]
   currentTeamId: number | null
@@ -78,6 +86,7 @@ export function LeagueStandingsList({
   error: string | null
   contentClassName?: string
   fadeFrom?: string
+  fromLeague?: number
 }) {
   return (
     <ScrollFade
@@ -103,6 +112,7 @@ export function LeagueStandingsList({
             key={standing.id}
             standing={standing}
             isCurrentTeam={standing.entry === currentTeamId}
+            fromLeague={fromLeague}
           />
         ))
       )}

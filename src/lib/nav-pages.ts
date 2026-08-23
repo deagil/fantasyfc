@@ -7,9 +7,9 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
-import { TileGridPage } from "@/components/tile-grid-page"
 import { CentralPage } from "@/components/central-page"
 import { FixturesPage } from "@/components/fixtures-page"
+import { MyTeamPage } from "@/components/team-page"
 import { TransfersHubPage } from "@/components/transfers-hub-page"
 
 export const defaultNavTabId = "hub" as const
@@ -30,7 +30,7 @@ export type NavPageConfig = {
 
 export const navPages: NavPageConfig[] = [
   { id: "hub", label: "Hub", icon: HomeIcon, View: CentralPage, enabled: true },
-  { id: "team", label: "Team", icon: UsersIcon, View: TileGridPage, enabled: false },
+  { id: "team", label: "Team", icon: UsersIcon, View: MyTeamPage, enabled: true },
   {
     id: "transfers",
     label: "Transfers",
